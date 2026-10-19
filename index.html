@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Crystalline Si · ALE Lab</title>
+  <style>
+    :root{--bg:#07101f;--panel:#0e1a2d;--line:#24354d;--muted:#91a2b9;--text:#f4f7fb;--cyan:#49d7e8;--blue:#5d8dff;--green:#55d69e;--orange:#ff9c5a;--danger:#ff6f7d;--shadow:0 18px 50px #02071388}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% -20%,#193356 0,#07101f 48%);color:var(--text);font-family:Inter,Pretendard,"Noto Sans KR",system-ui,sans-serif}button,input{font:inherit}button{color:inherit}
+    .app{min-height:100vh;display:grid;grid-template-rows:auto 1fr auto;padding:18px 22px 12px;gap:14px}.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px}.brand{display:flex;align-items:center;gap:12px}.mark{width:34px;height:34px;border:1px solid #3f5877;border-radius:10px;display:grid;place-items:center;color:var(--cyan);font-weight:900;background:#10213a}.eyebrow{color:var(--cyan);font-size:10px;letter-spacing:.18em;font-weight:800;text-transform:uppercase}.title{font-size:17px;font-weight:800;margin-top:2px}.topmeta{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:11px}.live{display:inline-flex;align-items:center;gap:6px;border:1px solid #235543;background:#0d2a25;border-radius:99px;padding:7px 10px;color:#87e9bd;font-weight:700}.live:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}
+    main{min-height:0;display:grid;grid-template-columns:minmax(590px,1.7fr) minmax(330px,.85fr);gap:14px}.panel{background:linear-gradient(145deg,#0f1c30ee,#0a1526ee);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.stage{position:relative;min-height:620px;overflow:hidden}.stage-head{position:absolute;z-index:3;left:18px;right:18px;top:16px;display:flex;justify-content:space-between;pointer-events:none}.stage-title{font-size:12px;font-weight:800}.stage-sub{font-size:10px;color:var(--muted);margin-top:4px}.view-tags{display:flex;gap:6px}.tag{padding:6px 8px;border:1px solid #30445f;border-radius:7px;color:#b4c0d0;background:#0b1729cc;font-size:9px;font-weight:700}.tag b{color:var(--cyan)}canvas{display:block;width:100%;height:100%;min-height:620px;cursor:grab}.legend{position:absolute;z-index:3;left:16px;bottom:15px;display:flex;gap:13px;padding:8px 10px;border:1px solid #263952;border-radius:9px;background:#07111edc;font-size:9px;color:#aab8ca}.legend span{display:flex;align-items:center;gap:5px}.dot{width:8px;height:8px;border-radius:50%}.stage-hint{position:absolute;right:16px;bottom:15px;color:#6f8199;font-size:9px}
+    aside{display:flex;flex-direction:column;gap:12px;min-height:0}.control{padding:16px}.section-label{display:flex;justify-content:space-between;color:#8294ac;font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;margin-bottom:13px}.material-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.material{padding:11px;border:1px solid #29405b;border-radius:10px;background:#0b1728}.material small{display:block;color:#72849d;font-size:8px;margin-bottom:4px}.material strong{font-size:12px}.material strong i{font-style:normal;color:var(--cyan)}
+    .slider-line{display:flex;justify-content:space-between;font-size:10px;margin-bottom:8px}.slider-line b{color:var(--cyan)}input[type=range]{appearance:none;width:100%;height:4px;background:#263b55;border-radius:9px;outline:0}input[type=range]::-webkit-slider-thumb{appearance:none;width:15px;height:15px;border-radius:50%;background:var(--cyan);border:3px solid #dffcff;box-shadow:0 0 0 3px #49d7e833}.ticks{display:flex;justify-content:space-between;color:#657891;font-size:8px;margin-top:6px}.energy{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.energy button{border:1px solid #2b405c;background:#0a1627;border-radius:9px;padding:9px 5px;color:#8295ae;font-weight:800;font-size:10px;cursor:pointer}.energy button.active{border-color:var(--cyan);background:#123244;color:#bff8ff;box-shadow:inset 0 0 18px #49d7e817}.energy button span{display:block;font-size:8px;font-weight:500;margin-top:3px;color:#667b94}.energy button.active span{color:#79cad5}
+    .actions{display:grid;grid-template-columns:1fr 44px;gap:8px}.primary,.reset{border:0;border-radius:10px;cursor:pointer;height:42px;font-weight:900}.primary{background:linear-gradient(90deg,#20a8ca,#417cfa);box-shadow:0 7px 22px #267dd53d;font-size:11px}.primary:disabled{opacity:.55;cursor:not-allowed}.reset{background:#17263b;border:1px solid #2a3e57;color:#91a4ba;font-size:17px}.progress{margin-top:11px;display:grid;grid-template-columns:repeat(3,1fr);gap:5px}.step{height:3px;background:#24354a;border-radius:5px}.step.on{background:var(--cyan);box-shadow:0 0 8px #49d7e888}.step-labels{display:grid;grid-template-columns:repeat(3,1fr);font-size:8px;color:#667a92;margin-top:5px;text-align:center}.step-labels .on{color:#b7c8dc}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;overflow:hidden}.metric{padding:14px 11px;background:#0d192b}.metric small{display:block;color:#71849c;font-size:8px;min-height:22px}.metric strong{display:block;font-size:17px;margin-top:4px}.metric strong em{font-style:normal;font-size:9px;color:#8092aa}.metric .cyan{color:var(--cyan)}.metric .green{color:var(--green)}
+    .readout{padding:14px 16px;flex:1}.readout h3{font-size:10px;margin:0 0 10px;color:#8da0b8;letter-spacing:.12em}.event{display:grid;grid-template-columns:8px 52px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid #1c2b40;font-size:9px;color:#9badc2}.event:last-child{border:0}.event .status{width:6px;height:6px;border-radius:50%;background:#344962;margin-top:3px}.event.done .status{background:var(--green)}.event.active .status{background:var(--cyan);box-shadow:0 0 8px var(--cyan)}.event time{color:#60748e}.event b{color:#d5dfec;font-weight:600}.note{border-left:2px solid #38587b;padding:7px 9px;margin-top:9px;color:#71849a;font-size:8.5px;line-height:1.55;background:#0a1525}.footer{display:flex;justify-content:space-between;color:#536780;font-size:8px;letter-spacing:.04em}.footer b{color:#7f92a9}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+    @media(max-width:900px){.app{padding:12px}main{grid-template-columns:1fr}.stage{min-height:540px}canvas{min-height:540px}.topmeta span:not(.live){display:none}}@media(max-width:560px){.stage{min-height:480px}canvas{min-height:480px}.view-tags,.stage-hint{display:none}.metrics{grid-template-columns:1fr}.metric{display:flex;justify-content:space-between;align-items:center}.metric small{min-height:0}.footer{display:none}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="mark">Si</div><div><div class="eyebrow">Atomic Layer Etching</div><div class="title">결정질 실리콘 ALE 가상 실험실</div></div></div>
+    <div class="topmeta"><span>MODEL · QUALITATIVE v1.0</span><span class="live">SIMULATION READY</span></div>
+  </header>
+  <main>
+    <section class="panel stage" aria-label="실리콘 원자 격자 시뮬레이션">
+      <div class="stage-head"><div><div class="stage-title">Si (100) · ATOMIC VIEW</div><div class="stage-sub" id="sceneCaption">Cl 흡착 전의 결정 표면</div></div><div class="view-tags"><span class="tag">LATTICE <b>5.43 Å</b></span><span class="tag">VIEW <b>3D</b></span></div></div>
+      <canvas id="scene" aria-label="회전 가능한 실리콘 격자와 염소, 아르곤 이온의 애니메이션"></canvas>
+      <div class="legend"><span><i class="dot" style="background:#5d8dff"></i>Si</span><span><i class="dot" style="background:#55d69e"></i>Cl</span><span><i class="dot" style="background:#ff9c5a"></i>Ar⁺</span><span><i class="dot" style="background:#ff6f7d"></i>제거 Si</span></div>
+      <div class="stage-hint">DRAG TO ROTATE · WHEEL TO ZOOM</div>
+    </section>
+    <aside>
+      <section class="panel control">
+        <div class="section-label"><span>01 · Process recipe</span><span>고정 재료</span></div>
+        <div class="material-row"><div class="material"><small>SUBSTRATE</small><strong><i>Si</i> · crystalline</strong></div><div class="material"><small>ADSORBATE</small><strong><i>Cl</i> · chlorine</strong></div></div>
+      </section>
+      <section class="panel control">
+        <div class="section-label"><span>02 · Cl coverage</span><span>흡착 정도</span></div>
+        <div class="slider-line"><span>표면 피복률</span><b id="coverageText">65%</b></div>
+        <input id="coverage" type="range" min="20" max="100" value="65" step="5" aria-label="염소 표면 피복률">
+        <div class="ticks"><span>20%</span><span>60%</span><span>100%</span></div>
+      </section>
+      <section class="panel control">
+        <div class="section-label"><span>03 · Ar⁺ ion energy</span><span>3단계</span></div>
+        <div class="energy" role="group" aria-label="아르곤 이온 에너지"><button data-e="20">20 eV<span>LOW</span></button><button class="active" data-e="50">50 eV<span>MID</span></button><button data-e="100">100 eV<span>HIGH</span></button></div>
+      </section>
+      <section class="panel control">
+        <div class="actions"><button class="primary" id="run">▶ ALE 1 CYCLE 실행</button><button class="reset" id="reset" title="초기화" aria-label="초기화">↺</button></div>
+        <div class="progress"><i class="step on"></i><i class="step"></i><i class="step"></i></div><div class="step-labels"><span class="on">Cl 흡착</span><span>Ar⁺ 충돌</span><span>Si 제거</span></div>
+      </section>
+      <section class="panel metrics">
+        <div class="metric"><small>가상 제거 확률</small><strong class="cyan" id="probability">58<em>%</em></strong></div><div class="metric"><small>제거된 Si 원자</small><strong id="removed">0 <em>atom</em></strong></div><div class="metric"><small>예상 EPC</small><strong class="green" id="epc">0.29 <em>ML/cycle</em></strong></div>
+      </section>
+      <section class="panel readout"><h3>CYCLE EVENT LOG</h3><div id="events"></div><div class="note">교육용 정성 모델입니다. 표시 수치는 피복률과 이온 에너지를 연결한 가상 지표이며, 실제 공정값에는 MD/DFT 계산과 실험 보정이 필요합니다.</div></section>
+    </aside>
+  </main>
+  <footer class="footer"><span><b>ALE sequence</b> · Cl adsorption → Ar⁺ activation → volatile SiClₓ desorption</span><span>NOT TO SCALE · EDUCATIONAL SURROGATE</span></footer>
+</div>
+<script>
+(()=>{
+ const canvas=document.querySelector('#scene'),ctx=canvas.getContext('2d'); let w,h,dpr=1,rotX=.74,rotY=-.62,zoom=1,drag=null,phase=0,start=0,running=false,energy=50,coverage=65,removed=0,raf;
+ const atoms=[]; for(let z=0;z<4;z++)for(let x=0;x<7;x++)for(let y=0;y<7;y++)atoms.push({x:(x-3)*54+(z%2)*14,y:(y-3)*54+(z%2)*14,z:(z-1.5)*52,top:z===0,key:x+'-'+y});
+ const sites=atoms.filter(a=>a.top).filter((_,i)=>i%2===0);
+ function resize(){const r=canvas.getBoundingClientRect();dpr=Math.min(2,devicePixelRatio||1);canvas.width=r.width*dpr;canvas.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);w=r.width;h=r.height}
+ function project(p){let x=p.x,y=p.y,z=p.z;const cy=Math.cos(rotY),sy=Math.sin(rotY),cx=Math.cos(rotX),sx=Math.sin(rotX);let x1=x*cy-z*sy,z1=x*sy+z*cy,y1=y*cx-z1*sx,z2=y*sx+z1*cx;const s=zoom*460/(650+z2);return{x:w*.48+x1*s,y:h*.57+y1*s,z:z2,s}}
+ const circle=(p,r,c,glow=0)=>{ctx.beginPath();ctx.arc(p.x,p.y,r*p.s,0,Math.PI*2);if(glow){ctx.shadowColor=c;ctx.shadowBlur=glow}ctx.fillStyle=c;ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle='#dce8ff44';ctx.lineWidth=1;ctx.stroke()};
+ function draw(t){ctx.clearRect(0,0,w,h);const grad=ctx.createRadialGradient(w*.47,h*.5,20,w*.47,h*.5,Math.max(w,h)*.6);grad.addColorStop(0,'#142640');grad.addColorStop(1,'#081321');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='#28415c55';ctx.lineWidth=1;for(let i=-5;i<=5;i++){let a=project({x:i*54,y:-300,z:105}),b=project({x:i*54,y:300,z:105});ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();a=project({x:-300,y:i*54,z:105});b=project({x:300,y:i*54,z:105});ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()}
+  const elapsed=running?t-start:0;phase=!running?0:elapsed<1200?1:elapsed<2450?2:3;const all=[];
+  atoms.forEach((a,i)=>{let q={...a},color='#5d8dff';const target=a.top&&a.key==='3-3';if(target&&phase===3){const u=Math.min(1,(elapsed-2450)/1100);q.z-=u*210;q.x+=u*95;color='#ff6f7d'}all.push({p:project(q),r:target&&phase===3?13:11,c:color,type:'atom'});
+   if(a.top&&phase<3){const ns=atoms.find(b=>b.x===a.x+54&&Math.abs(b.y-a.y)<2&&b.z===a.z);if(ns){const p1=project(a),p2=project(ns);all.push({p1,p2,type:'bond'})}}
+  });
+  const visible=Math.round(sites.length*coverage/100);sites.slice(0,visible).forEach((a,i)=>{let q={x:a.x,y:a.y,z:a.z-42};if(phase===1){const u=Math.min(1,elapsed/900);q.z-=110*(1-u)}if(phase===3&&a.key==='3-3'){const u=Math.min(1,(elapsed-2450)/1100);q.z-=u*210;q.x+=u*95}all.push({p:project(q),r:8,c:'#55d69e',type:'cl'})});
+  if(phase===2){const u=Math.min(1,(elapsed-1200)/1000),hit=atoms.find(a=>a.key==='3-3'&&a.top),q={x:hit.x,y:hit.y,z:hit.z-260+u*220};all.push({p:project(q),r:14,c:'#ff9c5a',type:'ion'})}
+  all.sort((a,b)=>(b.p?.z||0)-(a.p?.z||0));all.forEach(o=>{if(o.type==='bond'){ctx.beginPath();ctx.moveTo(o.p1.x,o.p1.y);ctx.lineTo(o.p2.x,o.p2.y);ctx.strokeStyle='#6d8bb044';ctx.lineWidth=2;ctx.stroke()}else circle(o.p,o.r,o.c,o.type==='ion'?18:0)});
+  if(running&&elapsed>3550){running=false;removed=1;document.querySelector('#removed').innerHTML='1 <em>atom</em>';updateSteps(3);log(3);document.querySelector('#run').disabled=false;document.querySelector('#sceneCaption').textContent='SiClₓ 표면종이 이탈한 후의 원자층';}
+  raf=requestAnimationFrame(draw)
+ }
+ function calc(){const ef={20:.42,50:.88,100:1.12}[energy],p=Math.min(95,Math.round(coverage*.0102*ef*100));document.querySelector('#probability').innerHTML=p+'<em>%</em>';document.querySelector('#epc').innerHTML=(p/200).toFixed(2)+' <em>ML/cycle</em>'}
+ function updateSteps(n){document.querySelectorAll('.step,.step-labels span').forEach((e,i)=>e.classList.toggle('on',i<Math.max(1,n)))}
+ function log(n=0){const labels=[['00.00','Cl 전구체가 표면 Si 활성점에 화학 흡착'],['01.20','Ar⁺ ('+energy+' eV)가 개질된 표면에 입사'],['02.45','운동량 전달로 Si–Si 결합 약화'],['03.55','SiClₓ 표면종 이탈 · 1개 원자 제거']];document.querySelector('#events').innerHTML=labels.map((x,i)=>`<div class="event ${i<n?'done':i===n?'active':''}"><i class="status"></i><time>${x[0]} s</time><b>${x[1]}</b></div>`).join('')}
+ document.querySelector('#coverage').oninput=e=>{coverage=+e.target.value;document.querySelector('#coverageText').textContent=coverage+'%';calc()};document.querySelectorAll('.energy button').forEach(b=>b.onclick=()=>{energy=+b.dataset.e;document.querySelectorAll('.energy button').forEach(x=>x.classList.toggle('active',x===b));calc();log(0)});
+ document.querySelector('#run').onclick=()=>{if(running)return;running=true;start=performance.now();removed=0;document.querySelector('#removed').innerHTML='0 <em>atom</em>';document.querySelector('#run').disabled=true;document.querySelector('#sceneCaption').textContent='Cl 흡착 → Ar⁺ 충돌 → 원자 단위 제거';updateSteps(1);log(0);setTimeout(()=>{if(running){updateSteps(2);log(1)}},1200);setTimeout(()=>{if(running){updateSteps(3);log(2)}},2450)};
+ document.querySelector('#reset').onclick=()=>{running=false;removed=0;phase=0;document.querySelector('#removed').innerHTML='0 <em>atom</em>';document.querySelector('#run').disabled=false;document.querySelector('#sceneCaption').textContent='Cl 흡착 전의 결정 표면';updateSteps(1);log(0)};
+ canvas.onpointerdown=e=>{drag={x:e.clientX,y:e.clientY,rx:rotX,ry:rotY};canvas.setPointerCapture(e.pointerId);canvas.style.cursor='grabbing'};canvas.onpointermove=e=>{if(drag){rotY=drag.ry+(e.clientX-drag.x)*.007;rotX=Math.max(.2,Math.min(1.35,drag.rx+(e.clientY-drag.y)*.007))}};canvas.onpointerup=()=>{drag=null;canvas.style.cursor='grab'};canvas.onwheel=e=>{e.preventDefault();zoom=Math.max(.68,Math.min(1.45,zoom-e.deltaY*.0007))};
+ addEventListener('resize',resize);resize();calc();log();draw(0);
+})();
+</script>
+</body>
+</html>
