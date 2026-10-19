@@ -16,14 +16,23 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Verify site entry point and controls
+      - name: Verify homepage and ALE simulator structure
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
 
-          html = Path("index.html").read_text(encoding="utf-8")
-          required = (
+          home = Path("index.html").read_text(encoding="utf-8")
+          ale = Path("ale.html").read_text(encoding="utf-8")
+          home_required = (
+              "Materials Science Platform",
+              'id="homeCards"',
+              'id="themeGrid"',
+              'href="ale.html"',
+              "assets/ale-plasma.svg",
+              "assets/materials-learning.svg",
+          )
+          ale_required = (
               '<canvas id="scene"',
               'id="coverage"',
               'id="sourcePower"',
@@ -33,12 +42,19 @@ jobs:
               'sim-model.js',
               'app.js',
           )
+          for label, page, required in (
+              ("homepage", home, home_required),
+              ("ALE simulator", ale, ale_required),
+          ):
+              missing = [value for value in required if value not in page]
+              if missing:
+                  raise SystemExit(f"{label}: missing required elements: {missing}")
 
-          missing = [value for value in required if value not in html]
-          if missing:
-              raise SystemExit(f"Missing required site elements: {missing}")
+          for asset in ("assets/ale-plasma.svg", "assets/materials-learning.svg"):
+              if not Path(asset).is_file():
+                  raise SystemExit(f"Missing homepage artwork: {asset}")
 
-          print("Static-site structure validation passed")
+          print("Homepage and ALE simulator structure validation passed")
           PY
 
       - name: Run simulation model tests
