@@ -34,12 +34,14 @@ jobs:
           )
           ale_required = (
               '<canvas id="scene"',
-              'id="coverage"',
+              'id="exposureTime"',
               'id="sourcePower"',
               'id="cycles"',
               'id="start"',
               'id="reset"',
               'sim-model.js',
+              'chamber-view.js',
+              'surface-v041.js',
               'app.js',
           )
           for label, page, required in (
@@ -49,6 +51,9 @@ jobs:
               missing = [value for value in required if value not in page]
               if missing:
                   raise SystemExit(f"{label}: missing required elements: {missing}")
+
+          if 'id="coverage"' in ale:
+              raise SystemExit("ALE simulator still contains obsolete target-coverage slider")
 
           for asset in ("assets/ale-plasma.svg", "assets/materials-learning.svg"):
               if not Path(asset).is_file():
@@ -61,4 +66,8 @@ jobs:
         run: node tests/sim-model.test.js
 
       - name: Parse browser application JavaScript
-        run: node --check app.js
+        run: |
+          node --check app.js
+          node --check sim-model.js
+          node --check chamber-view.js
+          node --check surface-v041.js
