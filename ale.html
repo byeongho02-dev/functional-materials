@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="description" content="결정질 Si 표면의 Cl 흡착 및 Ar 이온 활성화 기반 ALE 교육용 개념 시뮬레이터">
-  <title>ALE Simulator V0.4 · Integrated Visualization</title><link rel="stylesheet" href="styles.css">
+  <title>ALE Simulator V0.4.1 · Refined Plasma & Surface</title><link rel="stylesheet" href="styles.css">
 </head>
 <body><div class="app-shell">
-  <header class="topbar"><div class="brand"><span class="brand-mark">Si</span><div><p>ATOMIC LAYER ETCHING</p><h1>Crystalline Si · ALE Simulator <b>V0.4</b></h1></div></div><div class="status-strip"><span class="model-chip">CONCEPTUAL MODEL</span><span class="ready-dot" id="runStatus">READY</span></div></header>
+  <header class="topbar"><div class="brand"><span class="brand-mark">Si</span><div><p>ATOMIC LAYER ETCHING</p><h1>Crystalline Si · ALE Simulator <b>V0.4.1</b></h1></div></div><div class="status-strip"><span class="model-chip">CONCEPTUAL MODEL</span><span class="ready-dot" id="runStatus">READY</span></div></header>
   <main class="workspace">
     <aside class="panel controls" aria-label="공정 조건 설정">
       <div class="panel-title"><span>PROCESS CONTROL</span><small>RECIPE</small></div>
@@ -22,12 +22,12 @@
       <div class="sim-head"><div><small>3D ATOMIC SIMULATION</small><h2 id="stepTitle">초기 결정 표면</h2></div><div class="cycle-count"><strong id="cycleCurrent">0</strong><span>/</span><b id="cycleTotal">1</b><small>CYCLE</small></div></div>
       <div class="integrated-scene" id="integratedScene">
         <div class="chamber-pane">
-          <div class="integrated-title"><strong>01 · ICP CHAMBER</strong><span id="plasmaBadge" class="scene-badge">PLASMA OFF</span></div>
+          <div class="integrated-title"><strong>01 · ICP REACTOR / PLASMA</strong><span id="plasmaBadge" class="scene-badge">PLASMA OFF</span></div>
           <canvas id="chamberScene" role="img" aria-label="ICP 챔버 반단면과 Cl 공급종, Ar 플라즈마, 웨이퍼 입사 입자 애니메이션"></canvas>
         </div>
         <div class="zoom-link" aria-hidden="true"><span>WAFER SURFACE</span><i></i><span>ATOMIC ZOOM</span></div>
         <div class="surface-pane">
-          <div class="integrated-title"><strong>02 · Si(100) SURFACE</strong><span id="surfaceModeBadge" class="scene-badge">INITIAL SURFACE</span></div>
+          <div class="integrated-title"><strong>02 · Si(100) REACTION ZONE</strong><span id="surfaceModeBadge" class="scene-badge">INITIAL SURFACE</span></div>
           <canvas id="scene" aria-label="회전·확대 및 원자 선택이 가능한 결정질 실리콘 원자 표면 시뮬레이션"></canvas>
           <div class="atom-card" id="atomCard" hidden><button id="closeAtom">×</button><small>SELECTED ATOM</small><strong id="atomName">Si #1</strong><span id="atomState">Active · Layer 1</span></div>
         </div>
@@ -45,4 +45,4 @@
     </aside>
   </main>
   <footer><span>Si (100) · Cl adsorption · Ar⁺ activation</span><span>INTEGRATED VISUALIZATION · EDUCATIONAL SURROGATE · NOT MD / DFT</span></footer>
-</div><script src="sim-model.js"></script><script src="chamber-view.js"></script><script src="app.js"></script></body></html>
+</div><script src="sim-model.js"></script><script src="chamber-view.js"></script><script src="surface-v041.js"></script><script src="app.js"></script></body></html>
