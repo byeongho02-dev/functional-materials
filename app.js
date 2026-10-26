@@ -1,11 +1,11 @@
 (() => {
   'use strict';
-  const { ALEEngine, ConceptualPlasmaModel, clamp } = window.ALEModel;
+  const { ALEEngine, ConceptualPlasmaModel, estimateCoveragePct, clamp } = window.ALEModel;
   const $ = selector => document.querySelector(selector);
   const $$ = selector => Array.from(document.querySelectorAll(selector));
   const engine = new ALEEngine({ cols: 8, rows: 8, layers: 20, plasmaModel: new ConceptualPlasmaModel() });
   const state = {
-    sourcePowerW: 300, ionEnergyEv: 50, coveragePct: 65, totalCycles: 1,
+    sourcePowerW: 300, ionEnergyEv: 50, exposureTimeS: 5, adsorptionDurationMs: 1250, totalCycles: 1,
     speedIndex: 1, running: false, paused: false, currentCycle: 0,
     phaseIndex: -1, phaseElapsed: 0, previousTime: 0, plan: null,
     rotationX: 0.73, rotationY: -0.62, zoom: 1, drag: null,
@@ -70,6 +70,31 @@
     updateEnvironmentUI();
   }
 
+  function setExposure(value) {
+    state.exposureTimeS = clamp(Number.isFinite(Number(value)) ? Number(value) : 5, 0, 20);
+    // Compress the physical exposure into a watchable animation of ~0.65–3.05 s.
+    state.adsorptionDurationMs = 650 + state.exposureTimeS * 120;
+    $('#exposureTime').value = state.exposureTimeS;
+    $('#exposureOut').textContent = `${state.exposureTimeS.toFixed(1)} s`;
+  }
+
+  function phaseDuration(index) {
+    return index === 0 ? state.adsorptionDurationMs : baseDurations[index];
+  }
+
+  function renderLiveCoverage() {
+    if (!state.plan || state.phaseIndex < 0) return;
+    let value = state.plan.coveragePct;
+    if (state.phaseIndex === 0) {
+      const fraction = Math.min(1, Math.max(0, state.phaseElapsed / state.adsorptionDurationMs));
+      const plasma = state.plan.plasma;
+      const full = estimateCoveragePct(state.exposureTimeS, plasma.radicalFluxIndex);
+      const partial = estimateCoveragePct(state.exposureTimeS * fraction, plasma.radicalFluxIndex);
+      value = full > 0 ? state.plan.coveragePct * partial / full : 0;
+    }
+    $('#mCoverage').innerHTML = `${value.toFixed(1)}<em>%</em>`;
+  }
+
   function setCycles(value) {
     state.totalCycles = Math.round(clamp(value, 1, 100));
     $('#cycles').value = state.totalCycles; $('#cycleNumber').value = state.totalCycles;
@@ -80,7 +105,7 @@
   function bindControls() {
     $('#sourcePower').addEventListener('input', e => setPower(e.target.value));
     $('#powerNumber').addEventListener('change', e => setPower(e.target.value));
-    $('#coverage').addEventListener('input', e => { state.coveragePct = +e.target.value; $('#coverageOut').textContent = `${state.coveragePct}%`; });
+    $('#exposureTime').addEventListener('input', e => setExposure(e.target.value));
     $('#cycles').addEventListener('input', e => setCycles(e.target.value));
     $('#cycleNumber').addEventListener('change', e => setCycles(e.target.value));
     $('#cycleMinus').addEventListener('click', () => setCycles(state.totalCycles - 1));
@@ -112,7 +137,7 @@
   }
 
   function makePlan(cycle) {
-    return engine.prepareCycle({ cycle, sourcePowerW: state.sourcePowerW, ionEnergyEv: state.ionEnergyEv, coveragePct: state.coveragePct });
+    return engine.prepareCycle({ cycle, sourcePowerW: state.sourcePowerW, ionEnergyEv: state.ionEnergyEv, exposureTimeS: state.exposureTimeS });
   }
 
   function togglePause() {
@@ -146,15 +171,16 @@
     if (state.running && !state.paused) {
       const delta = Math.min(60, now - state.previousTime) * speedValues[state.speedIndex];
       state.phaseElapsed += delta; state.previousTime = now;
-      const duration = baseDurations[state.phaseIndex];
+      const duration = phaseDuration(state.phaseIndex);
       if (state.phaseElapsed >= duration) {
         state.phaseElapsed -= duration;
         if (state.phaseIndex === phaseNames.length - 1) finishCycle();
         else { state.phaseIndex += 1; updatePhaseUI(); }
       }
       if (state.running) {
-        const overall = ((state.currentCycle - 1) + (state.phaseIndex + Math.min(1, state.phaseElapsed / baseDurations[state.phaseIndex])) / 4) / state.totalCycles;
+        const overall = ((state.currentCycle - 1) + (state.phaseIndex + Math.min(1, state.phaseElapsed / phaseDuration(state.phaseIndex))) / 4) / state.totalCycles;
         $('#cycleProgress').style.width = `${overall * 100}%`;
+        renderLiveCoverage();
       }
     } else state.previousTime = now;
     drawScene();
@@ -169,7 +195,7 @@
       el.classList.toggle('active', index === state.phaseIndex); el.classList.toggle('done', index < state.phaseIndex);
     });
     const adsorbed = state.plan ? state.plan.adsorbedIds.length : 0;
-    $('#mCoverage').innerHTML = `${state.plan ? state.plan.coveragePct.toFixed(1) : '0.0'}<em>%</em>`;
+    renderLiveCoverage();
     $('#mModified').innerHTML = `${adsorbed}<em>atoms</em>`;
     updateEnvironmentUI();
   }
@@ -275,5 +301,5 @@
   }
   function selectAtom(event){const rect=canvas.getBoundingClientRect(),x=event.clientX-rect.left,y=event.clientY-rect.top;let best=null,dist=Infinity;state.projectedAtoms.forEach(p=>{const d=Math.hypot(x-p.x,y-p.y);if(d<Math.max(10,p.radius)&&d<dist){best=p.atom;dist=d;}});if(!best)return;state.selectedId=best.id;$('#atomCard').hidden=false;$('#atomName').textContent=`Si #${best.id}`;$('#atomState').textContent=`${best.modified?'Modified':'Active'} · Layer ${best.layer+1} · Column ${best.col+1},${best.row+1}`;}
 
-  window.addEventListener('resize',()=>{resizeCanvas();drawCharts();});bindControls();bindCanvas();setPower(300);setCycles(1);resizeCanvas();updateMetrics(null);drawCharts();requestAnimationFrame(tick);
+  window.addEventListener('resize',()=>{resizeCanvas();drawCharts();});bindControls();bindCanvas();setExposure(5);setPower(300);setCycles(1);resizeCanvas();updateMetrics(null);drawCharts();requestAnimationFrame(tick);
 })();
