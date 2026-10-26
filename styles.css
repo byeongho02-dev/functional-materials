@@ -27,3 +27,14 @@
 .simulation .interaction-hint{bottom:17px}
 @media(max-width:1100px){.simulation{min-height:735px}.integrated-scene{top:61px;bottom:107px}.surface-pane #scene{min-height:0}}
 @media(max-width:720px){.simulation{min-height:700px}.integrated-scene{left:8px;right:8px;top:56px;bottom:104px;gap:9px}.integrated-title{left:8px;right:8px}.integrated-title strong{font-size:8px}.scene-badge{font-size:7px;padding:3px 5px}.zoom-link{right:8px;padding:3px 6px}.zoom-link span{font-size:6px}.simulation .legend{gap:7px;flex-wrap:wrap;bottom:11px}.simulation .legend span{font-size:7px}.surface-pane #scene{min-height:0}}
+
+
+/* V0.4.1 visual emphasis: reactor 37%, active Si reaction area 63%.
+   The original controls / simulation / results page grid is unchanged. */
+.integrated-scene{grid-template-rows:minmax(0,.37fr) minmax(0,.63fr);gap:10px}
+.chamber-pane{border-color:#466680;background:#0a192b}
+.surface-pane{border-color:#4474a2;box-shadow:inset 0 0 0 1px #86bcff10}
+.surface-pane canvas#scene{touch-action:none}
+.integrated-title strong{text-shadow:0 2px 7px #050f1b;font-size:9px}
+.zoom-link{top:37%;background:#10364deb;border-color:#428db2;box-shadow:0 3px 12px #020f1b88}
+@media(max-width:720px){.integrated-scene{grid-template-rows:minmax(0,.37fr) minmax(0,.63fr)}.zoom-link{top:37%}}
