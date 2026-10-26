@@ -36,7 +36,7 @@
     c.fillStyle=bg;c.fillRect(0,0,w,h);
     const ph=state.running?state.phaseIndex:-1;
     const enabled=state.sourcePowerW>0;
-    const cl=ph===0&&enabled;
+    const cl=ph===0&&enabled&&state.exposureTimeS>0;
     const ar=ph===2&&enabled;
     const purge=ph===1||ph===3;
     const t=time*.001;
