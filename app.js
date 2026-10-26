@@ -16,8 +16,10 @@
   const baseDurations = [900, 420, 900, 820];
   const speedValues = [0.5, 1, 2, 4];
   const canvas = $('#scene');
+  const chamberCanvas = $('#chamberScene');
   const ctx = canvas.getContext('2d');
   let width = 0, height = 0, dpr = 1;
+  let lastRenderTime = 0, chamberAnimationTime = 0;
 
   function resizeCanvas() {
     const rect = canvas.getBoundingClientRect();
@@ -35,6 +37,25 @@
     chart.height = Math.max(1, Math.round(rect.height * dpr));
   }
 
+  // Presentational status only: the scientific engine and results remain unchanged.
+  function updateEnvironmentUI() {
+    const phase = state.running ? state.phaseIndex : -1;
+    const sourceSet = state.sourcePowerW > 0;
+    const clPlasma = sourceSet && phase === 0;
+    const arPlasma = sourceSet && phase === 2;
+    const badge = $('#plasmaBadge');
+    const surface = $('#surfaceModeBadge');
+    const sourcePanel = $('#plasmaState');
+    badge.classList.toggle('on', clPlasma);
+    badge.classList.toggle('ion', arPlasma);
+    badge.textContent = clPlasma ? 'Cl SPECIES · PLASMA' : arPlasma ? 'Ar PLASMA · BIAS' : phase === 1 || phase === 3 ? 'PURGE · PLASMA OFF' : 'READY · PLASMA OFF';
+    surface.classList.toggle('on', phase === 0 || phase === 1);
+    surface.classList.toggle('ion', phase === 2);
+    surface.textContent = phase === 0 ? 'Cl ADSORPTION' : phase === 1 ? 'MODIFIED SURFACE' : phase === 2 ? 'Ar⁺ BOMBARDMENT' : phase === 3 ? 'PRODUCT REMOVAL' : 'INITIAL SURFACE';
+    sourcePanel.classList.toggle('off', !clPlasma && !arPlasma);
+    sourcePanel.querySelector('span').textContent = clPlasma || arPlasma ? 'PLASMA SOURCE ON' : !sourceSet ? 'SOURCE POWER OFF' : phase===1 || phase===3 ? 'PURGE · PLASMA OFF' : 'SOURCE SETPOINT READY';
+  }
+
   function setPower(value) {
     state.sourcePowerW = Math.round(clamp(value, 0, 600));
     $('#sourcePower').value = Math.round(state.sourcePowerW / 10) * 10;
@@ -46,6 +67,7 @@
     panel.classList.toggle('off', !plasma.sourceOn);
     panel.querySelector('span').textContent = plasma.sourceOn ? 'PLASMA SOURCE ON' : 'PLASMA SOURCE OFF';
     panel.querySelector('b').textContent = `정성 플럭스 지수 ${plasma.ionFluxIndex.toFixed(2)}`;
+    updateEnvironmentUI();
   }
 
   function setCycles(value) {
@@ -104,7 +126,7 @@
     engine.reset(); Object.assign(state, { running: false, paused: false, currentCycle: 0, phaseIndex: -1, phaseElapsed: 0, plan: null, selectedId: null });
     lockRecipe(false); $('#pause').textContent = 'Ⅱ'; $('#runStatus').textContent = 'READY'; $('#cycleCurrent').textContent = '0';
     $('#stepTitle').textContent = '초기 결정 표면'; $('#cycleProgress').style.width = '0%'; $('#atomCard').hidden = true;
-    $$('.stepper-track div').forEach(el => el.classList.remove('active', 'done')); updateMetrics(null); drawCharts();
+    $('.stepper-track div').forEach(el => el.classList.remove('active', 'done')); updateMetrics(null); drawCharts(); updateEnvironmentUI();
   }
 
   function finishCycle() {
@@ -112,12 +134,15 @@
     if (state.currentCycle >= state.totalCycles) {
       state.running = false; state.phaseIndex = -1; lockRecipe(false); $('#pause').textContent = 'Ⅱ';
       $('#runStatus').textContent = 'COMPLETE'; $('#stepTitle').textContent = `${state.totalCycles} Cycle 완료`;
-      $('#cycleProgress').style.width = '100%'; return;
+      $('#cycleProgress').style.width = '100%'; updateEnvironmentUI(); return;
     }
     state.currentCycle += 1; state.plan = makePlan(state.currentCycle); state.phaseIndex = 0; state.phaseElapsed = 0; updatePhaseUI();
   }
 
   function tick(now) {
+    const frameDelta = lastRenderTime ? Math.min(60, Math.max(0, now-lastRenderTime)) : 0;
+    lastRenderTime = now;
+    if (state.running && !state.paused) chamberAnimationTime += frameDelta * speedValues[state.speedIndex];
     if (state.running && !state.paused) {
       const delta = Math.min(60, now - state.previousTime) * speedValues[state.speedIndex];
       state.phaseElapsed += delta; state.previousTime = now;
@@ -132,7 +157,9 @@
         $('#cycleProgress').style.width = `${overall * 100}%`;
       }
     } else state.previousTime = now;
-    drawScene(); requestAnimationFrame(tick);
+    drawScene();
+    if (window.ALEChamber) window.ALEChamber.render(chamberCanvas, state, chamberAnimationTime);
+    requestAnimationFrame(tick);
   }
 
   function updatePhaseUI() {
@@ -144,6 +171,7 @@
     const adsorbed = state.plan ? state.plan.adsorbedIds.length : 0;
     $('#mCoverage').innerHTML = `${state.plan ? state.plan.coveragePct.toFixed(1) : '0.0'}<em>%</em>`;
     $('#mModified').innerHTML = `${adsorbed}<em>atoms</em>`;
+    updateEnvironmentUI();
   }
 
   function updateMetrics(result) {
@@ -160,8 +188,9 @@
     const x = atom.x + (offset.x || 0), y = atom.y + (offset.y || 0), z = atom.z + (offset.z || 0);
     const cy = Math.cos(state.rotationY), sy = Math.sin(state.rotationY), cx = Math.cos(state.rotationX), sx = Math.sin(state.rotationX);
     const x1 = x * cy - z * sy, z1 = x * sy + z * cy, y1 = y * cx - z1 * sx, z2 = y * sx + z1 * cx;
-    const scale = state.zoom * 510 / (720 + z2);
-    return { x: width * .5 + x1 * scale, y: height * .47 + y1 * scale, depth: z2, scale };
+    const sceneFit = Math.min(1, Math.max(.62, height / 360));
+    const scale = state.zoom * 510 * sceneFit / (720 + z2);
+    return { x: width * .5 + x1 * scale, y: height * .53 + y1 * scale, depth: z2, scale };
   }
 
   function circle(point, radius, fill, glow = 0) {
