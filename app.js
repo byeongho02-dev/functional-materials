@@ -41,7 +41,7 @@
   function updateEnvironmentUI() {
     const phase = state.running ? state.phaseIndex : -1;
     const sourceSet = state.sourcePowerW > 0;
-    const clPlasma = sourceSet && phase === 0;
+    const clPlasma = sourceSet && phase === 0 && state.exposureTimeS > 0;
     const arPlasma = sourceSet && phase === 2;
     const badge = $('#plasmaBadge');
     const surface = $('#surfaceModeBadge');
