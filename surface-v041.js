@@ -124,7 +124,13 @@ function render(canvas,state,engine,time){
       state.projectedAtoms.push({atom,x:loc.x,y:loc.y,radius:Math.max(9,16*units)});
       // Surface Cl remains during purge, then leaves with removed species.
       const clOn=adsorbed.has(atom.id)&&phase>=0&&(phase!==3||!isRemoving);
-      const fraction=phase===0?clamp(state.phaseElapsed/phases[0],0,1):1;
+      const fraction=phase===0?(()=>{
+        const p=clamp(state.phaseElapsed/(state.adsorptionDurationMs||phases[0]),0,1);
+        const estimate=root.ALEModel&&root.ALEModel.estimateCoveragePct;
+        if(!estimate||!state.plan)return p;
+        const flux=state.plan.plasma.radicalFluxIndex,full=estimate(state.exposureTimeS,flux);
+        return full>0?clamp(estimate(state.exposureTimeS*p,flux)/full,0,1):0;
+      })():1;
       if(clOn&&((atom.col*17+atom.row*13)%19)/19<=fraction){
         const bondY=loc.y-17*units;
         stroke(c,loc.x,loc.y-9*units,loc.x,bondY,'#72dfb79a',2);
@@ -176,6 +182,7 @@ function render(canvas,state,engine,time){
   // Diagnostic but not quantitative: patch location and removed-site count.
   label(c,'7×3 representative surface patch · Si sites from model',15,h-26,10,'#849eb7');
   label(c,'Removal sites: '+(plan.removalIds||[]).length+' (full model)',15,h-10,9,'#6f92ad');
+  if(phase===0)label(c,'Cl EXPOSURE '+state.exposureTimeS.toFixed(1)+' s',w-15,h-10,10,'#83e1b5','right');
 }
 root.ALESurfaceV041={render};
 })(window);
