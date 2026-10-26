@@ -207,6 +207,10 @@
   }
 
   function drawScene() {
+    if (window.ALESurfaceV041) {
+      window.ALESurfaceV041.render(canvas, state, engine, chamberAnimationTime);
+      return;
+    }
     ctx.clearRect(0, 0, width, height);
     const bg = ctx.createRadialGradient(width * .5, height * .43, 10, width * .5, height * .43, Math.max(width, height) * .65);
     bg.addColorStop(0, '#142a47'); bg.addColorStop(1, '#07111e'); ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
