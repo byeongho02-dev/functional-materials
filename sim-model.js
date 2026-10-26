@@ -9,6 +9,19 @@
   const SI_ATOMIC_VOLUME = Math.pow(SI_LATTICE_A, 3) / 8;
   const SI_100_SITE_AREA = Math.pow(SI_LATTICE_A, 2) / 2;
   const ENERGY_FACTORS = Object.freeze({ 20: 0.35, 50: 0.68, 100: 1 });
+  // Normalized, uncalibrated adsorption saturation. These are demonstration-only
+  // parameters, NOT measured Cl sticking coefficients or radical fluxes.
+  const ADSORPTION_SATURATION_FRACTION = 0.98;
+  const ADSORPTION_RATE_INDEX_PER_S = 0.44;
+
+  function estimateCoveragePct(exposureTimeS, radicalFluxIndex) {
+    const timeS = clamp(exposureTimeS, 0, 20);
+    const fluxIndex = clamp(radicalFluxIndex, 0, 1);
+    if (!(timeS > 0 && fluxIndex > 0)) return 0;
+    return 100 * ADSORPTION_SATURATION_FRACTION *
+      (1 - Math.exp(-ADSORPTION_RATE_INDEX_PER_S * fluxIndex * timeS));
+  }
+
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, Number(value)));
@@ -89,14 +102,17 @@
 
     prepareCycle(input) {
       const cycle = Math.floor(clamp(input.cycle, 1, Number.MAX_SAFE_INTEGER));
-      const coveragePct = clamp(input.coveragePct, 0, 100);
+      const exposureTimeS = clamp(input.exposureTimeS ?? 5, 0, 20);
       const ionEnergyEv = ENERGY_FACTORS[input.ionEnergyEv] ? Number(input.ionEnergyEv) : 50;
       const plasma = this.plasmaModel.evaluate(input.sourcePowerW);
+      const modeledCoveragePct = estimateCoveragePct(exposureTimeS, plasma.radicalFluxIndex);
+      // Quantization into the finite 8x8 surface lattice yields the displayed coverage.
+      const coveragePct = modeledCoveragePct;
       const surface = this.getSurfaceAtoms();
       surface.forEach(atom => { atom.adsorbed = false; atom.modified = false; });
 
       if (!plasma.sourceOn || surface.length === 0) {
-        return { cycle, plasma, coveragePct: 0, ionEnergyEv, adsorbedIds: [], modifiedIds: [], removalIds: [] };
+        return { cycle, plasma, coveragePct: 0, modeledCoveragePct: 0, exposureTimeS, ionEnergyEv, adsorbedIds: [], modifiedIds: [], removalIds: [] };
       }
 
       const rng = mulberry32(0xA1E000 + cycle * 4099 + Math.round(coveragePct) * 31 + ionEnergyEv * 7 + Math.round(plasma.sourcePowerW));
@@ -121,7 +137,7 @@
         .map(atom => atom.id);
 
       return {
-        cycle, plasma, coveragePct: actualCoveragePct, targetCoveragePct: coveragePct, ionEnergyEv,
+        cycle, plasma, coveragePct: actualCoveragePct, modeledCoveragePct, exposureTimeS, ionEnergyEv,
         adsorbedIds: adsorbed.map(atom => atom.id),
         modifiedIds: adsorbed.map(atom => atom.id),
         removalIds
@@ -151,6 +167,7 @@
       const result = {
         cycle: plan.cycle,
         coveragePct: plan.coveragePct,
+        exposureTimeS: plan.exposureTimeS,
         sourcePowerW: plan.plasma.sourcePowerW,
         ionEnergyEv: plan.ionEnergyEv,
         modifiedAtoms: plan.modifiedIds.length,
@@ -180,7 +197,8 @@
   return {
     ALEEngine,
     ConceptualPlasmaModel,
-    constants: { SI_LATTICE_A, SI_ATOMIC_VOLUME, SI_100_SITE_AREA, ENERGY_FACTORS },
+    estimateCoveragePct,
+    constants: { SI_LATTICE_A, SI_ATOMIC_VOLUME, SI_100_SITE_AREA, ENERGY_FACTORS, ADSORPTION_SATURATION_FRACTION, ADSORPTION_RATE_INDEX_PER_S },
     clamp
   };
 });
