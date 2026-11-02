@@ -100,7 +100,7 @@
 .advanced-settings[open]>summary::after{content:'접기 −'}
 .advanced-settings .advanced-content{padding-top:5px;padding-bottom:8px}
 .advanced-settings:focus-within>summary{color:#c6f5ff}
-@media (min-width:1080px) and (min-height:640px){
+@media (min-width:1000px) and (min-height:600px){
   html,body{height:100%;overflow:hidden}
   .shell{height:100vh;height:100dvh;min-height:0;max-width:none;padding:8px 11px 7px;gap:7px;overflow:hidden}
   .header{flex:0 0 43px;height:43px;min-height:43px;gap:8px}
@@ -177,7 +177,7 @@
 }
 /* Browser zoom or compact laptop: keep controls available by panel scrolling,
    never shrink the 3D reactor to a tiny, unusable viewport. */
-@media(min-width:1080px) and (min-height:640px) and (max-height:770px){
+@media(min-width:1000px) and (min-height:600px) and (max-height:770px){
   .left,.right{gap:7px;padding:9px 10px}
   .left .section,.right .section{padding-bottom:7px}
   .left .value-note{font-size:8px;line-height:1.35}
@@ -188,7 +188,7 @@
   .stage .corner h2{font-size:16px}
   .reactions-inset{height:clamp(150px,38%,230px)}
 }
-@media(max-width:1079px){
+@media(max-width:999px){
   /* Responsive tablet/mobile layout retains accessible full-height study panels. */
   .advanced-settings>summary{min-height:36px}
 }
@@ -206,7 +206,7 @@
 
 
 /* Extra vertical density for common 720p laptop screens. */
-@media(min-width:1080px) and (min-height:640px) and (max-height:770px){
+@media(min-width:1000px) and (min-height:600px) and (max-height:770px){
   .right{gap:5px;padding:7px 9px}
   .left{gap:6px;padding:8px 9px}
   .right .panel-top{padding-bottom:6px}
