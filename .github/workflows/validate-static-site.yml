@@ -66,7 +66,15 @@ jobs:
               if not Path(asset).is_file():
                   raise SystemExit(f"Missing homepage artwork: {asset}")
 
-          print("Homepage and ALE simulator structure validation passed")
+          # Lecture 3 is published under the shape-memory-alloy theme.
+          if 'id="smaEntry"' not in home or 'href="learning-lecture3.html#chapter-1"' not in home:
+              raise SystemExit("Homepage missing lecture 3 shape-memory alloy link")
+          lecture3 = Path("learning-lecture3.html").read_text(encoding="utf-8")
+          if "3강 핵심정리" not in lecture3 or "확인문제" in lecture3:
+              raise SystemExit("Lecture 3 must conclude with key summary, not quiz")
+          if lecture3.count('data:image/webp;base64,') < 4:
+              raise SystemExit("Lecture 3 embedded application images missing")
+          print("Homepage, lecture 3, and ALE simulator structure validation passed")
           PY
 
       - name: Run simulation model tests
@@ -87,6 +95,19 @@ jobs:
           for file in /tmp/ale-v064-script-*.js; do
             node --check "$file"
           done
+
+      - name: Parse lecture 3 interactive script
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path('learning-lecture3.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script[^>]*>(.*?)</script>', html, re.S)
+          if len(scripts) != 1:
+              raise SystemExit(f'Expected one lecture 3 script; got {len(scripts)}')
+          Path('/tmp/learning-lecture3.js').write_text(scripts[0], encoding='utf-8')
+          PY
+          node --check /tmp/learning-lecture3.js
 
       - name: Parse archived ALE source JavaScript
         run: |
