@@ -78,7 +78,7 @@ jobs:
           import re
           from pathlib import Path
           html = Path('ale.html').read_text(encoding='utf-8')
-          scripts = re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>', html, re.S)
+          scripts = re.findall(r'<script[^>]*>(.*?)</script>', html, re.S)
           if len(scripts) != 4:
               raise SystemExit(f'Expected four V0.6.4 scripts; got {len(scripts)}')
           for i, content in enumerate(scripts):
