@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="ALE Simulator V0.6.4 — 챔버와 웨이퍼 반응 연결, 카메라 확대, 플라즈마, Sheath 및 가스·바이어스·압력 조절 교육용 시뮬레이터.">
+<title>ALE Simulator V0.6.4 — Guided Wafer Zoom</title>
+<style>
+:root{--bg:#07121e;--panel:#0c1e31;--panel2:#10263c;--border:#23415b;--muted:#839db6;--txt:#e9f4ff;--cyan:#63d9f9;--green:#63dcad;--purple:#ab8bfa;--amber:#ffc07b}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#071321;color:var(--txt);font-family:Inter,'Pretendard','Noto Sans KR',system-ui,-apple-system,sans-serif}button,input{font:inherit}button{cursor:pointer;color:inherit}body{background:radial-gradient(ellipse at 50% 0%,#183851,#081525 55%,#06111d)}
+.shell{max-width:1680px;margin:0 auto;padding:15px 19px 13px;min-height:100vh;display:flex;flex-direction:column;gap:12px}
+.header{min-height:64px;display:flex;align-items:center;gap:13px;justify-content:space-between}.logo{display:flex;align-items:center;gap:12px}.logo-icon{height:43px;width:43px;border-radius:13px;border:1px solid #3b6c87;background:linear-gradient(145deg,#143f56,#102236);display:grid;place-items:center;font-weight:900;color:#9be6fa;letter-spacing:-.06em;box-shadow:inset 0 0 22px #24c0ff15}.eyebrow{font-size:9px;color:#71d6ed;letter-spacing:.18em;font-weight:850}.logo h1{margin:3px 0 0;font-size:17px;letter-spacing:-.04em}.logo h1 b{font-size:11px;margin-left:8px;padding:3px 7px;color:#8ddce9;border:1px solid #28536c;border-radius:7px;vertical-align:1px}.header-right{display:flex;align-items:center;gap:10px}.pill{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:780;color:#c3e8ee;border:1px solid #2e5d72;background:#122a3e;border-radius:999px;padding:8px 11px;white-space:nowrap}.pill i{height:6px;width:6px;display:inline-block;border-radius:50%;background:#64e6ab;box-shadow:0 0 12px #64e6ab}
+.home{color:#9ac4dc;border:1px solid #2a4a63;text-decoration:none;border-radius:10px;padding:10px 13px;font-size:11px}.home:hover{color:white;background:#16344b}
+.workspace{flex:1;display:grid;grid-template-columns:minmax(260px,.75fr) minmax(500px,2.1fr) minmax(258px,.74fr);gap:12px;min-height:730px}
+.panel{border:1px solid var(--border);border-radius:18px;min-width:0;background:linear-gradient(155deg,#10243ae8,#09192bf2);box-shadow:0 16px 40px #0005;overflow:hidden}
+.left,.right{padding:18px;display:flex;flex-direction:column;gap:17px}.panel-top{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #1f3b54;padding-bottom:14px}.panel-top b{font-size:11px;letter-spacing:.15em;color:#9dc4dd}.panel-top span{font-size:9px;letter-spacing:.10em;color:#67bfd7}.section{border-bottom:1px solid #1e3750;padding-bottom:15px}.section:last-child{border:0;padding:0}.section h3{margin:0 0 12px;font-size:11px;color:#88cfe0;letter-spacing:.1em}.statline{display:flex;justify-content:space-between;gap:8px;margin:11px 0;font-size:11px}.statline span{color:#93abc1}.statline b{color:#d7eeff;font-weight:720}.readonly{padding:8px 11px;border:1px solid #234863;border-radius:9px;background:#0c2134;font-size:11px;color:#b6d1e6}.number-pill{font-size:10px;color:#9bc7dd}.controlrow{display:flex;justify-content:space-between;align-items:center;font-size:11px;margin-bottom:11px}.controlrow b{font-size:12px;color:#73d7ed}.controlrow span{font-weight:700;color:#d7e8f6}.range{width:100%;accent-color:#58cde2;cursor:pointer}.range-labels{display:flex;justify-content:space-between;margin-top:5px;font-size:9px;color:#6888a0}.guide{font-size:11px;color:#8babc4;line-height:1.75;margin:0}.toggle{display:flex;align-items:center;gap:9px;font-size:11px;color:#c4e0f1;margin:10px 0;cursor:pointer}.toggle input{accent-color:#52c7e3}.section .tag{font-size:10px;padding:4px 8px;border-radius:20px;border:1px solid #2c5a6b;color:#80cfde;background:#132c42}.value-note{font-size:10px;color:#6d8ca3;line-height:1.6;margin:10px 0 0}
+.stage-panel{display:flex;flex-direction:column;min-height:730px;position:relative}.stage-toolbar{height:58px;padding:12px 17px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #21384e}.stage-toolbar .title{display:flex;align-items:center;gap:10px}.stage-toolbar .title .spark{color:#66e6ef;font-size:16px}.stage-toolbar strong{font-size:12px;letter-spacing:.06em}.stage-toolbar small{display:block;color:#668fa9;font-size:9px;margin-top:4px}.camera-controls{display:flex;gap:5px;flex-wrap:wrap}.cam-btn{border:1px solid #2b506c;border-radius:9px;background:#112c43;padding:8px 10px;font-size:10px;color:#a9cfe5}.cam-btn.active{background:#17455e;border-color:#65b9d2;color:#d9fbff}.cam-btn:hover{filter:brightness(1.3)}
+.stage{position:relative;min-height:610px;flex:1;overflow:hidden;background:radial-gradient(ellipse at 50% 42%,#17324a 0%,#0a1e31 45%,#061320 100%)}
+#glScene{width:100%;height:100%;display:block;touch-action:none;cursor:grab}#glScene.dragging{cursor:grabbing}.stage:before{content:"";position:absolute;pointer-events:none;inset:0;background:radial-gradient(ellipse at center,transparent 50%,#040a1499 120%);z-index:1}.corner{position:absolute;z-index:2;top:19px;left:19px;pointer-events:none}.corner .kicker{font-size:10px;font-weight:900;color:#8dd3ec;letter-spacing:.14em}.corner h2{margin:6px 0 4px;font-size:23px;font-weight:800;letter-spacing:-.045em}.corner p{font-size:10px;color:#7ca6c4;margin:0}.stage-status{position:absolute;top:20px;right:20px;z-index:2;pointer-events:none;text-align:right}.stage-status span{display:block;font-size:10px;color:#96b6d0}.stage-status strong{display:inline-block;border:1px solid #5267aa;background:#30254e95;color:#d5c2ff;border-radius:20px;padding:6px 10px;font-size:10px;letter-spacing:.06em;margin-bottom:7px}.stage-status strong.off{color:#9baec1;background:#0d2439aa;border-color:#36516b}.stage-status strong.green{color:#a6ffe5;background:#174939aa;border-color:#397b69}.stage-status strong.orange{color:#ffd7a4;background:#52371daa;border-color:#967044}
+.callout{position:absolute;z-index:2;padding:7px 9px;border-radius:10px;background:#061b2abb;border:1px solid #2c5976;pointer-events:none;box-shadow:0 6px 18px #0003;white-space:nowrap}.callout b{display:block;font-size:10px;letter-spacing:.08em;color:#c7e4fa}.callout small{display:block;margin-top:3px;font-size:9px;color:#7db3cb}.callout.coil{left:5%;top:33%}.callout.wafer{right:4%;top:66%}.callout.exhaust{left:5%;bottom:18%}.callout:after{content:"";position:absolute;top:50%;height:1px;background:#3f89ac;box-shadow:0 0 7px #36baec}.callout.coil:after{left:100%;width:55px}.callout.wafer:after{right:100%;width:60px}.callout.exhaust:after{left:100%;width:55px}
+.stage-help{position:absolute;z-index:2;bottom:20px;left:17px;display:flex;gap:7px;pointer-events:none;flex-wrap:wrap}.hint{font-size:10px;color:#a1c9de;background:#091d2fd5;border:1px solid #2b4964;border-radius:8px;padding:7px 9px}.viewer-bottom{padding:12px 15px 15px;border-top:1px solid #1e384e;background:#09192c}.phases{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.step-btn{text-align:left;display:flex;align-items:center;gap:7px;background:#0c2135;border:1px solid #28465e;border-radius:10px;padding:11px 9px;min-width:0}.step-btn .id{font-size:10px;color:#8cb6cd;background:#163149;border-radius:7px;padding:5px 7px}.step-btn span{min-width:0;font-size:10px;line-height:1.4;color:#a9c4d6}.step-btn.active{background:#133e51;border-color:#50c6dd}.step-btn.active span{color:#e4faff}.step-btn.active .id{color:#091e30;background:#70dded}.play-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:11px}.playbar-left{display:flex;align-items:center;gap:8px}.btn{border:1px solid #355a70;padding:10px 13px;border-radius:9px;font-size:11px;font-weight:800;background:#12354b;white-space:nowrap}.btn.primary{background:linear-gradient(125deg,#168db9,#3b72c5);border-color:#438eae;color:#f4fdff}.btn.muted{background:#102739;color:#a6c4d5}.btn:disabled{opacity:.42;cursor:not-allowed}.subline{display:flex;align-items:center;gap:9px;min-width:0}.bar{height:5px;width:125px;border-radius:9px;background:#29445b;overflow:hidden}.bar i{display:block;height:100%;width:0;background:#6cdfec;transition:width .1s}.subline small{font-size:10px;color:#81a2b9;white-space:nowrap}
+.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.metric{padding:12px;background:#0b2135;border:1px solid #25415b;border-radius:11px;min-width:0}.metric small{font-size:9px;color:#7a9cba;display:block;margin-bottom:6px;line-height:1.35}.metric strong{font-size:15px;color:#f0f8ff}.metric strong.green{color:#7ceac1}.metric strong.gold{color:#ffc98d}.metric strong.purple{color:#c5acff}.detail-card{padding:13px;border:1px solid #27455d;border-radius:12px;background:#0b2035}.detail-card .kicker{font-size:9px;letter-spacing:.15em;color:#75c5df;font-weight:800}.detail-card h3{font-size:14px;margin:9px 0}.detail-card p{font-size:11px;color:#a8c2d5;line-height:1.8;margin:0}.events{display:flex;flex-direction:column;gap:9px}.event{display:flex;align-items:flex-start;gap:9px}.event .event-dot{height:8px;width:8px;margin-top:5px;background:#70d2e8;border-radius:50%;flex:none;box-shadow:0 0 8px #70d2e899}.event div{font-size:11px;line-height:1.6;color:#afc7d8}.model-note{font-size:10px;line-height:1.75;color:#c8b88d;border:1px solid #685c3c;background:#251f178a;padding:12px;border-radius:11px}.mini-key{display:flex;gap:11px;flex-wrap:wrap;margin-top:10px}.mini-key span{font-size:9px;color:#92aabd;display:flex;align-items:center;gap:5px}.mini-key i{height:7px;width:7px;border-radius:50%;display:inline-block}.footer{display:flex;justify-content:space-between;gap:12px;color:#65849f;font-size:9px;padding:0 4px}
+@media(max-width:1160px){.workspace{grid-template-columns:230px minmax(0,1fr)}.right{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px}.right>.panel-top,.right>.model-note{grid-column:1/-1}.stage{min-height:580px}.stage-panel{min-height:700px}}
+@media(max-width:740px){.shell{padding:10px}.header{min-height:53px}.header-right .pill{display:none}.logo h1{font-size:13px}.workspace{grid-template-columns:1fr}.stage-panel{grid-row:1;min-height:645px}.left{grid-row:2}.right{grid-row:3;display:flex}.stage{min-height:460px}.stage-toolbar{height:auto;min-height:55px;padding:10px;gap:5px}.camera-controls{gap:3px}.cam-btn{padding:7px;font-size:9px}.corner{top:10px;left:10px}.corner h2{font-size:17px}.corner p{display:none}.stage-status{top:12px;right:9px}.stage-status span{display:none}.callout{display:none}.stage-help{left:7px;bottom:10px;gap:4px}.hint{font-size:8px;padding:5px 6px}.viewer-bottom{padding:9px}.phases{gap:4px}.step-btn{padding:8px 4px;gap:3px}.step-btn span{font-size:9px}.step-btn .id{font-size:9px;padding:3px 4px}.play-bar{flex-wrap:wrap}.subline small{font-size:9px}.footer{font-size:8px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* v0.6.2 controls and connected wafer surface zoom */
+.left{gap:12px}.left .section{padding-bottom:13px}.left .section h3{margin-bottom:10px}.left .value-note b{color:#a3d7e9}
+.bias-switch{display:flex;justify-content:space-between;align-items:center;gap:10px;background:#0d2940;border:1px solid #2b536e;border-radius:11px;padding:9px 11px;margin:13px 0 12px}
+.bias-switch strong{font-size:11px}.bias-switch small{display:block;font-size:9px;color:#83aac4;margin-top:3px}
+.switch{display:block;position:relative;width:42px;height:24px;cursor:pointer;flex:none}.switch input{opacity:0;width:1px;height:1px;position:absolute}
+.switch-track{display:block;border-radius:15px;background:#2a425a;border:1px solid #40617d;width:42px;height:24px;transition:.2s}.switch-track:after{content:"";position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:50%;background:#a9bdcc;transition:.2s}
+.switch input:checked+.switch-track{background:#1785ad;border-color:#5ad8ed}.switch input:checked+.switch-track:after{left:23px;background:white;box-shadow:0 0 10px #72e0fe6e}.switch input:focus-visible+.switch-track{outline:2px solid #fff}
+.range:disabled{opacity:.42;cursor:not-allowed}
+#sheathOverlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.reactions-inset{position:absolute;z-index:3;width:37%;height:294px;right:13px;bottom:66px;background:linear-gradient(145deg,#112a42f6,#081a2cfa);border:1px solid #4d7d9c;border-radius:15px;box-shadow:0 12px 36px #020c18cc,inset 0 0 15px #62c8f80b;overflow:hidden;display:flex;flex-direction:column}
+.inset-head{display:flex;align-items:center;justify-content:space-between;padding:11px 13px 6px;gap:8px;flex-shrink:0}.inset-head span{display:block;font-size:8px;letter-spacing:.13em;color:#71cadc;font-weight:800}.inset-head strong{display:block;font-size:12px;margin-top:4px}.inset-head button{font-size:18px;border:1px solid #446f91;background:#133a55;border-radius:8px;padding:2px 9px;color:#d4f3ff}
+#atomScene{width:100%;flex:1;min-height:0;display:block}
+.inset-bar{display:flex;justify-content:space-between;gap:5px;align-items:center;padding:8px 10px;background:#0b2338;border-top:1px solid #2b5270;min-height:34px}.inset-bar span{font-size:9px;font-weight:850;color:#92eccc;white-space:nowrap}.inset-bar b{font-size:9px;font-weight:500;color:#9ab7ca;text-align:right}
+.reactions-inset.large{width:72%;height:67%;right:13px;bottom:34px}.reactions-inset.large #atomScene{min-height:0}
+.connector{position:absolute;left:38%;bottom:21%;width:26%;height:1px;border-top:1px dashed #69d9f0bd;transform:rotate(-13deg);z-index:2;pointer-events:none}.connector span{position:absolute;bottom:8px;left:2px;white-space:nowrap;color:#91d6e8;letter-spacing:.06em;font-size:9px;font-weight:700}
+.sheath-floating{position:absolute;z-index:2;left:35%;top:56%;border:1px solid #d5a06a5c;background:#301d19a8;border-radius:10px;padding:8px 10px;pointer-events:none;display:flex;gap:7px;align-items:center;backdrop-filter:blur(4px)}.sheath-floating i{width:7px;height:7px;border-radius:50%;background:#f5b879;box-shadow:0 0 12px #f5b879}.sheath-floating span{font-size:10px;color:#ffdaaf}
+.stage-help{bottom:13px;max-width:58%}.stage .corner h2{font-size:21px}.callout.coil{left:4%;top:39%;opacity:.8}
+.sheath-scale{padding:12px;background:#0c263b;border:1px solid #2f506d;border-radius:11px}.sheath-heading{display:flex;justify-content:space-between;gap:6px;align-items:flex-start}.sheath-heading strong{font-size:11px;color:#ffca9a}.sheath-heading small{font-size:9px;text-align:right;color:#86a8bc}.sheath-gradient{height:12px;background:#1e3951;border:1px solid #385873;border-radius:8px;overflow:hidden;margin-top:13px}.sheath-gradient span{height:100%;width:30%;display:block;background:linear-gradient(90deg,#5bb9f5,#ffb176);transition:width .17s ease}.scale-label{display:flex;justify-content:space-between;gap:6px;margin-top:6px}.scale-label span{font-size:9px;color:#779ab4}.tiny-metrics{margin-top:10px}.tiny-metrics .metric strong{font-size:13px}.cycle-line{display:flex;justify-content:space-between;padding:12px 1px 8px;font-size:11px}.cycle-line span{color:#81a2bb}.cycle-line strong{color:#9ae9ed}
+.reaction-path{display:flex;align-items:center;justify-content:space-between;gap:4px;background:#0e2a40;border-radius:10px;padding:10px 8px;margin-top:5px}.reaction-path span{font-size:10px;color:#c0e6ea}.reaction-path b{color:#63d7ef}
+@media(max-width:1160px){.reactions-inset{height:285px}.right{display:flex;grid-column:1/-1;flex-direction:row;flex-wrap:wrap}.right>.section{width:calc(50% - 8px)}.right>.panel-top,.right>.model-note{width:100%}}
+@media(max-width:780px){.workspace{grid-template-columns:1fr}.left{display:grid;grid-template-columns:1fr 1fr;gap:13px}.left>.panel-top{grid-column:1/-1}.stage{min-height:660px}.reactions-inset{width:48%;height:264px;bottom:65px}.connector{display:none}.sheath-floating{left:18%;top:53%}.stage-help{max-width:45%}.stage .corner h2{font-size:20px}.right>.section{width:100%}}
+@media(max-width:550px){.left{grid-template-columns:1fr}.stage{min-height:610px}.stage .corner{top:12px;left:13px}.stage .corner h2{font-size:17px}.stage-status{top:12px;right:11px}.stage-status strong{font-size:8px}.reactions-inset{width:55%;height:258px;bottom:72px;right:8px}.reactions-inset.large{width:92%;height:60%;right:4%;bottom:55px}.inset-head strong{font-size:10px}.inset-bar span,.inset-bar b{font-size:8px}.sheath-floating{top:46%;left:9px;padding:6px}.sheath-floating span{font-size:8px}.stage-help{max-width:40%;bottom:9px}.stage-help .hint{font-size:8px}.stage-toolbar{height:auto;min-height:56px;flex-wrap:wrap}.camera-controls{gap:4px}.cam-btn{padding:6px}.metric strong{font-size:13px}}
+
+/* V0.6.4 preserves the V0.6.2 3-column homepage preview appearance.
+   The new in-chamber reaction is an opt-in view, not a replacement scene. */
+.camera-controls .focus-trigger{border-color:#3f9e9d;color:#a1f6d7;background:#103a43}
+.camera-controls .focus-trigger.active{background:#1d5754;color:#f0fff6;box-shadow:inset 0 0 0 1px #69d5ae}
+#inSituAtoms{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;display:none}
+#inSituCaption{position:absolute;z-index:4;left:50%;bottom:63px;transform:translateX(-50%);pointer-events:none;display:none;padding:8px 12px;border-radius:10px;border:1px solid #36746d;background:#0a2a37df;box-shadow:0 8px 24px #0007;max-width:85%;text-align:center;white-space:normal}
+#inSituCaption b{display:block;color:#a0f3d1;font-size:11px;letter-spacing:.05em}
+#inSituCaption small{display:block;color:#bbd9e8;font-size:10px;margin-top:2px}
+#exitInSitu{position:absolute;z-index:5;right:15px;bottom:23px;display:none;border:1px solid #47aca5;border-radius:10px;padding:9px 13px;background:#104c50ee;color:#f1fffa;font-size:11px;font-weight:750;box-shadow:0 4px 12px #0006}
+.stage.in-situ-focus #inSituAtoms,.stage.in-situ-focus #inSituCaption,.stage.in-situ-focus #exitInSitu{display:block}
+.stage.in-situ-focus #reactionInset,.stage.in-situ-focus .connector{display:none}
+.stage.in-situ-focus .stage-help{display:none}
+.stage.in-situ-focus .sheath-floating{opacity:.78;transform:scale(.9)}
+.stage.in-situ-focus #inSituAtoms{filter:drop-shadow(0px 5px 15px #0005)}
+@media(max-width:800px){.stage-toolbar{height:auto;min-height:62px;flex-wrap:wrap}.camera-controls{flex-wrap:wrap}.camera-controls .focus-trigger{font-size:10px}.stage.in-situ-focus #inSituCaption{bottom:66px}.stage.in-situ-focus .stage-status{opacity:.84}}
+@media(max-width:550px){.stage.in-situ-focus #inSituCaption{max-width:80%;bottom:61px;padding:6px 8px}.stage.in-situ-focus #inSituCaption b{font-size:9px}.stage.in-situ-focus #inSituCaption small{font-size:8px}.stage.in-situ-focus #exitInSitu{bottom:11px;right:9px;padding:7px 8px;font-size:10px}}
+
+/* V0.6.4: guided camera path. Default V0.6.3.2 layout is intentionally untouched. */
+.focus-rail,.focus-eventbar{display:none;position:absolute;z-index:7;gap:5px;align-items:center;flex-wrap:wrap;max-width:calc(100% - 30px);border:1px solid #366b83;background:#091f33e8;box-shadow:0 9px 25px #0007;backdrop-filter:blur(8px);border-radius:11px;padding:7px}
+.focus-rail{top:106px;left:15px}
+.focus-eventbar{left:15px;bottom:18px}
+.stage.in-situ-focus .focus-rail,.stage.in-situ-focus .focus-eventbar{display:flex}
+.rail-kicker{font-size:8px;letter-spacing:.10em;color:#80b6cb;font-weight:900;margin-right:3px}
+.focus-rail button,.focus-eventbar button{background:#102d44;border:1px solid #31607a;color:#d2eaff;font-size:10px;font-weight:750;border-radius:7px;padding:7px 9px;white-space:nowrap;cursor:pointer}
+.focus-rail button.active{background:#17564f;border-color:#67d1af;color:#c8ffe5}
+.focus-rail button:focus-visible,.focus-eventbar button:focus-visible{outline:2px solid #6bdde0;outline-offset:2px}
+.focus-eventbar button.active{border-color:#67d1af;background:#17483f;color:#dbfff0}
+.event-state{font-size:10px;font-weight:800;color:#d7f6fc;padding:0 5px;white-space:nowrap}
+.stage.in-situ-focus #exitInSitu{display:none}
+.stage.in-situ-focus #inSituAtoms{opacity:1;transition:opacity .2s ease}
+.stage.in-situ-focus .stage-status{opacity:.83}
+.stage.focus-atomic .sheath-floating{opacity:.27}
+.stage.focus-atomic .callout.wafer{opacity:.2}
+.stage.focus-atomic #inSituCaption{bottom:66px}
+.stage.focus-wafer #inSituCaption{bottom:68px}
+.stage.focus-wafer .focus-eventbar{display:none}
+.stage.focus-atomic .focus-eventbar{display:flex}
+.stage.focus-atomic .focus-rail{border-color:#448f87}
+.stage #glScene{transition:filter .6s ease}
+.stage.focus-atomic #glScene{filter:brightness(.82) saturate(.86)}
+.stage.focus-atomic #sheathOverlay{opacity:.72}
+@media (max-width:780px){.focus-rail{top:120px;left:9px}.focus-eventbar{left:9px;bottom:10px}.stage.focus-atomic #inSituCaption{bottom:66px}.stage.in-situ-focus .stage-status{display:none}}
+@media (max-width:550px){.focus-rail{top:112px;left:8px;padding:5px;gap:3px;max-width:calc(100% - 16px)}.rail-kicker{display:none}.focus-rail button,.focus-eventbar button{font-size:9px;padding:6px}.focus-eventbar{max-width:calc(100% - 16px);bottom:10px;gap:3px;padding:5px}.event-state{font-size:8px}.stage.focus-atomic #inSituCaption{bottom:54px;max-width:85%}.stage.focus-wafer #inSituCaption{bottom:63px}}
+
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="header"><div class="logo"><div class="logo-icon">Si</div><div><div class="eyebrow">ATOMIC LAYER ETCHING · VISUALIZATION LAB</div><h1>Crystalline Si · ALE Simulator <b>V0.6.4 PREVIEW</b></h1></div></div><div class="header-right"><span class="pill"><i></i> LOCAL 3D RENDERER · OFFLINE</span><span class="pill">CONCEPTUAL VISUALIZATION</span></div></header>
+<div class="workspace">
+<aside aria-label="공정 설정" class="panel left">
+  <div class="panel-top"><b>PROCESS CONTROL</b><span>EDITABLE RECIPE</span></div>
+  <section class="section">
+    <h3>01 · REACTIVE / PURGE GAS</h3>
+    <div class="controlrow"><span>Cl₂ Feed Flow</span><b id="clFlowValue">25 sccm</b></div>
+    <input class="range" id="clFlow" aria-label="Cl 가스 유량" type="range" min="0" max="100" value="25" step="5">
+    <div class="range-labels"><span>0</span><span>50</span><span>100 sccm</span></div>
+    <div style="height:12px"></div>
+    <div class="controlrow"><span>Ar Flow</span><b id="arFlowValue">50 sccm</b></div>
+    <input class="range" id="arFlow" aria-label="Ar 가스 유량" type="range" min="0" max="100" value="50" step="5">
+    <div class="range-labels"><span>0</span><span>50</span><span>100 sccm</span></div>
+    <p class="value-note">각 단계에 해당하는 공급종만 표시해. 유량과 압력은 별도 설정으로 취급하며 배기 스로틀에 의한 압력 제어를 가정해.</p>
+  </section>
+  <section class="section">
+    <h3>02 · RF SOURCE & BIAS</h3>
+    <div class="controlrow"><span>ICP Source Power</span><b id="sourceValue">300 W</b></div>
+    <input class="range" id="sourcePower" aria-label="Source Power" type="range" min="0" max="600" step="25" value="300">
+    <div class="range-labels"><span>0 W</span><span>300 W</span><span>600 W</span></div>
+    <div class="bias-switch"><div><strong>RF Bias</strong><small>웨이퍼 전극의 RF 바이어스</small></div>
+      <label class="switch"><input type="checkbox" id="biasSwitch" checked aria-label="Bias ON OFF"><span class="switch-track"></span></label>
+    </div>
+    <div class="controlrow"><span>Bias Power</span><b id="biasValue">35 W</b></div>
+    <input class="range" id="biasPower" aria-label="Bias Power" type="range" min="0" max="150" step="5" value="35">
+    <div class="range-labels"><span>0 W</span><span>75 W</span><span>150 W</span></div>
+    <p class="value-note">Power는 Sheath·이온 가속의 <b>정성적 표현</b>에만 연결돼. W만으로 실제 전위강하·두께·IEDF를 산출하지 않아.</p>
+  </section>
+  <section class="section">
+    <h3>03 · CHAMBER & CYCLE</h3>
+    <div class="controlrow"><span>Pressure Setpoint</span><b id="pressureValue">8 mTorr</b></div>
+    <input class="range" id="pressure" aria-label="챔버 압력 설정" type="range" min="1" max="100" step="1" value="8">
+    <div class="range-labels"><span>1 mTorr</span><span>50</span><span>100 mTorr</span></div>
+    <div style="height:12px"></div>
+    <div class="controlrow"><span>Cl Exposure</span><b id="exposureValue">5.0 s</b></div>
+    <input class="range" id="exposure" aria-label="Cl 흡착 시간" type="range" min="0" max="15" step="0.5" value="5">
+    <div class="range-labels"><span>0 s</span><span>7.5 s</span><span>15 s</span></div>
+    <div style="height:12px"></div>
+    <div class="controlrow"><span>Cycles</span><b id="cyclesValue">3</b></div>
+    <input class="range" id="cycles" aria-label="사이클 수" type="range" min="1" max="10" value="3" step="1">
+    <div class="range-labels"><span>1</span><span>5</span><span>10</span></div>
+  </section>
+  <section class="section compact-options">
+    <h3>04 · DISPLAY</h3>
+    <div class="controlrow"><span>Wall Opacity</span><b id="wallValue">18%</b></div>
+    <input class="range" id="wallOpacity" aria-label="챔버 벽 불투명도" type="range" min="0" max="60" value="18">
+    <label class="toggle"><input type="checkbox" checked id="showPlasma"> 플라즈마 발광</label>
+    <label class="toggle"><input type="checkbox" checked id="showParticles"> 가스·이온 입자</label>
+    <label class="toggle"><input type="checkbox" checked id="showLabels"> 장비 라벨</label>
+    <label class="toggle"><input type="checkbox" id="autoRotate"> 챔버 자동 회전</label>
+  </section>
+</aside>
+<section class="panel stage-panel" aria-label="3D 챔버 시뮬레이션">
+<div class="stage-toolbar"><div class="title"><span class="spark">◈</span><div><strong>REACTOR SCENE</strong><small>ICP reactor · sheath · in-situ atomic reaction</small></div></div><div class="camera-controls" role="group" aria-label="카메라 시점"><button class="cam-btn active" data-camera="overview">Overview</button><button class="cam-btn" data-camera="wafer">Wafer</button><button class="cam-btn" data-camera="top">Top</button><button class="cam-btn" data-camera="side">Side</button><button class="cam-btn focus-trigger" id="inSituBtn" aria-pressed="false" title="기존 챔버 안에서 표면 반응 확대">◎ 웨이퍼 반응</button></div></div>
+<div class="stage" id="stage"><canvas id="glScene" aria-label="회전과 확대가 가능한 3D ICP 챔버, 코일, 플라즈마, 웨이퍼, 배기 경로"></canvas>
+<canvas id="sheathOverlay" aria-label="웨이퍼 위 Sheath 분포의 정성 시각화"></canvas>
+<canvas id="inSituAtoms" aria-label="챔버 내 웨이퍼 표면에서 Cl 흡착 및 Ar⁺ 충돌·생성물 이탈 시각화"></canvas>
+<div id="inSituCaption"><b>IN-CHAMBER · WAFER REACTION</b><small id="inSituStepText">웨이퍼 표면을 교육용 배율로 확대해 표시</small></div><button id="exitInSitu" type="button">↩ 챔버 전체로</button>
+<div class="focus-rail" id="focusRail" aria-label="카메라 확대 단계">
+  <span class="rail-kicker">CAMERA PATH</span>
+  <button type="button" data-focus="chamber">01 · Chamber</button>
+  <button type="button" data-focus="wafer">02 · Wafer</button>
+  <button type="button" data-focus="atomic">03 · Atomic</button>
+</div>
+<div class="focus-eventbar" id="focusEventBar">
+  <span class="event-state" id="focusEventState" aria-live="polite">Surface reaction</span>
+  <button type="button" id="focusReplay" title="원자 반응 장면을 처음부터 다시 보기">↺ 충돌 재생</button>
+  <button type="button" id="focusSlow" aria-pressed="true" title="원자 제거를 느리게 관찰">¼× 느리게</button>
+  <button type="button" id="focusNext">다음 단계 →</button>
+</div>
+<div class="reactions-inset" id="reactionInset">
+<div class="inset-head"><div><span>ATOMIC SURFACE · NOT TO SCALE</span><strong>Si(100) · Cl / Ar⁺ Reaction</strong></div><button id="atomExpand" title="확대 보기">⤢</button></div>
+<canvas id="atomScene" aria-label="Cl 흡착과 Ar 이온 충돌 및 SiClx 원자 제거 애니메이션"></canvas>
+<div class="inset-bar"><span id="atomStep">Cl ADSORPTION</span><b id="atomDesc">Cl species → Surface</b></div>
+</div>
+<div class="connector" aria-hidden="true"><span>WAFER → SURFACE ZOOM</span></div>
+<div class="sheath-floating" id="sheathFloating"><i></i><span id="sheathVisualText">Sheath · bias dependent</span></div>
+
+<div class="corner"><div class="kicker">LIVE 3D · ALE PROCESS</div><h2>ICP Plasma · Wafer Reaction</h2><p>반응성 가스 공급 → Sheath 이온 가속 → 표면 반응</p></div>
+<div class="stage-status"><strong id="plasmaTag" class="off">PLASMA OFF</strong><span id="stateText">Chamber standing by</span></div>
+<div class="callout wafer" data-label>Si WAFER<small>Substrate &amp; bias stage</small></div>
+<div class="stage-help"><span class="hint">↺ Drag to orbit</span><span class="hint">⌕ Scroll to zoom</span><span class="hint">◉ Bias / Pressure / Gas Flow · ◎ 웨이퍼 반응 보기</span></div>
+</div>
+<div class="viewer-bottom"><div class="phases" id="phases" aria-label="시각화 단계"><button class="step-btn active" data-step="0"><b class="id">01</b><span>Cl Adsorption</span></button><button class="step-btn" data-step="1"><b class="id">02</b><span>Purge</span></button><button class="step-btn" data-step="2"><b class="id">03</b><span>Ar⁺ Activation</span></button><button class="step-btn" data-step="3"><b class="id">04</b><span>Final Purge</span></button></div><div class="play-bar"><div class="playbar-left"><button class="btn primary" id="playBtn">▶ PLAY CYCLE</button><button class="btn muted" id="pauseBtn">Ⅱ PAUSE</button><button class="btn muted" id="resetBtn">↺ RESET</button></div><div class="subline"><div class="bar"><i id="progressBar"></i></div><small id="progressText">STEP 1 / 4</small></div></div></div>
+</section>
+<aside aria-label="시뮬레이션 상태" class="panel right">
+<div class="panel-top"><b>REACTION MONITOR</b><span>LIVE · CONCEPT MODEL</span></div><span id="metricPlasma" hidden></span>
+<section class="section">
+<h3>CHAMBER STATE</h3>
+<div class="metrics">
+<div class="metric"><small>ALE STEP</small><strong id="metricStep">Adsorption</strong></div>
+<div class="metric"><small>RF BIAS</small><strong id="metricBias">ON · 35 W</strong></div>
+<div class="metric"><small>PRESSURE SET</small><strong id="metricPressure">8 mTorr</strong></div>
+<div class="metric"><small>GAS FEED</small><strong id="metricGas">Cl · 25</strong></div>
+</div>
+</section>
+<section class="section">
+<h3>SHEATH & ION DIRECTION</h3>
+<div class="sheath-scale">
+<div class="sheath-heading"><strong id="sheathLabel">BIAS-ENHANCED</strong><small id="sheathDetail">기본 Sheath + Bias 보조 가속</small></div>
+<div class="sheath-gradient"><span id="sheathFill"></span></div>
+<div class="scale-label"><span>Intrinsic sheath</span><span>Bias enhanced (illustrative)</span></div>
+</div>
+<div class="metrics tiny-metrics"><div class="metric"><small>ACCELERATION INDEX</small><strong id="energyIndex">0.45</strong></div><div class="metric"><small>TRAJECTORY</small><strong id="directionality">Directional</strong></div></div>
+<p class="value-note">Bias OFF라도 플라즈마와 웨이퍼 경계에는 기본 Sheath가 형성될 수 있어. 표시 높이와 에너지 지수는 실제 전위·두께가 아닌 개념값이야.</p>
+</section>
+<section class="section">
+<h3>WAFER SURFACE RESPONSE</h3>
+<div class="metrics">
+<div class="metric"><small>Cl COVERAGE · MODEL</small><strong class="green" id="coverageValue">0%</strong></div>
+<div class="metric"><small>ION IMPACTS · PROXY</small><strong id="doseIndex">0.0</strong></div>
+<div class="metric"><small>MODIFIED REMOVAL</small><strong class="gold" id="chemRemoved">0 sites</strong></div>
+<div class="metric"><small>PHYSICAL SPUTTER</small><strong id="physRemoved">0 sites</strong></div>
+</div>
+<div class="cycle-line"><span>CYCLE</span><strong id="cycleIndex">1 / 3</strong></div>
+<div class="reaction-path"><span>Cl 흡착</span><b>→</b><span>Ar⁺ 충돌</span><b>→</b><span>생성물 이탈</span></div>
+</section>
+<section class="section">
+<h3>WHAT YOU SEE</h3>
+<div class="detail-card"><div class="kicker">STAGE EXPLANATION</div><h3 id="stepHeading">Cl species reaching wafer</h3><p id="stepDescription">Cl 공급종이 표면 활성점에 흡착하면서 개질층을 형성해.</p></div>
+<div class="mini-key"><span><i style="background:#b79aff"></i>Plasma</span><span><i style="background:#6ce9ba"></i>Cl adsorbed</span><span><i style="background:#fdb67b"></i>Ar⁺</span><span><i style="background:#ff8988"></i>SiClₓ product</span></div>
+</section>
+<div class="model-note"><b>MODEL LIMITATION</b><br>독립 실행형 시각화 미리보기야. 가스 유량·압력·Bias 변경은 <strong>정성적 지표와 시각화</strong>에 연결돼. Sheath 두께, 이온 에너지, EPC를 실험적으로 예측하는 모델은 아니야. 회전하는 챔버는 3D 렌더링 또는 소프트웨어 3D 투영으로 표시돼.</div>
+</aside>
+</div>
+<div class="footer"><span>V0.6.4 · Guided Wafer Zoom Preview · No changes to live homepage</span><span>EDUCATIONAL DEMONSTRATOR · NOT MD / CFD / PLASMA SOLVER</span></div>
+</div>
+<script>
+window.__ALE_V062_CONFIG__={clFlow:25,arFlow:50,biasOn:true,biasPower:35,pressure:8,exposure:5,cycles:3,cycleIndex:1};
+</script>
+<script>
+// Self-contained WebGL 1.0 pipeline — no external CDN or package required.
+(() => {
+'use strict';
+const canvas=document.getElementById('glScene');
+const gl=canvas.getContext('webgl',{antialias:true,alpha:false,preserveDrawingBuffer:false})||canvas.getContext('experimental-webgl');
+if(!gl){document.querySelector('.stage-status').innerHTML='<strong>WebGL unavailable</strong><span>Chrome/Edge에서 하드웨어 가속을 켜 주세요.</span>';return}
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+const PI=Math.PI,TAU=2*PI;
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const vec=(x,y,z)=>[x,y,z],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const norm=v=>{const n=Math.hypot(...v)||1;return v.map(x=>x/n)};
+function ident(){return [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]}
+function multiply(a,b){const o=new Array(16).fill(0);for(let col=0;col<4;col++)for(let row=0;row<4;row++)for(let k=0;k<4;k++)o[col*4+row]+=a[k*4+row]*b[col*4+k];return o}
+function translation(x,y,z){const m=ident();m[12]=x;m[13]=y;m[14]=z;return m}
+function scaling(x,y,z){const m=ident();m[0]=x;m[5]=y;m[10]=z;return m}
+function rotY(t){const c=Math.cos(t),s=Math.sin(t);return [c,0,-s,0,0,1,0,0,s,0,c,0,0,0,0,1]}
+function axisAngle(axis,a){const [x,y,z]=norm(axis),c=Math.cos(a),s=Math.sin(a),t=1-c;return [t*x*x+c,t*x*y+s*z,t*x*z-s*y,0,t*x*y-s*z,t*y*y+c,t*y*z+s*x,0,t*x*z+s*y,t*y*z-s*x,t*z*z+c,0,0,0,0,1]}
+function matrix(p=[0,0,0],s=[1,1,1],r=ident()){return multiply(multiply(translation(...p),r),scaling(...s))}
+function persp(fov,aspect,near,far){const f=1/Math.tan(fov/2),nf=1/(near-far);return [f/aspect,0,0,0,0,f,0,0,0,0,(far+near)*nf,-1,0,0,2*far*near*nf,0]}
+function lookAt(eye,target,up=[0,1,0]){const z=norm(sub(eye,target)),x=norm(cross(up,z)),y=cross(z,x);return [x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,eye),-dot(y,eye),-dot(z,eye),1]}
+function rotateYto(d){let dy=norm(d),up=[0,1,0],cr=cross(up,dy),len=Math.hypot(...cr);if(len<1e-6)return dy[1]>=0?ident():axisAngle([1,0,0],PI);return axisAngle(cr,Math.acos(clamp(dot(up,dy),-1,1)))}
+function makeProgram(vs,fs){const compile=(type,src)=>{const shader=gl.createShader(type);gl.shaderSource(shader,src);gl.compileShader(shader);if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(shader));return shader};const prog=gl.createProgram();gl.attachShader(prog,compile(gl.VERTEX_SHADER,vs));gl.attachShader(prog,compile(gl.FRAGMENT_SHADER,fs));gl.linkProgram(prog);if(!gl.getProgramParameter(prog,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(prog));return prog}
+const solidShader=makeProgram(`attribute vec3 aPos;attribute vec3 aNormal;uniform mat4 uM,uVP;varying vec3 vNormal,vWorld;void main(){vec4 wp=uM*vec4(aPos,1.);vWorld=wp.xyz;vNormal=mat3(uM)*aNormal;gl_Position=uVP*wp;}`,`precision mediump float;varying vec3 vNormal,vWorld;uniform vec4 uColor;uniform vec3 uCamera;uniform float uGlow;void main(){vec3 n=normalize(vNormal);vec3 l=normalize(vec3(-.65,.82,1.1));float d=.20+.70*max(dot(n,l),0.);vec3 view=normalize(uCamera-vWorld);float rim=pow(1.-abs(dot(n,view)),2.3);vec3 c=uColor.rgb*(.42+d*.62)+rim*vec3(.20,.45,.68);c+=uColor.rgb*uGlow;gl_FragColor=vec4(c,uColor.a);}`);
+const spriteShader=makeProgram(`attribute vec3 aPosition;attribute vec4 aTint;attribute float aSize;uniform mat4 uVP;uniform float uScale;varying vec4 vTint;void main(){vec4 clip=uVP*vec4(aPosition,1.);gl_Position=clip;gl_PointSize=clamp(aSize*uScale*12./max(4.,clip.w),2.,49.);vTint=aTint;}`,`precision mediump float;varying vec4 vTint;void main(){vec2 q=gl_PointCoord*2.-1.;float d=dot(q,q);if(d>1.)discard;float hot=exp(-8.*d);float halo=pow(1.-d,2.);vec3 cc=mix(vTint.rgb,vec3(1.),hot*.70);gl_FragColor=vec4(cc,vTint.a*(hot*.5+halo*.5));}`);
+const shader={p:solidShader,aPos:gl.getAttribLocation(solidShader,'aPos'),aNormal:gl.getAttribLocation(solidShader,'aNormal'),uM:gl.getUniformLocation(solidShader,'uM'),uVP:gl.getUniformLocation(solidShader,'uVP'),uColor:gl.getUniformLocation(solidShader,'uColor'),uCamera:gl.getUniformLocation(solidShader,'uCamera'),uGlow:gl.getUniformLocation(solidShader,'uGlow')};
+const dots={p:spriteShader,aPos:gl.getAttribLocation(spriteShader,'aPosition'),aTint:gl.getAttribLocation(spriteShader,'aTint'),aSize:gl.getAttribLocation(spriteShader,'aSize'),uVP:gl.getUniformLocation(spriteShader,'uVP'),uScale:gl.getUniformLocation(spriteShader,'uScale')};
+const meshes={};
+function upload(g){const vb=gl.createBuffer(),ib=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(g.vertices),gl.STATIC_DRAW);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(g.indices),gl.STATIC_DRAW);return {vb,ib,count:g.indices.length}}
+function gridSurface(outerU,outerV,fn){const p=[],ind=[];for(let i=0;i<=outerU;i++)for(let j=0;j<=outerV;j++){const {pt,n}=fn(i/outerU,j/outerV);p.push(...pt,...n)}for(let i=0;i<outerU;i++)for(let j=0;j<outerV;j++){const a=i*(outerV+1)+j,b=(i+1)*(outerV+1)+j;ind.push(a,b,a+1,b,b+1,a+1)}return {vertices:p,indices:ind}}
+function sphere(s=20,r=14){return gridSurface(s,r,(u,v)=>{const phi=u*PI,theta=v*TAU;const n=[Math.sin(phi)*Math.cos(theta),Math.cos(phi),Math.sin(phi)*Math.sin(theta)];return {pt:n,n}})}
+function cyl(s=48){const geo=gridSurface(s,1,(u,v)=>{const a=u*TAU,x=Math.cos(a),z=Math.sin(a);return {pt:[x,v-.5,z],n:[x,0,z]}});let k=geo.vertices.length/6;geo.vertices.push(0,-.5,0,0,-1,0,0,.5,0,0,1,0);for(let i=0;i<s;i++){const a=i*2,b=((i+1)%s)*2;geo.indices.push(k,b,a,k+1,a+1,b+1)}return geo}
+function torus(segments=54,small=12,ring=.12){return gridSurface(segments,small,(u,v)=>{const theta=u*TAU,phi=v*TAU,s=Math.cos(phi),sn=Math.sin(phi),ro=1+ring*s;return {pt:[Math.cos(theta)*ro,ring*sn,Math.sin(theta)*ro],n:[Math.cos(theta)*s,sn,Math.sin(theta)*s]}})}
+function shell(segments=48,hseg=4,start=2.26,end=5.95){return gridSurface(segments,hseg,(u,v)=>{const angle=start+(end-start)*u;const x=Math.cos(angle),z=Math.sin(angle);return {pt:[x,v-.5,z],n:[x,0,z]}})}
+function hemisphere(s=48,r=12){return gridSurface(r,s,(u,v)=>{const phi=u*PI/2,a=v*TAU,x=Math.sin(phi)*Math.cos(a),z=Math.sin(phi)*Math.sin(a),y=Math.cos(phi);return {pt:[x,y,z],n:[x,y,z]}})}
+function plane(){return {vertices:[-1,0,-1,0,1,0,1,0,-1,0,1,0,1,0,1,0,1,0,-1,0,1,0,1,0],indices:[0,1,2,0,2,3]}}
+function box(){const vertices=[],indices=[];const faces=[[[1,0,0],[[.5,-.5,-.5],[.5,-.5,.5],[.5,.5,.5],[.5,.5,-.5]]],[[-1,0,0],[[-.5,-.5,.5],[-.5,-.5,-.5],[-.5,.5,-.5],[-.5,.5,.5]]],[[0,1,0],[[-.5,.5,-.5],[.5,.5,-.5],[.5,.5,.5],[-.5,.5,.5]]],[[0,-1,0],[[-.5,-.5,.5],[.5,-.5,.5],[.5,-.5,-.5],[-.5,-.5,-.5]]],[[0,0,1],[[-.5,-.5,.5],[-.5,.5,.5],[.5,.5,.5],[.5,-.5,.5]]],[[0,0,-1],[[.5,-.5,-.5],[.5,.5,-.5],[-.5,.5,-.5],[-.5,-.5,-.5]]]];faces.forEach(([n,pts],i)=>{pts.forEach(v=>vertices.push(...v,...n));const k=i*4;indices.push(k,k+1,k+2,k,k+2,k+3)});return {vertices,indices}}
+for(const [k,g] of Object.entries({sphere:sphere(),cyl:cyl(),torus:torus(),shell:shell(),dome:hemisphere(),plane:plane(),box:box()}))meshes[k]=upload(g);
+let camera={yaw:0.54,elev:.29,dist:9.0,target:[0,1.66,0]},wanted={...camera,target:[...camera.target]},drag=null,needCameraLerp=false;
+const cfg=window.__ALE_V062_CONFIG__;
+let stage=0,playing=false,startTick=0,phaseElapsed=0,last=0,elapsed=0,power=300,wallAlpha=.18,showPlasma=true,showParticles=true,showLabels=true,autoRotate=false;
+const duration=4100,labels=[
+ {step:'Adsorption',gas:'Cl species',plasma:'Cl phase',bias:'OFF',head:'Cl species entering the reactor',desc:'반응성 Cl 공급종이 측면 가스 라인을 통해 들어와 웨이퍼로 이동해. 다음 단계에서 표면 흡착 원자 구조를 정교하게 연결할 예정이야.',state:'Cl feed · plasma illustration',tag:'green',badge:'Cl SUPPLY / PLASMA'},
+ {step:'Purge',gas:'Ar / inert',plasma:'OFF',bias:'OFF',head:'Residual species leave the chamber',desc:'흡착하지 않은 잔류종이 배기구로 이동하고 플라즈마 발광이 꺼져. 흡착된 Cl은 표면에 남아 있다는 가정을 이후 모델에서 연결할 거야.',state:'Purge · plasma off',tag:'off',badge:'PLASMA OFF / PURGE'},
+ {step:'Activation',gas:'Ar',plasma:'Ar phase',bias:'ON',head:'Ar⁺ ions accelerate toward Si wafer',desc:'Ar 플라즈마가 활성화되고 웨이퍼 위의 sheath 방향으로 Ar⁺가 입사해. 이 화면은 입사 위치와 방향만 보여주며 개별 Si 원자의 제거 여부는 계산하지 않아.',state:'Ar plasma · ions approaching wafer',tag:'orange',badge:'Ar⁺ PLASMA / BIAS ON'},
+ {step:'Final Purge',gas:'Ar / inert',plasma:'OFF',bias:'OFF',head:'Etch byproducts are exhausted',desc:'식각 생성물이 배기 방향으로 빠져나가는 과정을 개념적으로 보여줘. 실제 생성물 조성은 V0.5 모델 연결 이후에 별도로 구분해야 해.',state:'Final purge · byproduct evacuation',tag:'off',badge:'PLASMA OFF / EXHAUST'}
+];
+function updateUI(){const d=labels[stage];$('#metricStep').textContent=d.step;$('#metricGas').textContent=stage===0?'Cl · '+cfg.clFlow+' sccm':'Ar · '+cfg.arFlow+' sccm';$('#metricPlasma').textContent=d.plasma;$('#metricBias').textContent=stage===2&&cfg.biasOn?cfg.biasPower+' W · ON':'OFF';$('#stepHeading').textContent=d.head;$('#stepDescription').textContent=d.desc;$('#stateText').textContent=d.state;$('#plasmaTag').textContent=d.badge;$('#plasmaTag').className=d.tag;$$('[data-step]').forEach(b=>b.classList.toggle('active',Number(b.dataset.step)===stage));$('#playBtn').textContent=playing?'■ STOP AUTO':'▶ PLAY CYCLE';$('#progressText').textContent='STEP '+(stage+1)+' / 4'}
+function stepTo(i){stage=i;phaseElapsed=0;playing=false;updateUI();}
+$$('[data-step]').forEach(b=>b.onclick=()=>stepTo(Number(b.dataset.step)));
+$('#playBtn').onclick=()=>{playing=!playing;phaseElapsed=0;updateUI();};
+$('#pauseBtn').onclick=()=>{playing=false;updateUI()};
+$('#resetBtn').onclick=()=>{playing=false;stage=0;phaseElapsed=0;elapsed=0;cfg.cycleIndex=1;updateUI();cameraPreset('overview')};
+$('#sourcePower').oninput=e=>{power=Number(e.target.value);$('#sourceValue').textContent=power+' W';};
+$('#wallOpacity').oninput=e=>{wallAlpha=Number(e.target.value)/100;$('#wallValue').textContent=e.target.value+'%'};
+$('#showPlasma').onchange=e=>showPlasma=e.target.checked;
+$('#showParticles').onchange=e=>showParticles=e.target.checked;
+$('#showLabels').onchange=e=>{$$('[data-label]').forEach(x=>x.style.display=e.target.checked?'':'none')};
+$('#autoRotate').onchange=e=>autoRotate=e.target.checked;
+const preset={overview:{yaw:.54,elev:.29,dist:9.0,target:[0,1.65,0]},wafer:{yaw:.50,elev:.17,dist:5.9,target:[0,.83,0]},top:{yaw:.45,elev:1.38,dist:9.8,target:[0,1.5,0]},side:{yaw:1.48,elev:.22,dist:10.0,target:[0,1.62,0]},atomic:{yaw:.51,elev:.23,dist:4.40,target:[0,.91,0]}};
+function cameraPreset(name){wanted={...preset[name],target:[...preset[name].target]};needCameraLerp=true;$$('[data-camera]').forEach(b=>b.classList.toggle('active',b.dataset.camera===name))}
+$$('[data-camera]').forEach(b=>b.onclick=()=>cameraPreset(b.dataset.camera));
+canvas.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,yaw:camera.yaw,elev:camera.elev};needCameraLerp=false;canvas.setPointerCapture(e.pointerId);canvas.classList.add('dragging');$$('[data-camera]').forEach(b=>b.classList.remove('active'))});
+canvas.addEventListener('pointermove',e=>{if(!drag)return;camera.yaw=drag.yaw+(e.clientX-drag.x)*.006;camera.elev=clamp(drag.elev+(e.clientY-drag.y)*.006,-.18,1.48)});
+canvas.addEventListener('pointerup',()=>{drag=null;canvas.classList.remove('dragging')});
+canvas.addEventListener('pointercancel',()=>{drag=null;canvas.classList.remove('dragging')});
+canvas.addEventListener('wheel',e=>{e.preventDefault();camera.dist=clamp(camera.dist*(1+Math.sign(e.deltaY)*.09),3.8,18.8);wanted.dist=camera.dist;needCameraLerp=false;$$('[data-camera]').forEach(b=>b.classList.remove('active'))},{passive:false});
+// Handle mobile two-finger pinch for WebGL zoom, preserve one-finger orbit.
+let touches={};canvas.addEventListener('pointerdown',e=>{touches[e.pointerId]=[e.clientX,e.clientY]});
+canvas.addEventListener('pointermove',e=>{if(touches[e.pointerId])touches[e.pointerId]=[e.clientX,e.clientY];const ps=Object.values(touches);if(ps.length===2){const dist=Math.hypot(ps[0][0]-ps[1][0],ps[0][1]-ps[1][1]);if(touches._last)camera.dist=clamp(camera.dist*touches._last/dist,3.8,18.8);touches._last=dist}});
+for(const evt of ['pointerup','pointercancel'])canvas.addEventListener(evt,e=>{delete touches[e.pointerId];touches._last=null});
+const opaque=[],transparent=[];
+function push(mesh,p,s,color,trans=false,rot=ident(),glow=0){(trans?transparent:opaque).push({mesh,p,s,color,rot,glow})}
+function pipe(p1,p2,r,color,light=0){const v=sub(p2,p1),length=Math.hypot(...v),mid=[(p1[0]+p2[0])/2,(p1[1]+p2[1])/2,(p1[2]+p2[2])/2];push('cyl',mid,[r,length,r],color,false,rotateYto(v),light)}
+const C={steel:[.36,.51,.65,1],edge:[.48,.69,.84,1],dark:[.09,.18,.27,1],metal:[.23,.42,.56,1],ceramic:[.68,.79,.83,1],blue:[.12,.47,.73,1],coillight:[.20,.78,.92,1],base:[.12,.24,.36,1]};
+function assembly(){opaque.length=0;transparent.length=0;
+ // Floor and platform, subtle grid-like engineering backdrop.
+ push('plane',[0,-.39,0],[5,1,5],[.09,.17,.25,1]);
+ push('cyl',[0,-.18,0],[2.85,.27,2.85],C.dark);push('torus',[0,-.05,0],[2.86,.60,2.86],[.30,.51,.68,1]);
+ // Lower chamber & support stage.
+ push('cyl',[0,.27,0],[2.40,.46,2.40],[.20,.34,.45,1]);
+ for(let y of [0,.38,3.45])push('torus',[0,y,0],[2.50,.85,2.50],C.edge);
+ push('cyl',[0,.10,0],[.94,.35,.94],[.17,.27,.40,1]);
+ push('cyl',[0,.51,0],[1.79,.43,1.79],[.24,.36,.47,1]);
+ push('torus',[0,.77,0],[1.66,.10,1.66],[.45,.67,.78,1]);
+ // Visible Si wafer on top of bias stage.
+ push('cyl',[0,.84,0],[1.54,.052,1.54],[.10,.41,.62,1]);
+ push('torus',[0,.868,0],[1.55,.053,1.55],[.36,.80,.99,1],false,ident(),.09);
+ push('cyl',[0,.895,0],[1.42,.008,1.42],[.17,.56,.84,1],false,ident(),.11);
+ // Subtle radial wafer grid and edge marks.
+ for(let i=0;i<12;i++){let a=i*TAU/12;push('box',[Math.cos(a)*1.37,.908,Math.sin(a)*1.37],[.035,.006,.09],[.50,.82,.95,1],false,rotY(a));}
+ // 4 structural support posts, mostly behind cutaway opening.
+ for(let a of [2.10,3.15,4.20,5.25]){const x=Math.cos(a)*2.39,z=Math.sin(a)*2.39;push('cyl',[x,1.88,z],[.055,2.95,.055],[.37,.55,.67,1]);}
+ // Dielectric quartz window / ICP coil over lid. No actual RF field is solved.
+ push('cyl',[0,3.49,0],[2.12,.17,2.12],[.61,.73,.82,1]);
+ push('torus',[0,3.56,0],[2.18,.14,2.18],[.42,.68,.77,1]);
+ push('dome',[0,3.55,0],[1.87,.57,1.87],[.32,.67,.83,.29],true);
+ for(let y of [3.71,3.87,4.03])push('torus',[0,y,0],[1.61,.065,1.61],C.coillight,false,ident(),.25);
+ // Electrical / gas feed pipes.
+ pipe([-3.52,2.71,-.4],[-2.20,2.71,-.4],.09,C.metal);
+ pipe([2.20,2.63,.45],[3.45,2.63,.45],.09,C.metal);
+ push('cyl',[-3.49,2.71,-.4],[.14,.21,.14],C.edge,false,rotateYto([1,0,0]));
+ push('cyl',[3.44,2.63,.45],[.14,.21,.14],C.edge,false,rotateYto([1,0,0]));
+ // Pumping / exhaust line runs under wafer, away from the top plasma.
+ pipe([2.20,.22,0],[3.49,.22,0],.19,C.metal);
+ pipe([3.50,.22,0],[3.50,-.26,0],.19,C.metal);
+ push('torus',[3.13,.22,0],[.26,.07,.26],C.edge,false,rotateYto([0,0,1]));
+ // RF matching box indicative outer enclosure at rear of source.
+ push('box',[-2.18,4.18,-.16],[.55,.31,.42],C.metal);
+ pipe([-1.9,4.19,-.16],[-1.59,4.06,-.16],.085,C.coillight);
+ // Bias-modulated wafer sheath: color and height are illustrative, NOT measured sheath thickness.
+ if(power>0 && ((stage===0&&cfg.clFlow>0)||(stage===2&&cfg.arFlow>0))){
+   const enhanced=stage===2&&cfg.biasOn&&cfg.biasPower>0;
+   const apparent=enhanced?Math.min(.64,.19+Math.sqrt(cfg.biasPower/150)*.43*(1/(1+cfg.pressure/100))):.14;
+   transparent.push({mesh:'cyl',p:[0,.92+apparent/2,0],s:[1.48,apparent,1.48],color:enhanced?[.94,.57,.34,.10]:[.30,.75,.95,.06],rot:ident(),glow:.03});
+   transparent.push({mesh:'torus',p:[0,.92+apparent,0],s:[1.47,.012,1.47],color:enhanced?[.99,.70,.40,.36]:[.45,.81,1,.20],rot:ident(),glow:.08});
+ }
+ // Semi-transparent wall is drawn after solids for visible reactor internals.
+ transparent.push({mesh:'shell',p:[0,1.74,0],s:[2.46,3.42,2.46],color:[.28,.60,.79,wallAlpha],rot:ident(),glow:.05});
+ // Thin glass rim and cutaway edge profiles give visual depth.
+ const wallStarts=[2.26,5.95];
+ for(let a of wallStarts){const px=Math.cos(a)*2.46,pz=Math.sin(a)*2.46;pipe([px,.03,pz],[px,3.44,pz],.025,[.34,.78,.91,1]);}
+}
+function circleMeshRender(meshID,p,s,color,glow=0,rot=ident(),vp,cam){const mesh=meshes[meshID];const m=matrix(p,s,rot);gl.bindBuffer(gl.ARRAY_BUFFER,mesh.vb);gl.vertexAttribPointer(shader.aPos,3,gl.FLOAT,false,24,0);gl.vertexAttribPointer(shader.aNormal,3,gl.FLOAT,false,24,12);gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,mesh.ib);gl.uniformMatrix4fv(shader.uM,false,new Float32Array(m));gl.uniform4fv(shader.uColor,new Float32Array(color));gl.uniform1f(shader.uGlow,glow);gl.drawElements(gl.TRIANGLES,mesh.count,gl.UNSIGNED_SHORT,0)}
+function colors(r,g,b,a=1){return [r/255,g/255,b/255,a]}
+const spriteVBO=gl.createBuffer();let spriteCount=0;
+function dynamicSprites(t){const A=[];const active=power>0&&showPlasma&&(stage===0?cfg.clFlow>0:stage===2&&cfg.arFlow>0);const amp=power/600;
+const add=(p,color,size)=>{A.push(...p,...color,size)};
+if(active){
+ const n=Math.round((25+amp*65)*Math.min(1.9,(stage===0?cfg.clFlow:cfg.arFlow)/40)),col=stage===0?[.36,.95,.81,.64]:[.67,.47,1,.65];
+ for(let i=0;i<n;i++){const seed=i*37.871;const angle=seed*2.399+Math.sin(t*.18+seed)*.24;const rr=Math.sqrt((i+.2)/(n+.4))*2.07;const x=Math.cos(angle)*rr,z=Math.sin(angle)*rr,y=1.58+.78*Math.sin(seed*2.3+t*(.28+i%3*.09));if(y>.99&&y<3.26)add([x,y,z],col,i%7===0?12:7.8)}
+ }
+ if(!showParticles)return A;
+ if(stage===0){
+  for(let i=0;i<18;i++){const u=(t*.24+i/18)%1;let x=-3.3+3.15*u,y=2.70-(1.72*u*u),z=-.40+.48*u;add([x,y,z],[.19,.99,.71,.98],12)}
+ }else if(stage===1||stage===3){
+  for(let i=0;i<20;i++){const u=(t*.18+i/20)%1;let x=1.2+2.25*u,y=1.38-1.15*u,z=Math.sin(i*2.6)*.5;add([x,y,z],stage===1?[.50,.87,.89,.65]:[1,.72,.41,.80],9.4)}
+ }else if(stage===2){
+  for(let i=0;i<Math.max(3,Math.round(17*cfg.arFlow/50));i++){const u=(t*.22+i/17)%1;let x=Math.sin(i*13.74)*1.15,z=Math.cos(i*7.37)*.95;let y=3.18-2.15*u;add([x,y,z],[1,.56,.25,.98],13)}
+ }
+ return A;
+}
+function render(){const dpr=Math.min(2,window.devicePixelRatio||1);let w=canvas.clientWidth,h=canvas.clientHeight;let ww=Math.max(2,Math.floor(w*dpr)),hh=Math.max(2,Math.floor(h*dpr));if(canvas.width!==ww||canvas.height!==hh){canvas.width=ww;canvas.height=hh;gl.viewport(0,0,ww,hh)}
+ gl.enable(gl.DEPTH_TEST);gl.disable(gl.CULL_FACE);gl.clearColor(.026,.071,.121,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+ const eye=[camera.target[0]+Math.sin(camera.yaw)*Math.cos(camera.elev)*camera.dist,camera.target[1]+Math.sin(camera.elev)*camera.dist,camera.target[2]+Math.cos(camera.yaw)*Math.cos(camera.elev)*camera.dist];
+ const vp=multiply(persp(44*PI/180,w/Math.max(1,h),.08,90),lookAt(eye,camera.target));
+ assembly();gl.useProgram(shader.p);gl.enableVertexAttribArray(shader.aPos);gl.enableVertexAttribArray(shader.aNormal);gl.uniformMatrix4fv(shader.uVP,false,new Float32Array(vp));gl.uniform3fv(shader.uCamera,new Float32Array(eye));gl.disable(gl.BLEND);gl.depthMask(true);
+ for(const ob of opaque)circleMeshRender(ob.mesh,ob.p,ob.s,ob.color,ob.glow||0,ob.rot,vp,eye);
+ // Volumetric glow is deliberately subtle: a transparent cloud plus moving light points.
+ if(power>0&&showPlasma&&((stage===0&&cfg.clFlow>0)||(stage===2&&cfg.arFlow>0))){
+  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.depthMask(false);
+  const intensity=.075+power/600*.10;const col=stage===0?[.24,.95,.74,intensity]:[.51,.30,1,intensity];
+  circleMeshRender('sphere',[0,2.28,0],[1.99,.94,1.99],col,.2,ident(),vp,eye);
+  circleMeshRender('sphere',[0,2.23,0],[1.40,.75,1.40],[...col.slice(0,3),intensity*.58],.28,ident(),vp,eye);
+ }
+ // Draw glass last. Transparent wall opacity is an intentional user option.
+ gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
+ for(const ob of transparent)if(ob.color[3]>.005)circleMeshRender(ob.mesh,ob.p,ob.s,ob.color,ob.glow||0,ob.rot,vp,eye);
+ // Glowing radial point sprites.
+ const data=dynamicSprites(elapsed);spriteCount=data.length/8;
+ if(spriteCount){gl.useProgram(dots.p);gl.disable(gl.DEPTH_TEST);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.bindBuffer(gl.ARRAY_BUFFER,spriteVBO);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(data),gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(dots.aPos);gl.enableVertexAttribArray(dots.aTint);gl.enableVertexAttribArray(dots.aSize);gl.vertexAttribPointer(dots.aPos,3,gl.FLOAT,false,32,0);gl.vertexAttribPointer(dots.aTint,4,gl.FLOAT,false,32,12);gl.vertexAttribPointer(dots.aSize,1,gl.FLOAT,false,32,28);gl.uniformMatrix4fv(dots.uVP,false,new Float32Array(vp));gl.uniform1f(dots.uScale,dpr*1.45);gl.drawArrays(gl.POINTS,0,spriteCount)}
+ gl.disable(gl.BLEND);gl.depthMask(true);gl.enable(gl.DEPTH_TEST);
+}
+function frame(now){const dt=Math.min(.065,Math.max(0, (now-last)/1000||0));last=now;if(playing){phaseElapsed+=dt*1000;if(phaseElapsed>=duration){phaseElapsed-=duration;stage=(stage+1)%4;if(stage===0){cfg.cycleIndex++;if(cfg.cycleIndex>cfg.cycles){cfg.cycleIndex=cfg.cycles;playing=false;stage=3;}}updateUI()}}
+ if(autoRotate&&!drag){camera.yaw+=dt*.12}
+ if(needCameraLerp){const smoothing=1-Math.exp(-dt*5);for(const prop of ['yaw','elev','dist'])camera[prop]+=(wanted[prop]-camera[prop])*smoothing;for(let i=0;i<3;i++)camera.target[i]+=(wanted.target[i]-camera.target[i])*smoothing;if(Math.abs(camera.dist-wanted.dist)<.005)needCameraLerp=false}
+ elapsed+=dt;$('#progressBar').style.width=(playing?phaseElapsed/duration*100:0)+'%';render();requestAnimationFrame(frame)}
+try{updateUI();requestAnimationFrame(frame);window.__ALE_V061_TEST__={state:()=>({phase:stage,playing,canvas:[canvas.width,canvas.height],spriteCount,camera:{...camera}}),setPhase:stepTo,setCamera:cameraPreset,glReady:true}}catch(e){console.error('3D failed',e);document.querySelector('.stage-status').innerHTML='<strong>3D initialization failed</strong><span>'+e.message+'</span>'}
+})();
+</script>
+<script>
+// Camera-aware Canvas2D fallback for environments which disable WebGL by policy.
+// WebGL is preferred, this renders the same reactor concepts using an actual 3D projection.
+(() => {
+'use strict';
+if(window.__ALE_V061_TEST__?.glReady)return;
+const c=document.getElementById('glScene');const ctx=c.getContext('2d');if(!ctx)return;
+if(!document.getElementById('plasmaTag'))document.querySelector('.stage-status').innerHTML='<strong id="plasmaTag" class="off">PLASMA OFF</strong><span id="stateText">Software 3D mode</span>'; 
+const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s)),PI=Math.PI,TAU=2*PI;
+const cfg=window.__ALE_V062_CONFIG__;
+let cam={yaw:.54,elev:.29,dist:9.0,target:[0,1.64,0]},want=null,phase=0,power=300,opacity=.18,plasma=true,particles=true,play=false,acc=0,last=0,time=0,drag=null,auto=false;
+const names=['Adsorption','Purge','Activation','Final Purge'];
+const state=[
+ {plasma:'Cl phase',gas:'Cl species',bias:'OFF',badge:'Cl SUPPLY / PLASMA',cls:'green',head:'Cl species entering the reactor',desc:'반응성 Cl 공급종이 챔버 내부로 유입되어 웨이퍼 방향으로 이동해. 표면 원자 결합 계산은 현재는 교육용 원자 반응 확대 장면으로 연결했어.',subtitle:'Cl feed · plasma illustration'},
+ {plasma:'OFF',gas:'Ar / inert',bias:'OFF',badge:'PLASMA OFF / PURGE',cls:'off',head:'Residual species leave the chamber',desc:'플라즈마가 꺼지고 잔류종이 배기 방향으로 이동해. 개질된 표면 상태를 유지한다는 ALE 공정 개념을 나타내.',subtitle:'Purge · plasma off'},
+ {plasma:'Ar phase',gas:'Ar',bias:'ON',badge:'Ar⁺ PLASMA / BIAS ON',cls:'orange',head:'Ar⁺ ions accelerate toward Si wafer',desc:'Ar 플라즈마와 Bias가 활성화되고 이온이 표면을 향해 입사해. 입사 방향을 보여주는 개념 시각화야.',subtitle:'Ar plasma · ion direction'},
+ {plasma:'OFF',gas:'Ar / inert',bias:'OFF',badge:'PLASMA OFF / EXHAUST',cls:'off',head:'Etch byproducts are exhausted',desc:'반응 생성물이 배기로 이동해 챔버에서 빠져나가는 개념을 보여줘. 실제 생성물 구성은 별도 반응 모델에서 계산해야 해.',subtitle:'Final purge · byproduct evacuation'}
+];
+const L=(a,b,t)=>a+(b-a)*t,clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+function update(){const d=state[phase];$('#metricStep').textContent=names[phase];$('#metricPlasma').textContent=d.plasma;$('#metricGas').textContent=phase===0?'Cl · '+cfg.clFlow+' sccm':'Ar · '+cfg.arFlow+' sccm';$('#metricBias').textContent=phase===2&&cfg.biasOn?cfg.biasPower+' W · ON':'OFF';$('#plasmaTag').textContent=d.badge;$('#plasmaTag').className=d.cls;$('#stateText').textContent=d.subtitle;$('#stepHeading').textContent=d.head;$('#stepDescription').textContent=d.desc;$$('[data-step]').forEach(e=>e.classList.toggle('active',Number(e.dataset.step)===phase));$('#progressText').textContent='STEP '+(phase+1)+' / 4';$('#playBtn').textContent=play?'■ STOP AUTO':'▶ PLAY CYCLE'}
+function setPhase(p){phase=p;play=false;acc=0;update()}
+$$('[data-step]').forEach(b=>b.addEventListener('click',()=>setPhase(Number(b.dataset.step))));
+$('#playBtn').onclick=()=>{play=!play;acc=0;update()};$('#pauseBtn').onclick=()=>{play=false;update()};$('#resetBtn').onclick=()=>{phase=0;play=false;acc=0;time=0;cfg.cycleIndex=1;update();preset('overview')};
+$('#sourcePower').oninput=e=>{power=Number(e.target.value);$('#sourceValue').textContent=power+' W'};
+$('#wallOpacity').oninput=e=>{opacity=Number(e.target.value)/100;$('#wallValue').textContent=e.target.value+'%'};
+$('#showPlasma').onchange=e=>plasma=e.target.checked;$('#showParticles').onchange=e=>particles=e.target.checked;
+$('#showLabels').onchange=e=>$$('[data-label]').forEach(el=>el.style.display=e.target.checked?'':'none');
+$('#autoRotate').onchange=e=>auto=e.target.checked;
+const presets={overview:{yaw:.54,elev:.29,dist:9.0,target:[0,1.64,0]},wafer:{yaw:.52,elev:.16,dist:6.2,target:[0,.87,0]},top:{yaw:.50,elev:1.28,dist:10.4,target:[0,1.55,0]},side:{yaw:1.55,elev:.22,dist:10.8,target:[0,1.6,0]},atomic:{yaw:.51,elev:.23,dist:4.55,target:[0,.91,0]}};
+function preset(name){want={...presets[name],target:presets[name].target.slice()};$$('[data-camera]').forEach(b=>b.classList.toggle('active',b.dataset.camera===name))}
+$$('[data-camera]').forEach(b=>b.onclick=()=>preset(b.dataset.camera));
+c.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,yaw:cam.yaw,elev:cam.elev};want=null;c.setPointerCapture(e.pointerId);c.classList.add('dragging');$$('[data-camera]').forEach(b=>b.classList.remove('active'))});
+c.addEventListener('pointermove',e=>{if(!drag)return;cam.yaw=drag.yaw+(e.clientX-drag.x)*.006;cam.elev=clamp(drag.elev+(e.clientY-drag.y)*.006,-.18,1.48)});
+for(const event of ['pointerup','pointercancel'])c.addEventListener(event,()=>{drag=null;c.classList.remove('dragging')});
+c.addEventListener('wheel',e=>{e.preventDefault();cam.dist=clamp(cam.dist*(1+Math.sign(e.deltaY)*.09),3.7,18.8);want=null;$$('[data-camera]').forEach(b=>b.classList.remove('active'))},{passive:false});
+function proj(v,w,h){const d=[v[0]-cam.target[0],v[1]-cam.target[1],v[2]-cam.target[2]];const cy=Math.cos(cam.yaw),sy=Math.sin(cam.yaw),ce=Math.cos(cam.elev),se=Math.sin(cam.elev);const x=cy*d[0]-sy*d[2],y=-sy*se*d[0]+ce*d[1]-cy*se*d[2],z=sy*ce*d[0]+se*d[1]+cy*ce*d[2],depth=cam.dist-z,sc=h*.93/Math.max(2.5,depth);return [w*.50+x*sc,h*.535-y*sc,depth,sc]}
+function drawPath(points,fill,stroke='#ffffff22',width=1){ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.lineWidth=width;ctx.strokeStyle=stroke;ctx.stroke()}}
+function ring(r,y,fill='#12334c',lineColor='#9dbddd90',thick=2){const pts=Array.from({length:101},(_,i)=>proj([r*Math.cos(i*TAU/100),y,r*Math.sin(i*TAU/100)],W,H));drawPath(pts,fill,lineColor,thick)}
+function line3(a,b,color='#83c9ed',width=2){const x=proj(a,W,H),y=proj(b,W,H);ctx.beginPath();ctx.moveTo(x[0],x[1]);ctx.lineTo(y[0],y[1]);ctx.lineWidth=width;ctx.strokeStyle=color;ctx.stroke()}
+function spot(p,r,col,alpha=1){const [x,y,,sc]=proj(p,W,H),size=Math.max(1,r*sc);const g=ctx.createRadialGradient(x-size*.35,y-size*.35,.4,x,y,size);g.addColorStop(0,'#ffffff');g.addColorStop(.20,col);g.addColorStop(1,col);ctx.globalAlpha=alpha;ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,size,0,TAU);ctx.fill();ctx.globalAlpha=1}
+function cylinder(r,y1,y2,body='#1b3851',top='#30536b'){const rim1=Array.from({length:65},(_,i)=>proj([r*Math.cos(i*TAU/64),y1,r*Math.sin(i*TAU/64)],W,H));const rim2=Array.from({length:65},(_,i)=>proj([r*Math.cos(i*TAU/64),y2,r*Math.sin(i*TAU/64)],W,H));drawPath([...rim1,...rim2.slice().reverse()],body,null);drawPath(rim2,top,'#7baacf55',1.2);drawPath(rim1,null,'#3b729188',1.4)}
+let W=0,H=0;
+function render(){const dpr=Math.min(2,devicePixelRatio||1),r=c.getBoundingClientRect();W=r.width;H=r.height;if(!W||!H)return;const pw=Math.round(W*dpr),ph=Math.round(H*dpr);if(c.width!==pw||c.height!==ph){c.width=pw;c.height=ph}ctx.setTransform(dpr,0,0,dpr,0,0);
+ const bg=ctx.createRadialGradient(W*.5,H*.49,15,W*.5,H*.48,Math.max(W,H)*.72);bg.addColorStop(0,'#1c3e58');bg.addColorStop(.50,'#0d253b');bg.addColorStop(1,'#081827');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+ // Ground plane and platform.
+ ring(3.1,-.37,'#081927','#30597948',1);ring(2.86,-.21,'#1f3c51','#4b729d88',2);cylinder(2.86,-.29,-.12,'#0b2232','#2b4d63');ring(2.55,-.05,'#152f42','#668fa99c',2);
+ // Chamber cylindrical rear wall (glass opening toward the camera).
+ const segments=28,back1=2.26,back2=5.95;
+ for(let i=0;i<segments;i++){let a=back1+(back2-back1)*i/segments,b=back1+(back2-back1)*(i+1)/segments;const p=[proj([2.47*Math.cos(a),.05,2.47*Math.sin(a)],W,H),proj([2.47*Math.cos(b),.05,2.47*Math.sin(b)],W,H),proj([2.47*Math.cos(b),3.47,2.47*Math.sin(b)],W,H),proj([2.47*Math.cos(a),3.47,2.47*Math.sin(a)],W,H)];drawPath(p,'rgba(48,102,144,'+(.12+opacity*.35)+')',i%4===0?'#5b94b633':null,1)}
+ // Plasma glow on a 3D cross-section (not simulated emission).
+ const on=power>0&&plasma&&(phase===0?cfg.clFlow>0:phase===2&&cfg.arFlow>0);
+ if(on){const a=proj([0,2.42,0],W,H);const radius=2.0*a[3],rgb=phase===0?'61,221,185':'156,117,255';const g=ctx.createRadialGradient(a[0],a[1],4,a[0],a[1],radius);g.addColorStop(0,'rgba('+rgb+','+(.22+power/600*.22)+')');g.addColorStop(.55,'rgba('+rgb+',.14)');g.addColorStop(1,'rgba('+rgb+',0)');ctx.fillStyle=g;ctx.save();ctx.translate(a[0],a[1]);ctx.scale(1,.72);ctx.translate(-a[0],-a[1]);ctx.fillRect(a[0]-radius,a[1]-radius,2*radius,2*radius);ctx.restore()}
+ // Major coil and quartz window are distinct 3D solids.
+ cylinder(2.16,3.46,3.60,'#536c7d','#96b9c6');ring(2.2,3.60,'rgba(92,160,189,.25)','#7ed9f0',2);
+ for(let y of [3.73,3.87,4.01]){ring(1.64,y,null,'#44d3ec',4);ring(1.64,y,null,'#b7ffff99',1.3)}
+ line3([-2.45,4.07,-.3],[-1.5,4.07,-.3],'#58d9f4',5);
+ cylinder(2.43,.06,.38,'#19364a','#294e64');
+ cylinder(.89,.14,.48,'#1a2b3e','#34526a');cylinder(1.76,.39,.69,'#214055','#567389');ring(1.67,.74,'#142a3e','#98c7e1',3);
+ // Critical wafer surface now has visible shape and thickness.
+ cylinder(1.52,.76,.83,'#0d365a','#277ab3');ring(1.53,.84,'#114060','#78dcff',3);ring(1.43,.86,'#1b699b','#a5edff',1.7);
+ // A few radial tick marks make the wafer appear like an actual circular disc.
+ for(let i=0;i<15;i++){const a=i*TAU/15;line3([1.29*Math.cos(a),.88,1.29*Math.sin(a)],[1.40*Math.cos(a),.88,1.40*Math.sin(a)],'#b3eeff75',1)}
+ // Feed line and exhaust duct (front + right / back + left positions).
+ line3([-3.48,2.71,-.40],[-2.22,2.71,-.40],'#59bddd',5);line3([2.22,2.64,.45],[3.47,2.64,.45],'#59bddd',5);line3([2.23,.22,0],[3.55,.22,0],'#5d92ae',7);line3([3.55,.22,0],[3.55,-.30,0],'#5d92ae',7);
+ // Chrome cutaway frame edge profiles (two vertical rails).
+ for(let a of [2.26,5.95])line3([2.47*Math.cos(a),0,2.47*Math.sin(a)],[2.47*Math.cos(a),3.44,2.47*Math.sin(a)],'#74a9bd88',2);
+ ring(2.51,3.47,null,'#93bad1',3);ring(2.53,.01,null,'#80a4bd',2.5);
+ // Sheath stays weak even with RF bias OFF while plasma is on.
+ if(on){const powered=(phase===2&&cfg.biasOn&&cfg.biasPower>0);
+   const thick=powered?Math.min(.64,.19+Math.sqrt(cfg.biasPower/150)*.43/(1+cfg.pressure/100)):.14;
+   const bottom=Array.from({length:65},(_,i)=>proj([1.46*Math.cos(i*TAU/64),.92,1.46*Math.sin(i*TAU/64)],W,H));
+   const upper=Array.from({length:65},(_,i)=>proj([1.46*Math.cos(i*TAU/64),.92+thick,1.46*Math.sin(i*TAU/64)],W,H));
+   drawPath([...bottom,...upper.slice().reverse()],powered?'rgba(255,166,97,.12)':'rgba(109,207,252,.07)',null);
+   drawPath(upper,null,powered?'#ffa8688e':'#89c8f05b',2);
+ }
+ // Three-dimensional movement of selected species.
+ if(particles){
+  if(on){const n=Math.round((23+power/600*44)*Math.min(1.9,(phase===0?cfg.clFlow:cfg.arFlow)/40));for(let i=0;i<n;i++){const seed=i*12.189,angle=seed*2.39+Math.sin(time*.21+seed)*.15,r=Math.sqrt((i+.3)/(n+1))*2.07,x=r*Math.cos(angle),z=r*Math.sin(angle),y=1.55+.8*Math.sin(i*2.3+time*(.31+(i%3)*.04));spot([x,y,z],i%8===0?.055:.027,phase===0?'#6dffd2':'#bb91ff',.46)} }
+  if(phase===0){for(let i=0;i<16;i++){const t=(time*.25+i/16)%1;spot([-3.15+3.2*t,2.75-1.8*t*t,-.4+.4*t],.086,'#76f8ba')}}
+  if(phase===2){for(let i=0;i<15;i++){const t=(time*.22+i/15)%1;spot([Math.sin(i*13.7)*1.05,3.17-2.15*t,Math.cos(i*7.34)*.85],.087,'#ffb56a')}}
+  if(phase===1||phase===3){for(let i=0;i<15;i++){const t=(time*.17+i/15)%1;spot([1.2+2.2*t,1.3-1.13*t,Math.cos(i*2.7)*.5],.07,phase===1?'#7adddc':'#ffb36a',.7)}}
+ }
+ // Caption to explain this fallback is 3D projected, not a 2D static drawing.
+ 
+}
+function frame(now){const dt=Math.min(.06,Math.max(0,(now-last)/1000||0));last=now;if(play){acc+=dt*1000;if(acc>=4100){acc-=4100;phase=(phase+1)%4;if(phase===0){cfg.cycleIndex++;if(cfg.cycleIndex>cfg.cycles){cfg.cycleIndex=cfg.cycles;play=false;phase=3;}}update()}}if(auto&&!drag)cam.yaw+=dt*.12;if(want){const k=1-Math.exp(-dt*5);for(const key of ['yaw','elev','dist'])cam[key]+=k*(want[key]-cam[key]);for(let i=0;i<3;i++)cam.target[i]+=k*(want.target[i]-cam.target[i]);if(Math.abs(cam.dist-want.dist)<.005)want=null}time+=dt;$('#progressBar').style.width=(play?acc/4100*100:0)+'%';render();requestAnimationFrame(frame)}
+update();$('#plasmaTag').title='Canvas3D fallback due to WebGL being unavailable';$('#stateText').textContent+=' · software 3D';window.__ALE_V061_TEST__={glReady:false,softwareFallback:true,state:()=>({phase,playing:play,canvas:[c.width,c.height],camera:cam}),setPhase,setCamera:preset};requestAnimationFrame(frame);
+})();
+</script>
+<script>// ALE Simulator V0.6.2 — linked chamber/sheath/wafer visualization.
+// Physics indicators are deliberately normalized and NOT fitted to a reactor.
+(() => {
+  'use strict';
+  const q = s=>document.querySelector(s);
+  const cfg=window.__ALE_V062_CONFIG__;
+  const stage=q('#stage');
+  const atomCanvas=q('#atomScene'), a=atomCanvas.getContext('2d');
+  const overlay=q('#sheathOverlay'),o=overlay.getContext('2d');
+  const clamp=(v,l,h)=>Math.max(l,Math.min(h,v));
+  let lastPhase=-1,lastCycle=1,lastClock=0;
+  const heightDrop=Array.from({length:32},()=>0);
+  let expanded=false;
+  let inSitu=false;
+  let focusMode='chamber', focusAmount=0, focusTarget=0;
+  let focusAutoTicket=0, slowMotion=true, eventClock=0, lastEventTS=0;
+  let interactionDown=null;
+  const inSituCanvas=q('#inSituAtoms'), ins=inSituCanvas.getContext('2d');
+  const inSituBtn=q('#inSituBtn'), exitInSitu=q('#exitInSitu');
+  const labelInSitu=q('#inSituStepText');
+  const focusRail=q('#focusRail'), eventState=q('#focusEventState');
+  const focusNames={chamber:'Chamber',wafer:'Wafer',atomic:'Atomic'};
+  function setFocusMode(mode,autoAdvance=false){
+    if(!focusNames[mode])return;
+    focusAutoTicket++;
+    focusMode=mode;
+    inSitu=mode!=='chamber';
+    focusTarget=mode==='chamber'?0:mode==='wafer'?.48:1;
+    const stageClass=stage.classList;
+    stageClass.toggle('in-situ-focus',inSitu);
+    stageClass.toggle('focus-wafer',mode==='wafer');
+    stageClass.toggle('focus-atomic',mode==='atomic');
+    inSituBtn.classList.toggle('active',inSitu);
+    inSituBtn.setAttribute('aria-pressed',String(inSitu));
+    inSituBtn.textContent=inSitu?'◎ 웨이퍼 반응 ON':'◎ 웨이퍼 반응';
+    focusRail.querySelectorAll('[data-focus]').forEach(btn=>btn.classList.toggle('active',btn.dataset.focus===mode));
+    const api=window.__ALE_V061_TEST__;
+    if(api?.setCamera) api.setCamera(mode==='chamber'?'overview':mode);
+    if(mode==='atomic'){
+      eventClock=0;
+      eventState.textContent='원자 반응 · 자세히 관찰';
+    }else if(mode==='wafer'){
+      eventState.textContent='웨이퍼로 접근 중';
+    }else{
+      eventState.textContent='챔버 전체';
+      ins.clearRect(0,0,inSituCanvas.width,inSituCanvas.height);
+    }
+    if(autoAdvance&&mode==='wafer'){
+      const ticket=focusAutoTicket;
+      // Camera reaches wafer before switching to the magnified atomic scale.
+      setTimeout(()=>{if(ticket===focusAutoTicket&&focusMode==='wafer')setFocusMode('atomic');},1450);
+    }
+  }
+  function toggleInSitu(next){setFocusMode(next?'wafer':'chamber',Boolean(next));}
+  inSituBtn.addEventListener('click',()=>toggleInSitu(!inSitu));
+  exitInSitu.addEventListener('click',()=>setFocusMode('chamber'));
+  focusRail.querySelectorAll('[data-focus]').forEach(btn=>btn.addEventListener('click',()=>setFocusMode(btn.dataset.focus)));
+  q('#focusReplay').addEventListener('click',()=>{eventClock=0;eventState.textContent='충돌 · 이탈 장면 다시 재생';});
+  q('#focusSlow').addEventListener('click',()=>{
+    slowMotion=!slowMotion;
+    q('#focusSlow').textContent=slowMotion?'¼× 느리게':'1× 정상속도';
+    q('#focusSlow').classList.toggle('active',slowMotion);
+    q('#focusSlow').setAttribute('aria-pressed',String(slowMotion));
+  });
+  q('#focusSlow').classList.add('active');
+  q('#focusNext').addEventListener('click',()=>{
+    const current=window.__ALE_V061_TEST__?.state()?.phase??0;
+    window.__ALE_V061_TEST__?.setPhase?.((current+1)%4);
+    eventClock=0;
+  });
+  q('#glScene').addEventListener('pointerdown',e=>{interactionDown={x:e.clientX,y:e.clientY};});
+  q('#glScene').addEventListener('pointerup',e=>{
+    if(!interactionDown)return;
+    const move=Math.hypot(e.clientX-interactionDown.x,e.clientY-interactionDown.y);
+    interactionDown=null;
+    if(move>7||inSitu)return;
+    const rect=q('#glScene').getBoundingClientRect();
+    const u=e.clientX-rect.left,v=e.clientY-rect.top;
+    const camera=read().camera;
+    const point=project([0,.89,0],camera,rect.width,rect.height);
+    const radius=1.7*point[2];
+    if(Math.abs(u-point[0])<Math.max(35,radius)&&Math.abs(v-point[1])<Math.max(25,radius*.5))toggleInSitu(true);
+  });
+  q('#glScene').addEventListener('pointercancel',()=>{interactionDown=null;});
+  // Existing camera shortcuts still work. They do not replace the chamber model.
+  ['overview','top','side'].forEach(cam=>q('[data-camera="'+cam+'"]').addEventListener('click',()=>{
+    if(inSitu){setFocusMode('chamber');window.__ALE_V061_TEST__?.setCamera?.(cam);}
+  }));
+  q('[data-camera="wafer"]').addEventListener('click',()=>setFocusMode('wafer'));
+
+  function read(){return {phase:window.__ALE_V061_TEST__?.state()?.phase??0,
+      playing:!!window.__ALE_V061_TEST__?.state()?.playing,
+      camera:window.__ALE_V061_TEST__?.state()?.camera||{yaw:.54,elev:.29,dist:9,target:[0,1.65,0]},
+      gl:!!window.__ALE_V061_TEST__?.state()?.glReady};}
+  function indices(){
+    const power=Number(q('#sourcePower').value);
+    const clFlux = cfg.clFlow>0&&power>0 ? Math.min(2.3,(cfg.clFlow/25)**.7)*(power/300)**.75 * (1/(1+cfg.pressure/85)) : 0;
+    const target=Math.round(100*0.98*(1-Math.exp(-0.38*cfg.exposure*clFlux)));
+    const sheathBase=0.14;
+    const enhanced=(cfg.biasOn && cfg.biasPower>0);
+    const sheathVisual = enhanced ? 0.18 + .52*Math.sqrt(cfg.biasPower/150)/(1+cfg.pressure/100) : sheathBase;
+    const accel = power>0&&cfg.arFlow>0 ? Math.min(.96, 0.10 + (enhanced ? .80*Math.sqrt(cfg.biasPower/150)/(1+cfg.pressure/115):0)) : 0;
+    const angular=clamp((cfg.pressure-1)/100,0,1);
+    const ionFlux=cfg.arFlow>0&&power>0 ? (power/300)*cfg.arFlow/(cfg.arFlow+25)*1/(1+cfg.pressure/160) : 0;
+    const dose=ionFlux*(1.1+Math.sqrt(cfg.arFlow/100))*(enhanced?1.0:.27);
+    const chem=cfg.exposure>0 && cfg.clFlow>0 ? Math.round(32*(target/100) * (1-Math.exp(-1.4*dose*accel)) * .75):0;
+    const sput=power>0&&cfg.arFlow>0&&enhanced&&cfg.biasPower>=75 ? Math.round(32*(cfg.biasPower-70)/180*ionFlux*.12) : 0;
+    return {power, target, sheathBase,sheathVisual,enhanced,accel,angular,ionFlux,dose,chem:clamp(chem,0,23),sput:clamp(sput,0,6)};
+  }
+  function bindRange(key,label,suffix,format){
+    q('#'+key).addEventListener('input',e=>{cfg[key]=Number(e.target.value);q('#'+label).textContent=format?format(cfg[key]):cfg[key]+' '+suffix;refresh();});
+  }
+  bindRange('clFlow','clFlowValue','sccm');bindRange('arFlow','arFlowValue','sccm');
+  bindRange('biasPower','biasValue','W');bindRange('pressure','pressureValue','mTorr');
+  bindRange('exposure','exposureValue','s',v=>v.toFixed(1)+' s');bindRange('cycles','cyclesValue','');
+  q('#biasSwitch').addEventListener('change',e=>{cfg.biasOn=e.target.checked;refresh();});
+  q('#sourcePower').addEventListener('input',refresh);
+  q('#atomExpand').addEventListener('click',()=>{expanded=!expanded;q('#reactionInset').classList.toggle('large',expanded);q('#atomExpand').textContent=expanded?'⤡':'⤢';});
+  q('#resetBtn').addEventListener('click',()=>{heightDrop.fill(0);cfg.cycleIndex=1;lastCycle=1;if(inSitu)toggleInSitu(false);refresh();});
+  const phaseNames=['Cl ADSORPTION','PURGE / HOLD','Ar⁺ ACTIVATION','PRODUCT DESORPTION'];
+  const descriptions=[
+    ['Cl species → surface sites','Cl 공급종이 표면 활성점에 흡착하면서 개질층을 형성해. 가스 유량, Source Power와 노출 시간을 조절하면 피복률의 정성 모형이 변해.'],
+    ['Adsorbed Cl remains','미흡착 잔류종은 배출되고, 이미 흡착된 Cl은 표면에 남아 있다고 가정해.'],
+    ['Sheath → Ar⁺ → reaction','Ar 플라즈마에서 이온이 Sheath를 지나며 웨이퍼로 입사해. Bias Power와 압력을 조절하면 개념적 가속·궤적 표시가 바뀌어.'],
+    ['SiClₓ ↑ · exhaust','개질된 Si의 제거 생성물을 개념적으로 시각화해. 식각 생성물의 정확한 조성은 이 모델에서 계산하지 않아.']
+  ];
+  function refresh(){const st=read(),m=indices(),p=st.phase;
+    q('#biasPower').disabled=!cfg.biasOn;
+    q('#metricPressure').textContent=cfg.pressure+' mTorr';
+    q('#metricBias').textContent=st.phase===2?(cfg.biasOn?cfg.biasPower+' W · ON':'OFF'):(cfg.biasOn?cfg.biasPower+' W · SET':'OFF');
+    q('#metricGas').textContent=p===0?'Cl₂ · '+cfg.clFlow+' sccm':'Ar · '+cfg.arFlow+' sccm';
+    q('#sheathLabel').textContent=p===2&&m.enhanced?'BIAS-ENHANCED':p===0||p===2?'INTRINSIC SHEATH':'NO ACTIVE PLASMA';
+    q('#sheathDetail').textContent=p===2&&m.enhanced?'RF bias boosts ion acceleration':p===0?'No powered RF bias in adsorption':'No powered RF bias in this step';
+    q('#sheathFill').style.width=(p===0||p===2?Math.round((p===0?m.sheathBase:m.sheathVisual)/.7*100):0)+'%';
+    q('#energyIndex').textContent=(p===2?m.accel:0).toFixed(2);
+    q('#directionality').textContent=cfg.pressure>55?'More scattered':cfg.pressure>20?'Moderate':'Directional';
+    q('#coverageValue').textContent=m.target+'%';
+    q('#doseIndex').textContent=(p>=2?m.dose:0).toFixed(2)+' rel.';
+    q('#chemRemoved').textContent=(p>=2?m.chem:0)+' sites';
+    q('#physRemoved').textContent=(p>=2?m.sput:0)+' sites';
+    q('#cycleIndex').textContent=cfg.cycleIndex+' / '+cfg.cycles;
+    q('#atomStep').textContent=phaseNames[p];
+    q('#atomDesc').textContent=descriptions[p][0];
+    q('#stepHeading').textContent=phaseNames[p];
+    q('#stepDescription').textContent=descriptions[p][1];
+    q('#sheathVisualText').textContent=p===2 ? (cfg.biasOn&&cfg.biasPower>0?'RF BIAS · Sheath enhanced':'NO RF BIAS · Intrinsic sheath') : p===0?'Intrinsic plasma sheath':'No plasma / gas purge';
+    q('#sheathFloating').style.display=(p===0||p===2)&&m.power>0?'flex':'none';
+    q('#plasmaTag').textContent=p===0?'Cl SOURCE'+(cfg.clFlow?'':' · NO FLOW'):p===2?'Ar PLASMA · '+(cfg.biasOn?'BIAS ON':'BIAS OFF'):p===1?'PURGE':'FINAL PURGE';
+    q('#plasmaTag').className=p===0?'green':p===2?'orange':'off';
+    q('#stateText').textContent=(p===2?'Sheath region · ion acceleration':p===0?'Reactive feed · adsorption':p===1?'Residual gas is removed':'Products leave chamber');
+  }
+  function csize(canvas,ctx){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return [0,0];const dpr=Math.min(2,window.devicePixelRatio||1),cw=Math.round(w*dpr),ch=Math.round(h*dpr);
+    if(canvas.width!==cw||canvas.height!==ch){canvas.width=cw;canvas.height=ch;}
+    ctx.setTransform(dpr,0,0,dpr,0,0);return [w,h];}
+  function project(pt,cam,w,h){
+    const d=[pt[0]-cam.target[0],pt[1]-cam.target[1],pt[2]-cam.target[2]];
+    const cy=Math.cos(cam.yaw),sy=Math.sin(cam.yaw),ce=Math.cos(cam.elev),se=Math.sin(cam.elev);
+    const x=cy*d[0]-sy*d[2],y=-sy*se*d[0]+ce*d[1]-cy*se*d[2];
+    const z=sy*ce*d[0]+se*d[1]+cy*ce*d[2];
+    const sc=h*.93/Math.max(2.5,cam.dist-z);
+    return [w*.5+x*sc,h*.535-y*sc,sc];
+  }
+  function sheathOverlay(st,m){const [w,h]=csize(overlay,o);if(!w)return;o.clearRect(0,0,w,h);
+    const p=st.phase;if(![0,2].includes(p)||m.power<=0)return;
+    const enhanced=p===2&&m.enhanced;
+    const thick=enhanced?Math.min(.65,.19+.45*Math.sqrt(cfg.biasPower/150)/(1+cfg.pressure/100)):.14;
+    const top=[],bottom=[];
+    for(let i=0;i<=60;i++){
+      const ang=i*Math.PI*2/60,r=1.47;
+      bottom.push(project([r*Math.cos(ang),.92,r*Math.sin(ang)],st.camera,w,h));
+      top.push(project([r*Math.cos(ang),.92+thick,r*Math.sin(ang)],st.camera,w,h));
+    }
+    // Soft field fill helps users identify the space above the wafer as sheath.
+    o.save();o.beginPath();[...top,...bottom.slice().reverse()].forEach((v,i)=>i?o.lineTo(v[0],v[1]):o.moveTo(v[0],v[1]));o.closePath();
+    o.fillStyle=enhanced?'rgba(255,165,97,.085)':'rgba(116,208,255,.045)';o.fill();
+    o.beginPath();top.forEach((v,i)=>i?o.lineTo(v[0],v[1]):o.moveTo(v[0],v[1]));o.strokeStyle=enhanced?'rgba(255,192,124,.48)':'rgba(127,208,255,.23)';o.lineWidth=2;o.stroke();
+    if(p===2&&cfg.arFlow>0){
+      const n=clamp(Math.round(cfg.arFlow/13),2,9),t=performance.now()*.0004;
+      for(let i=0;i<n;i++){
+        const x=((i+.5)/n-.5)*2.5,z=Math.sin(i*2.49)*.38;
+        const fall=(t+i/n)%1,y=1.65-fall*.77;
+        const angleScatter=m.angular*.24*Math.sin((i+1)*12.13+fall*2);
+        const loc=project([x+angleScatter*fall,y,z],st.camera,w,h);
+        const tail=project([x+angleScatter*Math.max(0,fall-.1),y+.12,z],st.camera,w,h);
+        o.beginPath();o.moveTo(tail[0],tail[1]);o.lineTo(loc[0],loc[1]);o.strokeStyle=enhanced?'rgba(255,188,109,.79)':'rgba(178,194,245,.45)';o.lineWidth=enhanced?2.6:1.2;o.stroke();
+        o.beginPath();o.arc(loc[0],loc[1],enhanced?3.4:2.1,0,Math.PI*2);o.fillStyle=enhanced?'#ffbe83':'#a7c0d7';o.fill();
+      }
+    }
+    o.restore();
+  }
+  function sphere(ctx,x,y,r,col,alpha=1){const g=ctx.createRadialGradient(x-r*.37,y-r*.39,.5,x,y,r);g.addColorStop(0,'#f0f9ff');g.addColorStop(.25,col);g.addColorStop(1,col);ctx.globalAlpha=alpha;ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+  function seeded(i){let x=(i*9301+49297)%233280;return x/233280;}
+  function atomScene(st,m,clock){const [w,h]=csize(atomCanvas,a);if(!w)return;
+    a.clearRect(0,0,w,h);const bg=a.createLinearGradient(0,0,0,h);bg.addColorStop(0,'#102943');bg.addColorStop(1,'#0a1d30');a.fillStyle=bg;a.fillRect(0,0,w,h);
+    const siteCount=32,cols=8,rows=4,space=Math.min(w/10,h/8.5),r=Math.min(11,Math.max(5,space*.24));
+    const x0=w*.5-3.5*space,y0=h*.45-1.2*space;
+    const sites=[];
+    for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+      const x=x0+col*space+(row%2)*space*.16,y=y0+row*space*.47;
+      sites.push({x,y,i:row*cols+col,row,col});
+    }
+    const coverageSites=Math.round(siteCount*m.target/100);
+    const phase=st.phase;
+    const removing=m.chem+m.sput;
+    const removalSites=new Set();for(let j=0;j<removing;j++)removalSites.add((j*7+3)%siteCount);
+    const t=(clock*.00028)%1;
+    // wafer base: lower two layers kept dim to distinguish the active surface.
+    for(let dep=2;dep>=1;dep--){
+      for(const s of sites){const shift=dep*space*.62;
+        sphere(a,s.x,s.y+shift+heightDrop[s.i]*4,r*.86,dep===1?'#356d9f':'#254d76',.68);
+        if(s.col<cols-1){const ns=sites[s.i+1];a.strokeStyle='#5b91ba69';a.lineWidth=1.2;a.beginPath();a.moveTo(s.x,s.y+shift+heightDrop[s.i]*4);a.lineTo(ns.x,ns.y+shift+heightDrop[ns.i]*4);a.stroke();}
+      }
+    }
+    for(const s of sites){
+      if(s.col<cols-1){const next=sites[s.i+1];a.beginPath();a.moveTo(s.x,s.y+heightDrop[s.i]*8);a.lineTo(next.x,next.y+heightDrop[next.i]*8);a.strokeStyle='#7fb3de97';a.lineWidth=2;a.stroke();}
+      if(s.row<rows-1){const n=sites[s.i+cols];a.beginPath();a.moveTo(s.x,s.y+heightDrop[s.i]*8);a.lineTo(n.x,n.y+heightDrop[n.i]*8);a.strokeStyle='#5e9bcc5e';a.lineWidth=1.5;a.stroke();}
+    }
+    for(const s of sites){
+      const index=(s.i*13+11)%32,covered=index<coverageSites;
+      const remove=removalSites.has(s.i);
+      const fade=(phase===3&&remove&&m.chem>0)?Math.min(1, t*2.4):0;
+      const modified=(phase===1||phase===2||phase===3)&&covered;
+      const y=s.y+heightDrop[s.i]*8;
+      sphere(a,s.x,y,r*(1-fade*.5),modified?'#9d81d8':'#4f95df',1-fade*.7);
+      if(covered&&phase!==3){
+        const progress=phase===0?0.65+(0.35*Math.sin(clock*.001+s.i*.31)):1;
+        a.strokeStyle='#55d8aa';a.lineWidth=1.5;a.beginPath();a.moveTo(s.x,y-r);a.lineTo(s.x,y-r-9*progress);a.stroke();
+        sphere(a,s.x,y-r-12*progress,r*.49,'#55d9a6');
+      }
+      if(phase===0&&!covered&&cfg.clFlow>0&&m.power>0&&s.i%4===0){
+        sphere(a,s.x-6*Math.sin(clock*.001+s.i),y-35+t*12,r*.25,'#79f1bf',.7);
+      }
+      if(phase===2&&remove){
+        a.strokeStyle='rgba(255,184,99,.55)';a.lineWidth=2;a.beginPath();a.arc(s.x,y,r*1.7,0,Math.PI*2);a.stroke();
+      }
+    }
+    if(phase===2 && m.ionFlux>0){
+      const n=Math.min(5,Math.max(2,Math.round(cfg.arFlow/18)));
+      for(let i=0;i<n;i++){
+        const site=sites[(i*7+3)%32];
+        const frac=(clock*.00052+i/n)%1;
+        const x=site.x+frac*m.angular*12*Math.sin(i*3.8),y=site.y-80+frac*70;
+        a.strokeStyle=m.enhanced?'#ffb16e':'#a5b8ca';a.lineWidth=2.3;a.beginPath();a.moveTo(x,y-13);a.lineTo(x,y+2);a.stroke();sphere(a,x,y,r*.5,m.enhanced?'#ffab70':'#a5b9cc');
+      }
+      a.fillStyle='#ffc68f';a.font='bold 10px system-ui';a.fillText(m.enhanced?'Ar⁺ · sheath acceleration':'Ar⁺ · low energy',12,17);
+    }
+    if(phase===3 && removing>0){
+      const ejections=Math.min(4,removing);
+      for(let i=0;i<ejections;i++){
+        const site=sites[(i*7+3)%32];const p=(clock*.00023+i*.19)%1;
+        const px=site.x+Math.sin(p*3+i)*15,py=site.y-15-p*80;
+        a.strokeStyle='rgba(248,144,107,'+(1-p)+')';a.lineWidth=2;a.beginPath();a.moveTo(site.x,site.y);a.quadraticCurveTo(px+12,py+30,px,py);a.stroke();
+        sphere(a,px,py,r*.7,'#f38d77');sphere(a,px+8,py-8,r*.44,'#71dbac');
+        if(i===0){a.fillStyle='#ffc5aa';a.font='bold 11px system-ui';a.fillText('SiClₓ ↑',px+12,Math.max(16,py-8));}
+      }
+    }
+    if(phase===1){a.fillStyle='#8caac0';a.font='10px system-ui';a.fillText('Cl remains on the surface',12,16);}
+    if(phase===0){a.fillStyle='#89e8bf';a.font='10px system-ui';a.fillText('Cl adsorption · saturation trend',12,16);}
+    a.fillStyle='#7094ae';a.font='9px system-ui';a.fillText('Representative lattice patch · not atomistic MD',10,h-9);
+  }
+  function commitCycle(n){const m=indices();const removals=Math.min(8,m.chem+m.sput);
+    for(let i=0;i<removals;i++){heightDrop[(i*7+3+n*2)%32]=Math.min(3,heightDrop[(i*7+3+n*2)%32]+1);}
+  }
+
+  // An embedded, unframed molecular-level layer anchored to the wafer position
+  // in the SAME existing 3D reactor. Illustrative scale is deliberately enlarged:
+  // atoms cannot be drawn at their true sizes inside a reactor.
+  function drawInChamberReaction(st,m,clock){
+    const [w,h]=csize(inSituCanvas,ins);
+    if(!w||!inSitu||focusAmount<.08){ins.clearRect(0,0,w,h);return;}
+    ins.clearRect(0,0,w,h);
+    // The atomic patch fades in only near the physical wafer: no permanent floating panel.
+    ins.save();
+    ins.globalAlpha=clamp((focusAmount-.31)/.69,0,1);
+    const center=project([0,.91,0],st.camera,w,h);
+    const cx=clamp(center[0],w*.28,w*.73),cy=clamp(center[1],h*.35,h*.77);
+    const radiusX=Math.min(Math.max(w*(.26+focusAmount*.10),92),300);
+    const radiusY=Math.min(Math.max(h*(.14+focusAmount*.10),74),180);
+    const compact=w<590;
+    // No new inset box: subtle elliptical footprint sits over wafer in reactor.
+    ins.save();
+    const halo=ins.createRadialGradient(cx,cy+8,8,cx,cy+8,radiusX*1.08);
+    halo.addColorStop(0,'rgba(6,30,49,.96)');
+    halo.addColorStop(.52,'rgba(6,29,48,.91)');
+    halo.addColorStop(.82,'rgba(18,55,81,.62)');
+    halo.addColorStop(1,'rgba(8,24,43,0)');
+    ins.fillStyle=halo;ins.beginPath();ins.ellipse(cx,cy+9,radiusX*1.13,radiusY*1.7,0,0,Math.PI*2);ins.fill();
+    ins.beginPath();ins.ellipse(cx,cy+9,radiusX*.99,radiusY*.92,0,0,Math.PI*2);
+    ins.strokeStyle='rgba(92,191,224,.60)';ins.lineWidth=1.3;ins.setLineDash([5,5]);ins.stroke();ins.setLineDash([]);
+    const cols=7,rows=4;
+    const gap=Math.min((radiusX*1.72)/(cols+1),compact?31:58);
+    const ygap=Math.min(radiusY*.37,compact?23:37);
+    const rad=Math.min(compact?10:16,gap*.30);
+    const originX=cx-3*gap,originY=cy-radiusY*.30;
+    const pts=[];
+    for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+      pts.push({i:row*cols+col,row,col,x:originX+col*gap+row*gap*.14,y:originY+row*ygap});
+    }
+    const siteCount=pts.length;
+    const nAds=Math.min(siteCount,Math.round(siteCount*m.target/100));
+    const covered=(i)=>((i*13+11)%siteCount)<nAds;
+    const sortedSites=pts.map(p=>p.i).sort((a,b)=>((a*17+11)%31)-((b*17+11)%31));
+    const chemTargets=sortedSites.filter(i=>covered(i)).slice(0,Math.min(m.chem,siteCount));
+    const sputTargets=sortedSites.filter(i=>!chemTargets.includes(i)).slice(0,Math.min(m.sput,siteCount-chemTargets.length));
+    const remove=new Set([...chemTargets,...sputTargets]);
+    const removePoints=pts.filter(p=>remove.has(p.i));
+    const nRem=remove.size;
+    const phase=st.phase,t=(clock*.00028)%1;
+    // Bulk layers and bonds are dim: focus only on active top layer.
+    for(let dep=2;dep>=1;dep--){
+      for(const p of pts){
+        const by=p.y+dep*gap*.53+heightDrop[p.i%32]*3;
+        sphere(ins,p.x,by,rad*.83,dep===1?'#386b99':'#234867',dep===1?.58:.34);
+      }
+    }
+    for(const p of pts){
+      if(p.col<cols-1){const v=pts[p.i+1];ins.strokeStyle='rgba(132,184,238,.63)';ins.lineWidth=1.65;ins.beginPath();ins.moveTo(p.x,p.y);ins.lineTo(v.x,v.y);ins.stroke();}
+      if(p.row<rows-1){const v=pts[p.i+cols];ins.strokeStyle='rgba(113,167,228,.40)';ins.lineWidth=1.3;ins.beginPath();ins.moveTo(p.x,p.y);ins.lineTo(v.x,v.y);ins.stroke();}
+    }
+    for(const p of pts){
+      const ads=covered(p.i),rem=remove.has(p.i);
+      const eject=phase===3&&rem&&nRem>0;
+      const fraction=eject?Math.min(1,t*1.8):0;
+      const altered=(phase===1||phase===2||phase===3)&&ads;
+      sphere(ins,p.x,p.y+heightDrop[p.i%32]*5,rad*(1-fraction*.63),altered?'#a68add':'#519cde',1-fraction*.7);
+      if(ads&&phase!==3){
+        const y=p.y-rad-5;
+        ins.strokeStyle='#66deb0';ins.lineWidth=1.7;ins.beginPath();ins.moveTo(p.x,p.y-rad*.6);ins.lineTo(p.x,y);ins.stroke();
+        sphere(ins,p.x,y-4,rad*.43,'#65deb1');
+      }
+      if(phase===2&&rem){
+        ins.strokeStyle='rgba(255,182,104,.74)';ins.lineWidth=2;
+        ins.beginPath();ins.arc(p.x,p.y,rad*1.65,0,Math.PI*2);ins.stroke();
+      }
+    }
+    if(phase===2 && m.ionFlux>0){
+      // Ions enter the surface layer from the existing reactor sheath.
+      const n=Math.min(5,Math.max(2,Math.ceil(cfg.arFlow/21)));
+      for(let i=0;i<n;i++){
+        const p=removePoints[i%Math.max(1,removePoints.length)]||pts[(i*9+3)%siteCount];
+        const fall=(clock*.00048+i/n)%1;
+        const scatter=m.angular*12*(1-fall)*Math.sin(i*2.38);
+        const x=p.x+scatter,y=p.y-70+fall*58;
+        ins.strokeStyle=m.enhanced?'#ffad69':'#a8c5db';ins.lineWidth=m.enhanced?2.6:1.7;
+        ins.beginPath();ins.moveTo(x,y-14);ins.lineTo(x,y);ins.stroke();
+        sphere(ins,x,y,rad*.50,m.enhanced?'#ffa65d':'#b3c8d8');
+      }
+    }
+    if(phase===3 && nRem>0){
+      for(let i=0;i<Math.min(nRem,5);i++){
+        const p=removePoints[i];
+        const progress=(clock*.00035+i*.14)%1;
+        const x=p.x+Math.sin(progress*3+i)*13,y=p.y-12-progress*90;
+        ins.strokeStyle='rgba(255,151,111,'+(1-progress*.8)+')';ins.lineWidth=2;
+        ins.beginPath();ins.moveTo(p.x,p.y);ins.quadraticCurveTo(x+7,y+22,x,y);ins.stroke();
+        sphere(ins,x,y,rad*.68,'#f18c79');sphere(ins,x+8,y-7,rad*.40,'#6bdcac');
+      }
+    }
+    if(phase===0 && cfg.clFlow>0 && m.power>0){
+      for(let j=0;j<6;j++){
+        const p=pts[(j*4+1)%siteCount],travel=(clock*.00034+j/6)%1;
+        sphere(ins,p.x+Math.sin(j)*8,p.y-55+travel*30,rad*.34,'#7cf5bf',.7);
+      }
+    }
+    // Unframed scale/context annotations; never claim atomic dimension accuracy.
+    ins.fillStyle='#a8f2d2';ins.font='700 '+(compact?9:11)+'px system-ui';
+    ins.textAlign='center';
+    ins.fillText(phase===0?'Cl ADSORPTION':phase===1?'MODIFIED LAYER':phase===2?'Ar⁺ IMPACT':'SiClₓ DESORPTION',cx,cy-radiusY*.85);
+    ins.fillStyle='#94b7d1';ins.font=(compact?8:10)+'px system-ui';
+    ins.fillText('Wafer surface · enlarged schematic (not to scale)',cx,cy+radiusY*.82);
+    ins.restore();
+    ins.restore();
+    labelInSitu.textContent=focusMode==='wafer'?'Sheath를 통과하는 입자와 웨이퍼 위치를 관찰':
+      descriptions[phase][0]+' · 원자 크기 비율이 아닌 교육용 확대';
+  }
+  function loop(now){
+    const dt=lastClock?Math.min(45,now-lastClock):0;lastClock=now;
+    focusAmount+=(focusTarget-focusAmount)*(1-Math.exp(-dt*.006));
+    if(inSitu&&focusMode==='atomic')eventClock+=dt*(slowMotion?.25:1);
+    const st=read(),m=indices();
+    if(cfg.cycleIndex!==lastCycle){for(let n=lastCycle;n<cfg.cycleIndex;n++)commitCycle(n);lastCycle=cfg.cycleIndex;}
+    if(st.phase!==lastPhase){lastPhase=st.phase;eventClock=0;refresh();}
+    if(focusMode==='atomic'){
+      const ev=st.phase===0?'Cl 흡착 위치':st.phase===1?'개질층 유지':st.phase===2?'Ar⁺ 충돌':m.chem+m.sput>0?'SiClₓ 이탈':'제거 사건 없음';
+      if(eventState.textContent!==ev)eventState.textContent=ev;
+    }
+    sheathOverlay(st,m);atomScene(st,m,now);
+    drawInChamberReaction(st,m,focusMode==='atomic'?eventClock:now);
+    requestAnimationFrame(loop);
+  }
+  refresh();requestAnimationFrame(loop);
+  window.__ALE_V064_TEST__={getFocus:()=>({mode:focusMode,amount:focusAmount,target:focusTarget,clock:eventClock,slow:slowMotion}),setFocus:setFocusMode};
+  window.__ALE_V062_TEST__={config:cfg,indices,refresh,getDisplay:()=>({phase:read().phase,coverage:q('#coverageValue').textContent,bias:q('#metricBias').textContent,sheath:q('#sheathLabel').textContent,chem:q('#chemRemoved').textContent,sput:q('#physRemoved').textContent,cycle:q('#cycleIndex').textContent})};
+})();
+</script>
+</body></html>
