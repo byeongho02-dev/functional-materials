@@ -33,16 +33,23 @@ jobs:
               "assets/materials-learning.svg",
           )
           ale_required = (
-              '<canvas id="scene"',
-              'id="exposureTime"',
-              'id="sourcePower"',
+              'ALE Simulator V0.6.4',
+              'id="glScene"',
+              'id="inSituAtoms"',
+              'id="atomScene"',
+              'id="inSituBtn"',
+              'id="focusReplay"',
+              'id="focusSlow"',
+              'id="clFlow"',
+              'id="arFlow"',
+              'id="biasSwitch"',
+              'id="biasPower"',
+              'id="pressure"',
+              'id="exposure"',
               'id="cycles"',
-              'id="start"',
-              'id="reset"',
-              'sim-model.js',
-              'chamber-view.js',
-              'surface-v041.js',
-              'app.js',
+              'id="playBtn"',
+              'id="pauseBtn"',
+              'id="resetBtn"',
           )
           for label, page, required in (
               ("homepage", home, home_required),
@@ -65,7 +72,23 @@ jobs:
       - name: Run simulation model tests
         run: node tests/sim-model.test.js
 
-      - name: Parse browser application JavaScript
+      - name: Parse deployed ALE V0.6.4 inline scripts
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          html = Path('ale.html').read_text(encoding='utf-8')
+          scripts = re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>', html, re.S)
+          if len(scripts) != 4:
+              raise SystemExit(f'Expected four V0.6.4 scripts; got {len(scripts)}')
+          for i, content in enumerate(scripts):
+              Path(f'/tmp/ale-v064-script-{i}.js').write_text(content, encoding='utf-8')
+          PY
+          for file in /tmp/ale-v064-script-*.js; do
+            node --check "$file"
+          done
+
+      - name: Parse archived ALE source JavaScript
         run: |
           node --check app.js
           node --check sim-model.js
