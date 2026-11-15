@@ -1,0 +1,227 @@
+/* All selectors stay inside the learning page, including the in-chat review. */
+#materialsLab {
+  --lab-bg: #080f1c;
+  --lab-surface: #0d1a2c;
+  --lab-surface-2: #112238;
+  --lab-line: #263b51;
+  --lab-text: #edf4fa;
+  --lab-muted: #afc0d1;
+  --lab-cyan: #71dfe5;
+  --lab-purple: #bd9bff;
+  --lab-amber: #ffc47d;
+  --lab-blue: #77b4ff;
+  color-scheme: dark;
+  background: var(--lab-bg);
+  color: var(--lab-text);
+  font: 15px/1.7 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -.02em;
+  overflow-wrap: anywhere;
+}
+body:has(> #materialsLab) { margin: 0; background: #080f1c; }
+#materialsLab *, #materialsLab *::before, #materialsLab *::after { box-sizing: border-box; }
+#materialsLab [hidden] { display: none !important; }
+#materialsLab a { color: inherit; text-decoration: none; }
+#materialsLab button, #materialsLab input { font: inherit; }
+#materialsLab button, #materialsLab summary, #materialsLab input[type="range"], #materialsLab input[type="radio"] { cursor: pointer; }
+#materialsLab button { color: inherit; }
+#materialsLab button:focus-visible, #materialsLab a:focus-visible, #materialsLab summary:focus-visible, #materialsLab input:focus-visible { outline: 3px solid var(--lab-cyan); outline-offset: 5px; }
+#materialsLab button:disabled { cursor: default; opacity: .5; }
+#materialsLab .skip-link { position: absolute; transform: translateY(-180%); top: 8px; left: 16px; padding: 8px 14px; background: var(--lab-cyan); color: var(--lab-bg); z-index: 100; }
+#materialsLab .skip-link:focus { transform: none; }
+#materialsLab .site-header { max-width: 1240px; margin: auto; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid var(--lab-line); }
+#materialsLab .wordmark { display: inline-flex; align-items: center; gap: 13px; font-size: 15px; letter-spacing: -.035em; }
+#materialsLab .wordmark b { font-weight: 400; color: var(--lab-muted); }
+#materialsLab .brand-mark { font: 750 27px/1 system-ui, sans-serif; color: var(--lab-text); }
+#materialsLab .brand-mark span { color: var(--lab-cyan); }
+#materialsLab .home-link { color: var(--lab-muted); font-size: 12px; padding: 7px 0 7px 10px; }
+#materialsLab .home-link span { color: var(--lab-cyan); margin-left: 10px; }
+#materialsLab main { max-width: 1240px; margin: auto; padding: 0 32px; }
+#materialsLab .intro { padding: 48px 0 36px; }
+#materialsLab .eyebrow, #materialsLab .section-kicker { color: var(--lab-cyan); font-size: 10px; font-weight: 650; letter-spacing: .17em; }
+#materialsLab .eyebrow { display: flex; align-items: center; gap: 9px; }
+#materialsLab .eyebrow > span { height: 5px; width: 5px; background: var(--lab-cyan); border-radius: 50%; }
+#materialsLab h1 { font-size: clamp(35px, 4.9vw, 58px); line-height: 1.22; font-weight: 650; letter-spacing: -.055em; margin: 18px 0; }
+#materialsLab h1 em { font-style: normal; color: var(--lab-cyan); }
+#materialsLab .intro-bottom { display: flex; align-items: end; justify-content: space-between; gap: 24px; }
+#materialsLab .intro p { margin: 0; color: var(--lab-muted); font-size: 14px; }
+#materialsLab .study-label { flex-shrink: 0; text-align: right; color: var(--lab-text); font-size: 12px; }
+#materialsLab .study-label > span { display: block; color: var(--lab-muted); font-size: 11px; margin-top: 4px; }
+#materialsLab .lab-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--lab-line); border-bottom: 1px solid var(--lab-line); gap: 0; }
+#materialsLab .lab-tabs button { display: flex; align-items: center; justify-content: flex-start; gap: 12px; border: 0; border-bottom: 2px solid transparent; background: none; padding: 18px 16px; color: var(--lab-muted); font-size: 15px; text-align: left; }
+#materialsLab .lab-tabs button + button { border-left: 1px solid var(--lab-line); }
+#materialsLab .lab-tabs button > span { font-family: ui-monospace, monospace; font-size: 11px; color: var(--lab-muted); }
+#materialsLab .lab-tabs button small { font-size: 10px; margin-left: auto; color: var(--lab-muted); }
+#materialsLab .lab-tabs button[aria-selected="true"] { border-bottom-color: var(--lab-cyan); color: var(--lab-cyan); background: #71dfe509; }
+#materialsLab .lab-tabs button[aria-selected="true"] > span { color: var(--lab-cyan); }
+#materialsLab .lab-tabs button:hover { background: #ffffff05; }
+#materialsLab .topic-panel { padding-top: 28px; }
+#materialsLab .topic-heading { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+#materialsLab .topic-heading h2 { font-size: clamp(21px, 2.7vw, 27px); font-weight: 600; letter-spacing: -.04em; margin: 4px 0 0; }
+#materialsLab .topic-heading > p { color: var(--lab-muted); font-size: 12px; margin: 0 0 4px; text-align: right; }
+#materialsLab .lab-layout { display: grid; grid-template-columns: minmax(0, 1fr) 312px; border: 1px solid var(--lab-line); border-radius: 12px; overflow: hidden; background: var(--lab-surface); }
+#materialsLab .visual-panel { min-width: 0; display: flex; flex-direction: column; }
+#materialsLab .visual-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 11px 18px; border-bottom: 1px solid #263b5177; }
+#materialsLab .visual-toolbar > div { display: flex; flex-wrap: wrap; justify-content: end; gap: 8px; }
+#materialsLab .live-label { white-space: nowrap; color: var(--lab-muted); font-size: 11px; display: flex; gap: 7px; align-items: center; }
+#materialsLab .live-label i { width: 5px; height: 5px; border-radius: 100%; background: var(--lab-cyan); }
+#materialsLab .quiet-button { background: transparent; border: 0; font-size: 11px; padding: 5px; color: var(--lab-muted); }
+#materialsLab .quiet-button:hover, #materialsLab .text-button:hover { color: var(--lab-cyan); }
+#materialsLab .stage { position: relative; height: 395px; flex: 1 0 395px; min-width: 0; background: #0b1729; overflow: hidden; }
+#materialsLab .stage canvas { display: block; width: 100%; height: 100%; touch-action: pan-y; cursor: grab; }
+#materialsLab .stage canvas:active { cursor: grabbing; }
+#materialsLab .scene-caption { position: absolute; bottom: 14px; left: 20px; right: 20px; display: flex; flex-direction: column; pointer-events: none; }
+#materialsLab .scene-caption > span { color: var(--lab-text); font-size: 12px; text-shadow: 0 1px 4px #000; }
+#materialsLab .scene-caption > small { color: var(--lab-muted); font-size: 10px; margin-top: 3px; text-shadow: 0 1px 4px #000; }
+#materialsLab .scene-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 9px 16px; border-top: 1px solid #263b5177; padding: 12px 18px; font-size: 10px; color: var(--lab-muted); }
+#materialsLab .scene-legend > span { display: flex; align-items: center; gap: 6px; }
+#materialsLab .scene-legend i { height: 3px; width: 12px; border-radius: 1px; }
+#materialsLab .incident { background: var(--lab-cyan); }
+#materialsLab .reflection { background: var(--lab-blue); }
+#materialsLab .absorption { background: var(--lab-purple); }
+#materialsLab .transmission { background: var(--lab-amber); }
+#materialsLab .scene-legend > small { margin-left: auto; font-size: 10px; }
+#materialsLab .controls { min-width: 0; padding: 20px 22px; border-left: 1px solid var(--lab-line); background: #0f1d30; }
+#materialsLab .control-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 21px; }
+#materialsLab .control-heading h3 { font-size: 13px; font-weight: 600; margin: 0; }
+#materialsLab .text-button { font-size: 11px; color: var(--lab-muted); background: none; border: 0; padding: 2px; text-decoration: underline; text-underline-offset: 4px; }
+#materialsLab .field { display: block; margin-bottom: 21px; }
+#materialsLab .field > span { display: flex; align-items: baseline; gap: 5px; font-size: 12px; color: #d3deea; }
+#materialsLab .field i { font-family: Georgia, serif; font-size: 14px; }
+#materialsLab .field output { font: 500 12px/1.4 ui-monospace, monospace; margin-left: auto; color: var(--lab-cyan); white-space: nowrap; }
+#materialsLab input[type="range"] { display: block; width: 100%; height: 19px; margin: 9px 0 2px; accent-color: var(--lab-cyan); }
+#materialsLab .field > small { display: flex; justify-content: space-between; font-size: 10px; color: var(--lab-muted); }
+#materialsLab .result { border-top: 1px solid var(--lab-line); margin-top: 23px; padding-top: 17px; }
+#materialsLab .result-label { font-size: 11px; color: var(--lab-muted); }
+#materialsLab .energy-bar { display: flex; height: 7px; border-radius: 3px; overflow: hidden; margin: 14px 0 13px; background: #ffffff0a; }
+#materialsLab #rSegment { background: var(--lab-blue); }
+#materialsLab #aSegment { background: var(--lab-purple); }
+#materialsLab #tSegment { background: var(--lab-amber); }
+#materialsLab .energy-values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+#materialsLab .energy-values > span { font-size: 10px; color: var(--lab-muted); }
+#materialsLab .energy-values strong { display: block; color: var(--lab-text); font: 500 18px/1.5 ui-monospace, monospace; margin-top: 2px; }
+#materialsLab .small-results { margin: 18px 0 0; font-size: 11px; }
+#materialsLab .small-results > div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding-top: 6px; }
+#materialsLab .small-results dt { color: var(--lab-muted); }
+#materialsLab .small-results dd { margin: 0; color: var(--lab-text); font-family: ui-monospace, monospace; white-space: nowrap; }
+#materialsLab .observe { display: flex; align-items: center; gap: 18px; margin: 20px 0 0; padding: 15px 0 22px; border-bottom: 1px solid var(--lab-line); }
+#materialsLab .observe > span { flex-shrink: 0; color: var(--lab-cyan); font-size: 11px; }
+#materialsLab .observe p { margin: 0; font-size: 12px; color: var(--lab-muted); flex: 1; }
+#materialsLab .outline-button { flex-shrink: 0; border: 1px solid #456174; background: transparent; border-radius: 6px; padding: 8px 11px; font-size: 11px; }
+#materialsLab .outline-button:hover { background: var(--lab-surface-2); }
+#materialsLab .lesson-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 50px; padding: 28px 0 26px; }
+#materialsLab .lesson-grid h3 { font-size: 18px; font-weight: 550; margin: 5px 0 12px; letter-spacing: -.04em; }
+#materialsLab .lesson-grid p { font-size: 13px; color: var(--lab-muted); margin: 10px 0 0; line-height: 1.9; }
+#materialsLab .lesson-grid p b { color: var(--lab-text); font-weight: 500; }
+#materialsLab .formula { font-family: ui-monospace, 'Noto Sans KR', sans-serif; background: var(--lab-surface); border-left: 2px solid var(--lab-cyan); padding: 13px 16px; color: #d2eeef; font-size: 12px; line-height: 2.1; margin: 15px 0 12px; }
+#materialsLab .lesson-grid .model-note { font-size: 11px; }
+#materialsLab .comparison { padding: 0 0 30px; }
+#materialsLab table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; table-layout: fixed; }
+#materialsLab caption { text-align: left; font-size: 14px; margin-bottom: 11px; }
+#materialsLab th, #materialsLab td { padding: 12px 16px 12px 0; border-bottom: 1px solid var(--lab-line); font-weight: 400; }
+#materialsLab thead th { color: var(--lab-muted); font-size: 11px; }
+#materialsLab th:first-child { width: 22%; }
+#materialsLab td { color: var(--lab-muted); }
+#materialsLab .quiz { background: var(--lab-surface); border-radius: 8px; padding: 22px 24px; }
+#materialsLab .quiz h3 { font-weight: 500; font-size: 15px; margin: 8px 0 17px; }
+#materialsLab .quiz-choices { display: flex; gap: 10px; flex-wrap: wrap; }
+#materialsLab .quiz-choices button { border: 1px solid #405a70; border-radius: 6px; padding: 9px 14px; background: #102136; font-size: 12px; text-align: left; }
+#materialsLab .quiz-choices button:hover { border-color: var(--lab-cyan); }
+#materialsLab .quiz-choices button[aria-pressed="true"] { border-color: var(--lab-cyan); background: #1c3645; }
+#materialsLab .quiz-feedback { margin: 12px 0 0; color: var(--lab-cyan); font-size: 12px; }
+#materialsLab .quiz-feedback:empty { display: none; }
+#materialsLab .lab-footer { margin-top: 40px; border-top: 1px solid var(--lab-line); padding: 23px 0 30px; color: var(--lab-muted); font-size: 11px; }
+#materialsLab .lab-footer > div { display: flex; align-items: center; gap: 13px; }
+#materialsLab .footer-mark { font: 650 24px/1 system-ui, sans-serif; color: var(--lab-cyan); }
+#materialsLab .lab-footer > div > span:not(.footer-mark) { font-size: 12px; color: var(--lab-text); }
+#materialsLab .lab-footer small { color: var(--lab-muted); font-size: 11px; }
+#materialsLab .lab-footer > p { margin-top: 20px; }
+#materialsLab .lab-footer summary { width: fit-content; }
+#materialsLab .lab-footer a { text-decoration: underline; text-underline-offset: 3px; }
+#materialsLab .lab-footer ul { padding-left: 18px; line-height: 2.2; }
+#materialsLab .fixed-condition { display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; font-size: 12px; margin: 0 0 18px; }
+#materialsLab .fixed-condition b { margin-left: auto; font: 500 12px/1.4 ui-monospace, monospace; }
+#materialsLab .fixed-condition small { width: 100%; color: var(--lab-muted); font-size: 10px; margin-top: -10px; }
+#materialsLab .mode-select { border: 0; padding: 0; margin: 0; }
+#materialsLab .mode-select legend { color: var(--lab-muted); font-size: 11px; margin-bottom: 8px; }
+#materialsLab .mode-select label { display: flex; align-items: center; gap: 9px; padding: 5px 0; font-size: 12px; cursor: pointer; }
+#materialsLab .mode-select input { accent-color: var(--lab-cyan); margin: 0; width: 15px; height: 15px; flex-shrink: 0; }
+#materialsLab .mode-select small { display: block; color: var(--lab-muted); font-size: 10px; }
+#materialsLab .state-value { display: block; font-weight: 500; font-size: 24px; letter-spacing: -.04em; color: var(--lab-cyan); margin-top: 6px; }
+#materialsLab .result-detail { color: var(--lab-muted); font-size: 11px; margin: 11px 0 0; }
+#materialsLab .resistance-chart { width: 100%; height: auto; display: block; overflow: visible; margin-top: 12px; }
+#materialsLab .resistance-chart text { fill: var(--lab-muted); font: 12px/1 sans-serif; letter-spacing: 0; }
+#materialsLab .chart-grid { fill: none; stroke: #54697b; stroke-width: 1; }
+#materialsLab .chart-tc { fill: none; stroke: #63778a; stroke-width: 1; stroke-dasharray: 3 4; }
+#materialsLab .chart-line { fill: none; stroke: var(--lab-cyan); stroke-width: 2; }
+#materialsLab #resistanceDot { fill: var(--lab-amber); stroke: var(--lab-bg); stroke-width: 2; }
+#materialsLab .model-boundary { padding: 15px 0; margin-bottom: 22px; border-top: 1px solid var(--lab-line); border-bottom: 1px solid var(--lab-line); display: flex; gap: 18px; }
+#materialsLab .model-boundary strong { flex-shrink: 0; font-size: 11px; font-weight: 500; color: var(--lab-cyan); }
+#materialsLab .model-boundary p { margin: 0; font-size: 11px; color: var(--lab-muted); }
+#materialsLab .angle-value { display: block; font: 500 36px/1.4 ui-monospace, monospace; letter-spacing: -.05em; color: var(--lab-cyan); margin-top: 4px; }
+#materialsLab .angle-value.invalid { font-size: 23px; color: var(--lab-amber); line-height: 1.8; }
+#materialsLab .fallback { position: absolute; inset: 0; padding: 16px 20px 70px; }
+#materialsLab .fallback svg { width: 100%; height: 100%; overflow: visible; }
+#materialsLab .fallback text { font-family: 'Noto Sans KR', system-ui, sans-serif; font-size: 12px; fill: var(--lab-text); }
+#materialsLab .fallback .fallback-note { fill: var(--lab-muted); font-size: 11px; }
+#materialsLab .fallback .fallback-grid { stroke: #263b51; stroke-width: 1; }
+#materialsLab .fallback .fallback-in { stroke: var(--lab-cyan); fill: none; stroke-width: 2; }
+#materialsLab .fallback .fallback-out { stroke: var(--lab-amber); fill: none; stroke-width: 2; }
+#materialsLab .fallback .fallback-reflect { stroke: var(--lab-blue); fill: none; stroke-width: 2; }
+#materialsLab .fallback .fallback-solid { fill: #344b6b; stroke: #94b6db; stroke-width: 1; }
+#materialsLab .fallback .fallback-super { fill: #4a426e; stroke: var(--lab-purple); stroke-width: 1; }
+#materialsLab .render-fallback .stage canvas { visibility: hidden; }
+#materialsLab .render-fallback .live-label i { background: var(--lab-amber); }
+@media (min-width: 1600px) { #materialsLab .intro { padding-top: 64px; } }
+@media (max-width: 1000px) {
+  #materialsLab .lab-tabs button small { display: none; }
+  #materialsLab .lab-layout { grid-template-columns: minmax(0, 1fr) 280px; }
+  #materialsLab .controls { padding: 20px 18px; }
+  #materialsLab .scene-legend > small { width: 100%; margin-left: 0; }
+  #materialsLab .lesson-grid { gap: 30px; }
+}
+@media (max-width: 760px) {
+  #materialsLab .site-header { padding: 18px 20px; }
+  #materialsLab main { padding: 0 20px; }
+  #materialsLab .intro { padding-top: 34px; }
+  #materialsLab .intro-bottom { align-items: start; flex-direction: column; gap: 16px; }
+  #materialsLab .study-label { text-align: left; }
+  #materialsLab .study-label > span { display: inline; margin-left: 10px; }
+  #materialsLab .lab-tabs button { gap: 7px; padding: 15px 9px; font-size: 13px; }
+  #materialsLab .topic-heading { align-items: start; flex-direction: column; gap: 7px; }
+  #materialsLab .topic-heading > p { text-align: left; }
+  #materialsLab .lab-layout { grid-template-columns: minmax(0, 1fr); }
+  #materialsLab .stage { height: 345px; flex-basis: 345px; }
+  #materialsLab .controls { border-left: 0; border-top: 1px solid var(--lab-line); padding: 22px; }
+  #materialsLab .field { margin-bottom: 20px; }
+  #materialsLab .field > span { font-size: 13px; }
+  #materialsLab .field > small { font-size: 11px; }
+  #materialsLab .scene-legend > small { width: auto; margin-left: auto; }
+  #materialsLab .observe { flex-wrap: wrap; gap: 10px; }
+  #materialsLab .observe > p { flex-basis: calc(100% - 82px); }
+  #materialsLab .observe > button { margin-left: 0; }
+  #materialsLab .lesson-grid { grid-template-columns: 1fr; gap: 28px; }
+  #materialsLab .quiz { padding: 20px; }
+  #materialsLab .model-boundary { flex-direction: column; gap: 5px; }
+}
+@media (max-width: 390px) {
+  #materialsLab .site-header { padding: 16px; gap: 12px; }
+  #materialsLab main { padding: 0 16px; }
+  #materialsLab .wordmark { gap: 8px; font-size: 13px; }
+  #materialsLab .home-link { font-size: 11px; }
+  #materialsLab .home-link span { margin-left: 3px; }
+  #materialsLab .lab-tabs button { gap: 5px; padding-left: 6px; padding-right: 5px; font-size: 12px; }
+  #materialsLab .lab-tabs button > span { font-size: 10px; }
+  #materialsLab .stage { height: 300px; flex-basis: 300px; }
+  #materialsLab .visual-toolbar { padding: 10px 12px; }
+  #materialsLab .scene-caption { left: 14px; right: 14px; }
+  #materialsLab .scene-legend { gap: 9px 12px; padding: 12px; }
+  #materialsLab .scene-legend > small { width: 100%; margin-left: 0; }
+  #materialsLab .study-label > span { display: block; margin-left: 0; }
+}
+@media (pointer: coarse) {
+  #materialsLab button, #materialsLab .mode-select label, #materialsLab summary, #materialsLab .home-link { min-height: 44px; }
+  #materialsLab input[type="range"] { height: 30px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #materialsLab *, #materialsLab *::before, #materialsLab *::after { scroll-behavior: auto !important; transition: none !important; }
+}
