@@ -1,0 +1,38 @@
+name: Validate isolated ICP preview
+
+on:
+  pull_request:
+    paths:
+      - 'ale-v092-fab-preview.html'
+      - 'src/fab3d/**'
+      - 'tests/fab3d/**'
+      - 'docs/fab3d/**'
+      - 'package*.json'
+      - 'vite.fab.config.mjs'
+      - 'playwright.fab.config.cjs'
+      - '.github/workflows/validate-fab-preview.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  preview-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/sim-model.test.js
+      - run: npm run test:fab
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: icp-preview-test-evidence
+          path: |
+            preview/fab-v092/
+            test-results/
+          retention-days: 14

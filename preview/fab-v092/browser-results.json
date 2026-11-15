@@ -1,0 +1,98 @@
+{
+  "baseCommit": "cdf11be7f1273e17ea4d837053580fcce53ee265",
+  "branch": "feature/ale-v092-production-style-icp",
+  "node": "v24.22.1",
+  "three": "0.182.0",
+  "playwright": "1.58.2",
+  "vite": "7.3.8",
+  "browserStats": {
+    "startTime": "2026-11-15T04:22:24.110Z",
+    "duration": 172136.94999999998,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "built preview loads locally with twelve genuine components and no page exceptions or remote assets",
+      "passed": true,
+      "durationMs": 5236
+    },
+    {
+      "title": "all camera views, drag orbit, cutaway, transparency, separation and part visibility work",
+      "passed": true,
+      "durationMs": 41407
+    },
+    {
+      "title": "four stages and power switches share the same site-linked event history",
+      "passed": true,
+      "durationMs": 21630
+    },
+    {
+      "title": "viewport 1366×768: usable layout and browser capture",
+      "passed": true,
+      "durationMs": 8378
+    },
+    {
+      "title": "viewport 1440×900: usable layout and browser capture",
+      "passed": true,
+      "durationMs": 9160
+    },
+    {
+      "title": "viewport 1280×720: usable layout and browser capture",
+      "passed": true,
+      "durationMs": 9091
+    },
+    {
+      "title": "viewport 390×844: usable layout and browser capture",
+      "passed": true,
+      "durationMs": 10587
+    },
+    {
+      "title": "viewport 360×800: usable layout and browser capture",
+      "passed": true,
+      "durationMs": 10505
+    },
+    {
+      "title": "native WebGL unavailability falls back to interactive CPU-projected chamber geometry",
+      "passed": true,
+      "durationMs": 10828
+    },
+    {
+      "title": "WebGL context loss recovers into a usable software chamber",
+      "passed": true,
+      "durationMs": 7519
+    },
+    {
+      "title": "records actual render performance at three desktop sizes and 0 / 240 / 800 particle budgets",
+      "passed": true,
+      "durationMs": 35583
+    }
+  ],
+  "modelTests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "existingStaticWorkflow": "passed",
+  "offlineInstallAndBuild": "passed (npm ci --offline, populated local cache)",
+  "onlineOfflineBundleBytesIdentical": true,
+  "bundleSha256": "3005e62a166d6367425ed5c5bdb8a107873f159efb5b28bf1567347d4cc78590",
+  "sourceSha256": {
+    "ale-v092-fab-preview.html": "db2e6291dabb6dec6a940f40f821b4b15b448c88daeb810208bf194c6c2e4975",
+    "package.json": "cdf7944729f4d9cf883e55697b008b4101ad74a17e4d30bcb2420e0f51586e71",
+    "package-lock.json": "6001addaa2d595191c2f7fe7e1a25d13f02ad062f9624be022e959746adf6690",
+    "vite.fab.config.mjs": "fe537b0e5113bc5f8fc5562ac78151492dfeb5874c96fd91bc45e157b851b8be",
+    "playwright.fab.config.cjs": "9ab61c6f18398d4ad15402a55c469afe30df2e2d2b833d25813c7868bd7d27b5",
+    "src/fab3d/cameras.js": "84b77ebff245db4b96f1bf8d8c42de3ed53a0bcb06ab64c42899769a182251fa",
+    "src/fab3d/chamber.js": "9ee01c19683251b27962ae5dfcc7615d22a5cb9e8f461135b179a11bbd065c51",
+    "src/fab3d/main.js": "6f5a281b71e579b72f64da6db0a06d7788d188d210a6b68501feaa3542359b61",
+    "src/fab3d/package.json": "5a065fe7d8eab2a582f428e11c2ea63aaf70607a54f69cfd5c711b5c53d91b32",
+    "src/fab3d/process.js": "fbc3629baf42249a1dde6194c0a49a86ccde0ca8f8053a9860cb92f061a67440",
+    "src/fab3d/software.js": "1becbbaa96cb56e7eb25b1c462b6d844039787fd21956095fdddba3b9ee70345",
+    "src/fab3d/style.css": "d1a528a316d94250ba8cbd2bbf8ababdd038a20758d9d1c855f2d2e83778ca59",
+    "src/fab3d/surface.js": "cf6a1faedc7f6b952947e3b883d01f010d678041128fcb27bddbe85f547bc3d4",
+    "tests/fab3d/model.test.mjs": "d12ae03c6af0f43067dbc341b8a7e4585322e0a849ce3a637346bc15178e7c19",
+    "tests/fab3d/preview.spec.cjs": "4822bc8c77244355931aff0f3c7d82e5a4994a9057ee7545abb943ff6720c1a7"
+  }
+}
