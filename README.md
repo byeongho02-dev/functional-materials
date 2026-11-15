@@ -2,9 +2,33 @@
 
 브라우저에서 별도 빌드 없이 실행하는 기능성 재료 교육용 인터랙티브 자료입니다.
 
-## Crystalline Si ALE simulator
+## Production-style ICP ALE V0.9.2
 
-`index.html`은 결정질 Si 표면에 Cl이 흡착되고 Ar⁺ 이온의 물리 에너지로 표면 Si가 원자 단위로 제거되는 여러 ALE 사이클을 3D 형태로 보여 줍니다.
+홈페이지 `index.html`의 ALE Simulator 메뉴와 대표 카드에서
+`ale-v092-fab.html`을 바로 엽니다. 별도 설치 없이 Three.js 0.182.0의 실제
+3D 챔버를 회전·확대하고, 절개·투명·분해 및 같은 site에 연결된 ALE 사건을 탐색합니다.
+기존 `ale.html`과 학습 자료는 유지하며 카드의 보조 링크에서 기존 시뮬레이터를 엽니다.
+
+- 홈페이지: <https://byeongho02-dev.github.io/functional-materials/>
+- ICP ALE: <https://byeongho02-dev.github.io/functional-materials/ale-v092-fab.html>
+- 모델 범위·공개 문헌·라이선스: [docs/fab3d/README.md](docs/fab3d/README.md)
+
+게시용 파일은 모든 JavaScript와 CSS를 포함하므로 CDN이나 브라우저의 npm import에
+의존하지 않습니다. 소스 수정 후 아래 명령으로 다시 생성하고 함께 커밋합니다.
+
+```sh
+npm ci
+npm run build:fab:static
+npm run test:pages
+```
+
+CI는 게시 파일과 소스가 일치하는지, 홈페이지 → 새 챔버 → 홈/학습 경로,
+기존 ALE 링크와 WebGL 대체 화면이 동작하는지 확인합니다.
+
+## 기존 Crystalline Si ALE simulator
+
+`ale.html`은 결정질 Si 표면에 Cl이 흡착되고 Ar⁺ 이온의 물리 에너지로 표면 Si가
+원자 단위로 제거되는 여러 ALE 사이클을 3D 형태로 보여 줍니다.
 
 - Cl 표면 피복률: 0–100%
 - Ar⁺ 에너지 프리셋: 20 / 50 / 100 eV
@@ -40,14 +64,15 @@ python3 -m http.server 8000
 
 브라우저에서 `http://localhost:8000/`을 엽니다.
 
-## 배포 준비 상태
+## GitHub Pages 게시
 
 저장소는 GitHub Pages에서 별도 빌드 없이 게시할 수 있도록 준비되어 있습니다.
 
 - 사이트 진입점: 저장소 루트의 `index.html`
 - Jekyll 처리 비활성화: `.nojekyll`
 - 자동 검증: `.github/workflows/validate-static-site.yml`
-- 실제 Pages 배포: 아직 활성화하지 않음
+- 게시 방식: `main` 브랜치의 `/(root)`를 사용하는 기존 GitHub Pages
+- 새 ICP 페이지: 소스에서 생성해 커밋한 `ale-v092-fab.html`
 
-PR을 `main`에 병합한 뒤 실제로 게시할 때만 GitHub의 **Settings → Pages**에서
-`Deploy from a branch`, `main`, `/(root)`를 선택합니다.
+검증을 통과한 변경을 `main`에 반영하면 기존 Pages 게시가 갱신됩니다.
+Three.js 파일을 가져오기 위해 별도 CDN이나 새 호스팅 서비스를 설정할 필요가 없습니다.

@@ -1,0 +1,38 @@
+{
+  "entry": "ale-v092-fab.html",
+  "publishTarget": "https://byeongho02-dev.github.io/functional-materials/ale-v092-fab.html",
+  "staticChecks": {
+    "passed": 2,
+    "failed": 0
+  },
+  "browserStats": {
+    "startTime": "2026-11-15T07:26:18.195Z",
+    "duration": 21240.595,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "browserCases": [
+    {
+      "title": "homepage opens the published ICP page and preserves learning at 1440×900",
+      "passed": true,
+      "durationMs": 8806
+    },
+    {
+      "title": "homepage opens the published ICP page and preserves learning at 390×844",
+      "passed": true,
+      "durationMs": 6474
+    },
+    {
+      "title": "the published static entry retains the no-WebGL software fallback",
+      "passed": true,
+      "durationMs": 4570
+    }
+  ],
+  "generatedEntrySha256": "df771ad427c0a63f8177976ae859eb8e71451012e12446ff179da0370925d343",
+  "homepageImageSha256": "e6ecf617f796218a81e3bbfa8f4d0c74029df1d9192aee2e3ccea3831db373e3",
+  "runtimeExternalAssetRequests": 0,
+  "pageExceptions": 0,
+  "legacyAndLectureFilesUnchanged": true
+}

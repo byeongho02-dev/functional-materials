@@ -29,7 +29,8 @@ jobs:
               'id="homeCards"',
               'id="themeGrid"',
               'href="ale.html"',
-              "assets/ale-plasma.svg",
+              'href="ale-v092-fab.html"',
+              "assets/ale-v092-chamber.png",
               "assets/materials-learning.svg",
           )
           ale_required = (
@@ -62,7 +63,7 @@ jobs:
           if 'id="coverage"' in ale:
               raise SystemExit("ALE simulator still contains obsolete target-coverage slider")
 
-          for asset in ("assets/ale-plasma.svg", "assets/materials-learning.svg"):
+          for asset in ("assets/ale-plasma.svg", "assets/materials-learning.svg", "assets/ale-v092-chamber.png"):
               if not Path(asset).is_file():
                   raise SystemExit(f"Missing homepage artwork: {asset}")
 

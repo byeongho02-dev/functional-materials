@@ -5,16 +5,19 @@
   "scripts": {
     "dev:fab": "vite --config vite.fab.config.mjs",
     "build:fab": "vite build --config vite.fab.config.mjs",
+    "build:fab:static": "node scripts/build-fab-static.mjs",
     "preview:fab": "vite preview --config vite.fab.config.mjs",
     "test:fab:model": "node --test tests/fab3d/*.test.mjs",
     "test:fab:browser": "playwright test --config playwright.fab.config.cjs",
-    "test:fab": "npm run test:fab:model && npm run build:fab && npm run test:fab:browser"
+    "test:fab": "npm run test:fab:model && npm run build:fab && npm run test:fab:browser",
+    "test:pages": "npm run build:fab:static && node --test tests/pages/*.test.cjs && playwright test --config playwright.pages.config.cjs"
   },
   "dependencies": {
     "three": "0.182.0"
   },
   "devDependencies": {
     "@playwright/test": "1.58.2",
+    "esbuild": "0.28.2",
     "vite": "7.3.8"
   }
 }

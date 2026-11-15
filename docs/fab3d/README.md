@@ -3,12 +3,25 @@
 교육용 범용 ICP 챔버를 **Three.js 0.182.0 / r182**의 실제 Mesh, LatheGeometry,
 TubeGeometry, ExtrudeGeometry로 구성합니다. 특정 제조사의 장비나 OEM 치수를
 재현하지 않습니다. 독립 entry는 `ale-v092-fab-preview.html`이고 구현은
-`src/fab3d/`에 격리했습니다. 기존 홈페이지, `ale.html`, 강의 파일은 수정하지 않습니다.
+`src/fab3d/`에 격리했습니다. 홈페이지의 기본 ALE 링크는 게시용 `ale-v092-fab.html`로
+연결하고, 기존 `ale.html`과 강의 파일은 그대로 유지합니다.
 
 ## 로컬 실행과 빌드
 
 Node.js 20.19+ 또는 22.12+ / npm이 필요합니다. 의존성 버전과 무결성은
 `package-lock.json`에 고정했습니다.
+
+GitHub Pages에서 실행할 파일은 다음 명령으로 생성합니다. 생성된 파일에는 CSS와
+Three.js를 포함한 JavaScript가 모두 들어 있어 브라우저에서 npm import나 CDN을
+사용하지 않습니다. 소스와 게시 파일의 일치는 CI에서 검사합니다.
+
+```sh
+npm run build:fab:static
+npm run test:pages
+```
+
+기존 `main` 루트 게시 설정에서 `ale-v092-fab.html`을 제공하고,
+개발·구조 검토용 entry는 아래와 같이 별도로 실행합니다.
 
 ```sh
 npm ci
