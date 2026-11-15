@@ -1,0 +1,48 @@
+name: Validate isolated ICP preview
+
+on:
+  pull_request:
+    paths:
+      - 'ale-v092-fab-preview.html'
+      - 'ale-v092-fab.html'
+      - 'index.html'
+      - 'assets/ale-v092-chamber.png'
+      - 'scripts/build-fab-static.mjs'
+      - 'src/fab3d/**'
+      - 'tests/fab3d/**'
+      - 'tests/pages/**'
+      - 'docs/fab3d/**'
+      - 'package*.json'
+      - 'vite.fab.config.mjs'
+      - 'playwright.fab.config.cjs'
+      - 'playwright.pages.config.cjs'
+      - '.github/workflows/validate-fab-preview.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  preview-tests:
+    # Keep the browser runner within the pinned Playwright version's OS support.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/sim-model.test.js
+      - run: npm run test:fab
+      - run: npm run test:pages
+      - name: Verify committed Pages entry matches the sources
+        run: git diff --exit-code -- ale-v092-fab.html
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: icp-preview-test-evidence
+          path: |
+            preview/fab-v092/
+            test-results/
+          retention-days: 14

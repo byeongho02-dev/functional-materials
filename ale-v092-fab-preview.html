@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="범용 양산형 ICP 챔버와 하나의 공정 시계로 연결된 ALE 표면 사건을 탐색하는 격리된 교육용 3D 미리보기.">
+  <meta name="theme-color" content="#101820">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23172029'/%3E%3Cellipse cx='16' cy='11' rx='10' ry='5' fill='none' stroke='%2389d8c6'/%3E%3Cpath d='M6 11v10c0 7 20 7 20 0V11' fill='none' stroke='%2389d8c6'/%3E%3C/svg%3E">
+  <title>Production-style ICP · ALE V0.9.2 Preview</title>
+  <link rel="stylesheet" href="/src/fab3d/style.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="app-header">
+    <a class="brand" href="./index.html" aria-label="Functional Materials 홈"><svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="11" rx="12" ry="5"/><path d="M8 11v16c0 7 24 7 24 0V11M8 19c0 7 24 7 24 0"/></svg><span>FUNCTIONAL<br><b>MATERIALS</b></span></a>
+    <div class="title-block"><span class="eyebrow">INTERACTIVE PROCESS LAB / 03</span><h1>Production-style ICP <span>ALE V0.9.2</span></h1></div>
+    <div class="header-meta"><span class="preview-badge">REVIEW PREVIEW</span><a href="./index.html">학습 홈 <span aria-hidden="true">↗</span></a></div>
+  </header>
+
+  <main class="workspace">
+    <aside class="panel control-panel" aria-label="공정과 구성요소">
+      <div class="panel-heading"><h2>공정 설정</h2><span class="section-number">01 / PROCESS</span></div>
+      <div class="control-content">
+        <div class="switch-row"><label for="plasma"><b>ICP source</b><small>플라즈마 생성</small></label><input id="plasma" type="checkbox" role="switch" checked></div>
+        <div class="switch-row"><label for="bias"><b>RF bias</b><small>방향성 이온 활성화</small></label><input id="bias" type="checkbox" role="switch" checked></div>
+        <p id="power-note" class="small-note">Source와 bias는 독립적으로 제어됩니다.</p>
+        <div class="range-heading"><label for="particle-budget">Particle budget</label><output id="budget-value" for="particle-budget">240</output></div>
+        <input id="particle-budget" type="range" min="0" max="800" step="80" value="240">
+        <div class="range-extents"><span>0</span><span>시각화 밀도 · 반응 수와 무관</span><span>800</span></div>
+        <div class="control-divider"></div>
+        <div class="range-heading"><label for="explode">Assembly separation</label><output id="explode-value" for="explode">0%</output></div>
+        <input id="explode" type="range" min="0" max="100" value="0" step="1">
+        <div class="range-extents"><span>조립</span><span>분해</span></div>
+        <div class="parts-heading"><h3>Chamber assembly</h3><span>12 PARTS</span></div>
+        <p class="parts-note">이름을 눌러 탐색 · 체크로 표시</p>
+        <div id="parts-list" class="parts-list" aria-label="챔버 구성요소"></div>
+      </div>
+      <div class="left-footer"><span class="status-dot"></span> Procedural geometry <span>Ø 200 mm</span></div>
+    </aside>
+
+    <section class="panel viewer-panel" aria-labelledby="viewer-title">
+      <div class="viewer-toolbar"><div><span class="eyebrow">CHAMBER EXPLORER</span><h2 id="viewer-title">챔버 구조 탐색</h2></div><span id="renderer-mode" class="renderer-badge">렌더러 준비 중</span></div>
+      <div class="camera-toolbar" aria-label="카메라와 보기 설정">
+        <div class="camera-tabs" role="group" aria-label="Camera views">
+          <button data-view="orbit" aria-pressed="true">Orbit</button><button data-view="front" aria-pressed="false">Front cutaway</button><button data-view="top" aria-pressed="false">Top</button><button data-view="wafer" aria-pressed="false">Wafer</button>
+        </div>
+        <div class="view-toggles"><label><input id="cutaway" type="checkbox" checked>절개</label><label><input id="transparent" type="checkbox">투명</label></div>
+      </div>
+      <div id="viewport" class="viewport" tabindex="0" aria-label="3D ICP 챔버. 드래그로 회전, 휠 또는 핀치로 확대, 방향키로 회전합니다.">
+        <div class="scene-topline"><span><i class="status-dot" id="source-dot"></i><b id="source-status">ICP SOURCE ON</b></span><span id="stage-tag">01 / CHLORINATION</span></div>
+        <div id="fallback-note" class="fallback-note" role="status" hidden>WebGL을 사용할 수 없어 소프트웨어 3D로 표시합니다. 드래그·확대·카메라 전환을 사용할 수 있습니다.</div>
+        <div id="part-label" class="part-label"><span class="label-dot"></span><span id="part-label-text">Removable liner</span></div>
+        <div class="scene-caption"><span class="caption-rule"></span><div><b>GENERIC ICP ARCHITECTURE</b><small>범용 개념 구조 · OEM 설계/치수 재현 아님</small></div></div>
+        <div class="performance"><span><b id="fps">—</b> FPS</span><span><b id="particle-active">0</b> / <span id="particle-max">240</span> particles</span></div>
+        <div class="scene-legend"><span><i class="cl-color"></i>Cl-containing</span><span><i class="ion-color"></i>Ar⁺</span><span><i class="product-color"></i>SiClₓ</span></div>
+      </div>
+      <div class="viewer-hint"><span>드래그 회전 <i>·</i> 휠/핀치 확대 <i>·</i> Shift + 드래그 이동</span><span>CHAMBER SCALE</span></div>
+      <div class="sequence">
+        <div class="sequence-title"><h3>ALE process sequence</h3><span>ONE CLOCK / SITE-LINKED EVENTS</span></div>
+        <div id="stages" class="stages" aria-label="ALE stages"></div>
+        <div class="playback"><button id="play" class="play-button" aria-label="공정 일시정지"><span id="play-symbol">Ⅱ</span><span id="play-text">일시정지</span></button><button id="reset" class="reset-button" aria-label="공정 초기화">↺</button><div class="clock-readout"><b id="clock">00.00</b><span> / 12.00 s</span><small id="cycle">CYCLE 001</small></div><label class="speed-label" for="speed">속도 <select id="speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label></div>
+      </div>
+    </section>
+
+    <aside class="panel detail-panel" aria-label="구성요소 설명과 표면 사건">
+      <div class="panel-heading"><h2>구조와 표면</h2><span class="section-number">02 / INSPECT</span></div>
+      <div class="detail-scroll">
+        <section class="part-detail"><span class="eyebrow">SELECTED COMPONENT</span><h3 id="part-title">Removable liner</h3><span id="part-material" class="material-tag">Ceramic · replaceable shield</span><p id="part-description"></p></section>
+        <section class="surface-section"><div class="surface-title"><h3>Surface events</h3><span class="live-badge">LINKED</span></div><p class="surface-scale">원자 개념 확대 · 챔버와 다른 스케일</p><canvas id="surface" aria-label="동일한 공정 시계를 사용하는 16개 표면 site의 개념 확대. 클릭해 site를 선택하세요."></canvas><div class="site-select"><label for="site">Surface site</label><select id="site"></select></div><p id="site-key" class="site-key">C1 / S01</p><ol id="event-list" class="event-list"></ol></section>
+        <div class="stage-description"><span id="stage-description-label">01 / CHLORINATION</span><p id="stage-description"></p></div>
+      </div>
+      <div class="detail-footer"><span class="status-dot"></span><span>Single process clock · shared event array</span></div>
+    </aside>
+  </main>
+
+  <footer class="app-footer"><p><b>모델 범위</b> 공간분포·반응 경로는 교육용 가정이며 검증된 plasma/transport solver가 아닙니다. 200 mm는 기준 웨이퍼 직경이며 내부 부품은 실측 치수가 아닙니다.</p><a href="./docs/fab3d/README.md">공개 문헌 · 모델 설명 ↗</a></footer>
+</div>
+<script type="module" src="/src/fab3d/main.js"></script>
+</body>
+</html>
