@@ -17,7 +17,8 @@ permissions:
 
 jobs:
   preview-tests:
-    runs-on: ubuntu-latest
+    # Keep the browser runner within the pinned Playwright version's OS support.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

@@ -35,6 +35,7 @@ node tests/sim-model.test.js
 
 기존 `.github/workflows/validate-static-site.yml`의 Python 블록과 JS parse checks도
 그대로 실행했습니다. 신규 CI는 PR 검증과 artifact 보존만 하며 배포 job은 없습니다.
+브라우저 runner는 고정된 Playwright 1.58.2가 지원하는 Ubuntu 24.04로 고정했습니다.
 
 ## 성능 실측과 제한
 
