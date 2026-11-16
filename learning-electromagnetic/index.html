@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="전자파 차폐, 초전도체, 메타표면을 3D와 슬라이더로 탐구하는 기능성 재료 학습자료">
+  <meta name="description" content="전자파 차폐, 초전도체, 메타표면을 짧은 설명과 생활 속 예시, 3D 실험으로 쉽게 이해하는 학습자료">
   <title>전자기파와 기능성 재료 · Materials Learning</title>
   <link rel="stylesheet" href="styles.css">
   <script defer src="vendor/three.min.js"></script>
@@ -18,10 +18,10 @@
   </header>
 
   <main>
-    <section class="intro" aria-labelledby="page-title">
+    <section class="intro" id="basics" aria-labelledby="page-title">
       <div class="eyebrow"><span></span> FUNCTIONAL MATERIALS / INTERACTIVE LAB</div>
-      <h1 id="page-title">전자기파와 만나는<br><em>기능성 재료</em></h1>
-      <div class="intro-bottom"><p>막아내고, 밀어내고, 방향을 바꾸다.<br>직접 조건을 바꾸며 눈에 보이지 않는 재료의 역할을 살펴보세요.</p><span class="study-label">3개의 개념 실험<span>원리 이해를 위한 단순화 모델</span></span></div>
+      <h1 id="page-title">눈으로 배우는<br><em>기능성 재료</em></h1>
+      <div class="intro-bottom"><p>전자파를 줄이고, 자석을 띄우고, 빛의 방향을 바꿔요.<br>직접 움직여 보며 재료가 하는 일을 살펴보세요.</p><span class="study-label">3개의 개념 실험<span>원리를 쉽게 표현한 학습 모델</span></span></div>
     </section>
 
     <div class="lab-tabs" id="lab-tabs" role="tablist" aria-label="학습 주제">
@@ -31,7 +31,12 @@
     </div>
 
     <section class="topic-panel" id="panel-emi" role="tabpanel" aria-labelledby="tab-emi">
-      <div class="topic-heading"><div><div class="section-kicker">01 / BLOCK THE WAVE</div><h2>전자파를 어떻게 막을까?</h2></div><p>반사 · 흡수 · 투과의 에너지 흐름</p></div>
+      <div class="topic-heading"><div><div class="section-kicker">01 / BLOCK THE WAVE</div><h2>전자파를 어떻게 막을까?</h2></div><p>돌려보내고, 안에서 줄이고, 일부는 통과해요</p></div>
+      <div class="easy-brief">
+        <p class="easy-takeaway">금속에는 쉽게 움직일 수 있는 <strong>자유전자</strong>가 있습니다. 이 전자들이 전자파에 반응하면서 일부 파를 되돌려 보내고, 일부 에너지를 열로 바꿉니다.</p>
+        <ul class="easy-points"><li><strong>반사 R</strong><span>전자파가 표면에서 되돌아가는 현상이에요.</span></li><li><strong>흡수 A</strong><span>전자파의 에너지가 재료 안에서 열 등으로 바뀌는 현상이에요.</span></li><li><strong>투과 T</strong><span>전자파가 재료를 지나 반대편으로 나오는 현상이에요.</span></li></ul>
+        <p class="remember-line"><span>기억할 한 문장</span><strong>전자파 차폐는 반사와 흡수를 통해, 반대편으로 투과하는 전자파를 줄이는 것입니다.</strong></p>
+      </div>
       <div class="lab-layout">
         <div class="visual-panel">
           <div class="visual-toolbar"><span class="live-label"><i></i>3D 개념 모델</span><div><button type="button" class="quiet-button" data-motion="emi" aria-pressed="false">일시정지</button><button type="button" class="quiet-button" data-view="emi">시점 초기화</button></div></div>
@@ -47,33 +52,83 @@
           <label class="field" for="emiThickness"><span>금속판 두께 <i>t</i><output id="emiThicknessOut" for="emiThickness">8.0 μm</output></span><input id="emiThickness" type="range" min="0.5" max="50" step="0.5" value="8"><small><span>0.5 μm</span><span>50 μm</span></small></label>
           <label class="field" for="emiFrequency"><span>주파수 <i>f</i><output id="emiFrequencyOut" for="emiFrequency">1.0 GHz</output></span><input id="emiFrequency" type="range" min="0.1" max="10" step="0.1" value="1"><small><span>0.1 GHz</span><span>10 GHz</span></small></label>
           <label class="field" for="emiReflection"><span>표면 반사율 <i>R</i><output id="emiReflectionOut" for="emiReflection">55%</output></span><input id="emiReflection" type="range" min="0" max="90" step="1" value="55"><small><span>0%</span><span>90%</span></small></label>
-          <div class="result" aria-live="polite" aria-atomic="true"><div class="result-label">입사 에너지 100%의 행방</div><div class="energy-bar" role="img" id="energyBar" aria-label="반사, 흡수, 투과 에너지 비율"><span id="rSegment"></span><span id="aSegment"></span><span id="tSegment"></span></div><div class="energy-values"><span>반사 R<strong id="rValue">55.0%</strong></span><span>흡수 A<strong id="aValue">28.5%</strong></span><span>투과 T<strong id="tValue">16.5%</strong></span></div><dl class="small-results"><div><dt>표피 깊이 δ</dt><dd id="skinValue">15.92 μm</dd></div><div><dt>차폐효과 SE</dt><dd id="seValue">7.83 dB</dd></div></dl></div>
+          <div class="result" aria-live="polite" aria-atomic="true"><div class="result-label">입사 에너지 100%의 행방</div><div class="energy-bar" role="img" id="energyBar" aria-label="반사, 흡수, 투과 에너지 비율"><span id="rSegment"></span><span id="aSegment"></span><span id="tSegment"></span></div><div class="energy-values"><span>반사 R<strong id="rValue">55.0%</strong></span><span>흡수 A<strong id="aValue">28.5%</strong></span><span>투과 T<strong id="tValue">16.5%</strong></span></div><details class="calculation-details"><summary>계산값 보기</summary><dl class="small-results"><div><dt>표피 깊이 δ</dt><dd id="skinValue">15.92 μm</dd></div><div><dt>차폐효과 SE</dt><dd id="seValue">7.83 dB</dd></div></dl></details></div>
         </aside>
       </div>
-      <div class="observe"><span>해볼 실험</span><p>표면 반사율은 그대로 두고, 두께를 늘려보세요. 투과가 줄어든 만큼 어떤 비율이 커지나요?</p><button type="button" class="outline-button" id="doubleThickness">두께 2배로</button></div>
+      <div class="observe"><span>해볼 실험</span><p>두께를 늘려보세요. 반대편으로 나오는 파와 ‘투과’ 수치가 어떻게 달라지나요?</p><button type="button" class="outline-button" id="doubleThickness">두께 2배로</button></div>
+      <section class="mechanism" aria-labelledby="emi-mechanism-title">
+        <div class="mechanism-heading"><span>원인 → 변화 → 결과</span><h3 id="emi-mechanism-title">왜 전자파가 줄어들까요?</h3></div>
+        <ol class="mechanism-steps">
+          <li><h4>전자파가 자유전자를 움직여요</h4><p>전자파의 <strong>전기장</strong>이 전자에 힘을 가합니다. 금속의 자유전자가 이에 따라 움직이면서 <strong>전류</strong>가 생겨요.</p></li>
+          <li><h4>움직이는 전하가 되돌아가는 파를 만들어요</h4><p>이 전하·전류의 반응도 전자기파를 만듭니다. 입사한 쪽으로 되돌아가는 성분이 <strong>반사</strong>이고, 일부는 재료 안으로 들어갑니다.</p></li>
+          <li><h4>재료 안에서는 에너지가 열로 바뀌어요</h4><p>전자가 격자 진동이나 결함 등에 의해 <strong>산란</strong>되면, 전자파가 전달한 에너지가 열로 소모됩니다. 이것이 도체의 <strong>흡수</strong>이며, 남은 일부가 반대편으로 <strong>투과</strong>해요.</p></li>
+        </ol>
+        <p class="mechanism-connect"><strong>3D에서 확인하기</strong>이 모델에서 두께를 늘리면 파가 재료 안을 지나는 거리가 길어집니다. 내부 감쇠가 더 누적돼 흡수가 늘고 투과가 줄어들어요.</p>
+      </section>
+      <dl class="keyword-note"><div><dt>표피 깊이 δ</dt><dd>도체 안에서 전자파가 약해지는 거리의 기준이에요. 작을수록 표면 가까이에서 빠르게 약해져요.</dd></div><div><dt>차폐효과 SE</dt><dd>투과 전력이 얼마나 줄었는지 나타내요. dB 값이 클수록 통과하는 비율이 작아요.</dd></div></dl>
+      <p class="everyday-example"><strong>어디에 쓸까요?</strong>전자기기의 금속 케이스처럼, 안팎의 전자파 영향을 줄이는 데 쓰여요.</p>
+      <details class="easy-more"><summary>수식과 자세한 설명이 궁금하다면</summary><div class="easy-more-body">
       <div class="lesson-grid"><article><div class="section-kicker">THE IDEA</div><h3>반사와 흡수는 서로 다른 경로</h3><p><b>반사</b>는 파가 표면에서 되돌아가는 것, <b>흡수</b>는 재료 내부에서 전자파 에너지가 열 등으로 바뀌는 것입니다. <b>투과</b>는 반대편으로 빠져나간 에너지입니다.</p><p>도체 안의 전기장 진폭은 표피 깊이 δ만큼 진행할 때 약 1/e로 줄어듭니다. 주파수가 높아지면 δ가 작아져, 같은 두께에서도 흡수가 더 커집니다.</p></article><article><div class="section-kicker">READ THE MODEL</div><h3>무엇을 계산하고 있을까?</h3><div class="formula">δ = √[1 / (π f μ₀ σ)]<br>T = (1 − R) e<sup>−2t/δ</sup> &nbsp; A = 1 − R − T<br>SE = −10 log₁₀(T)</div><p class="model-note">σ = 1.0 × 10⁶ S/m, μᵣ = 1인 도체의 단일 통과 근사입니다. R은 비교를 위한 독립 입력이며 실제로는 재료·주파수·두께에 따라 달라집니다. 경계면의 다중 반사는 생략했습니다.</p></article></div>
       <div class="comparison"><table><caption>세 경로를 한눈에 비교하기</caption><thead><tr><th scope="col">경로</th><th scope="col">에너지는 어디로?</th><th scope="col">이 모델에서 바꿔볼 것</th></tr></thead><tbody><tr><th scope="row">반사 R</th><td>입사한 쪽으로 되돌아감</td><td>표면 반사율 슬라이더</td></tr><tr><th scope="row">흡수 A</th><td>재료 내부에서 소산</td><td>두께 증가, 주파수 증가</td></tr><tr><th scope="row">투과 T</th><td>재료를 지나 반대편으로 나감</td><td>얇은 판과 두꺼운 판 비교</td></tr></tbody></table></div>
       <div class="quiz" data-quiz="emi"><span class="section-kicker">QUICK CHECK</span><h3>이 모델에서 두께만 늘리면 반사율 R도 커질까요?</h3><div class="quiz-choices"><button type="button" data-answer="wrong">네, 항상 커져요</button><button type="button" data-answer="correct">아니요, R은 고정돼요</button></div><p class="quiz-feedback" aria-live="polite"></p></div>
+      </div></details>
     </section>
 
     <section class="topic-panel" id="panel-super" role="tabpanel" aria-labelledby="tab-super" hidden>
-      <div class="topic-heading"><div><div class="section-kicker">02 / CHANGE THE STATE</div><h2>차가워지면 무엇이 달라질까?</h2></div><p>임계온도 · 마이스너 효과 · 자속 고정</p></div>
+      <div class="topic-heading"><div><div class="section-kicker">02 / CHANGE THE STATE</div><h2>차가워지면 무엇이 달라질까?</h2></div><p>아주 차가워졌을 때 나타나는 특별한 성질</p></div>
+      <div class="easy-brief">
+        <p class="easy-takeaway">일부 재료는 충분히 차가워지면 <strong>전기저항이 0</strong>인 <strong>초전도 상태</strong>가 됩니다. 자기장에 대한 반응도 달라져, 조건에 따라 자석을 띄울 수 있어요.</p>
+        <ul class="easy-points"><li><strong>임계온도 T<sub>c</sub></strong><span>초전도 상태가 가능해지는 온도의 경계예요. 자기장과 전류 조건도 맞아야 해요.</span></li><li><strong>마이스너 효과</strong><span>충분히 약한 자기장을 재료 내부에서 밀어내는 현상이에요.</span></li><li><strong>자속 고정</strong><span>제2종 초전도체에 들어온 자속이 결함 등에 붙잡히는 현상이에요.</span></li></ul>
+        <p class="remember-line"><span>기억할 한 문장</span><strong>마이스너 효과는 자기장을 밀어내는 것, 자속 고정은 들어온 자속을 붙잡는 것입니다.</strong></p>
+      </div>
       <div class="lab-layout">
         <div class="visual-panel"><div class="visual-toolbar"><span class="live-label"><i></i>3D 개념 모델</span><div><button type="button" class="quiet-button" data-motion="super" aria-pressed="false">일시정지</button><button type="button" class="quiet-button" data-view="super">시점 초기화</button></div></div><div class="stage" data-stage="super"><canvas id="superCanvas" aria-label="초전도체 주변의 자기장 선과 자석의 개념 모델"></canvas><div class="fallback" hidden role="img" aria-label="초전도체 자기장의 2D 대체 모식도"></div><div class="scene-caption"><span id="superSceneCaption">초전도체 바깥으로 휘어지는 자기장 선</span><small>자석의 높이와 자기장 선은 정성적 모식도입니다.</small></div></div><div class="scene-legend"><span><i class="incident"></i>자기장 선</span><span><i class="absorption"></i>제2종 초전도체</span><small>드래그로 회전 · 휠로 확대</small></div></div>
-        <aside class="controls" aria-label="초전도체 조건"><div class="control-heading"><h3>실험 조건</h3><button type="button" class="text-button" data-reset="super">기본값</button></div><label class="field" for="superTemperature"><span>온도 <i>T</i><output id="superTemperatureOut" for="superTemperature">65 K</output></span><input id="superTemperature" type="range" min="10" max="140" step="1" value="65"><small><span>10 K</span><span>140 K</span></small></label><div class="fixed-condition"><span>임계온도 T<sub>c</sub></span><b>92 K</b><small>YBCO를 예로 든 대표값</small></div><fieldset class="mode-select"><legend>자기장 조건 살펴보기</legend><label><input type="radio" name="fieldMode" value="meissner" checked><span>마이스너 효과<small>충분히 약한 외부장 가정</small></span></label><label><input type="radio" name="fieldMode" value="pinning"><span>자속 고정<small>제2종의 혼합상 가정</small></span></label></fieldset><div class="result" aria-live="polite" aria-atomic="true"><div class="result-label">현재 상태</div><strong class="state-value" id="superState">초전도 상태</strong><dl class="small-results"><div><dt>T / T<sub>c</sub></dt><dd id="superRatio">0.71</dd></div><div><dt>정규화 저항 R / R(T<sub>c</sub>⁺)</dt><dd id="superResistance">0.00</dd></div></dl><p class="result-detail" id="superExplanation">약한 외부장을 내부에서 밀어내는 마이스너 효과를 관찰합니다.</p></div></aside>
+        <aside class="controls" aria-label="초전도체 조건"><div class="control-heading"><h3>실험 조건</h3><button type="button" class="text-button" data-reset="super">기본값</button></div><label class="field" for="superTemperature"><span>온도 <i>T</i><output id="superTemperatureOut" for="superTemperature">65 K</output></span><input id="superTemperature" type="range" min="10" max="140" step="1" value="65"><small><span>10 K</span><span>140 K</span></small></label><div class="fixed-condition"><span>임계온도 T<sub>c</sub></span><b>92 K</b><small>이 실험에서는 92 K를 기준으로 비교해요.</small></div><fieldset class="mode-select"><legend>자기장의 모습</legend><label><input type="radio" name="fieldMode" value="meissner" checked><span>마이스너 효과<small>약한 자기장을 밀어내기</small></span></label><label><input type="radio" name="fieldMode" value="pinning"><span>자속 고정<small>들어온 자속을 붙잡기</small></span></label></fieldset><div class="result" aria-live="polite" aria-atomic="true"><div class="result-label">현재 상태</div><strong class="state-value" id="superState">초전도 상태</strong><details class="calculation-details"><summary>계산값 보기</summary><dl class="small-results"><div><dt>T / T<sub>c</sub></dt><dd id="superRatio">0.71</dd></div><div><dt>정규화 저항 R / R(T<sub>c</sub>⁺)</dt><dd id="superResistance">0.00</dd></div></dl><p class="result-detail" id="superExplanation">약한 외부장을 내부에서 밀어내는 마이스너 효과를 관찰합니다.</p></details></div></aside>
       </div>
-      <div class="observe"><span>해볼 실험</span><p>온도를 92 K 위아래로 바꾸고, 두 자기장 조건을 비교해보세요.</p><button type="button" class="outline-button" id="crossTc">T<sub>c</sub> 위로 올리기</button></div>
+      <div class="observe"><span>해볼 실험</span><p>온도를 낮췄다 올려보세요. 자석과 자기장 선의 모습이 어떻게 달라지나요?</p><button type="button" class="outline-button" id="crossTc">T<sub>c</sub> 위로 올리기</button></div>
+      <section class="mechanism" aria-labelledby="super-mechanism-title">
+        <div class="mechanism-heading"><span>원인 → 변화 → 결과</span><h3 id="super-mechanism-title">왜 저항이 사라지고 자석이 뜰까요?</h3></div>
+        <ol class="mechanism-steps">
+          <li><h4>전자들이 집단적인 양자 상태를 만들어요</h4><p>초전도 상태에서는 전자들이 <strong>쿠퍼쌍</strong>을 이루고, 많은 쌍이 위상이 연결된 상태를 형성합니다. 이 집단 상태가 유지되는 조건에서는 전류의 에너지가 열로 계속 흩어지는 과정이 억제돼, <strong>직류 저항이 0</strong>이 됩니다.</p></li>
+          <li><h4>표면 부근의 전류가 안쪽 자기장을 상쇄해요</h4><p>초전도체는 외부 자기장에 대해 표면 부근에 <strong>차폐 전류</strong>가 흐르는 상태로 반응합니다. 이 전류가 안쪽에서 외부장과 반대 방향의 자기장을 만들어, 충분히 약한 외부장이 깊숙이 들어오지 못하게 해요. 이것이 <strong>마이스너 효과</strong>이며, 단순히 저항이 0이라는 사실만으로 설명되지는 않습니다.</p></li>
+          <li><h4>자속이 고정되면 위치 변화에도 저항해요</h4><p>제2종의 혼합상에서는 자속이 작은 <strong>소용돌이</strong> 형태로 일부 침투합니다. 재료의 결함이 소용돌이가 자리 잡기 쉬운 위치가 되면 움직임을 억제해요. 이 <strong>자속 고정</strong>은 자석과 시료의 상대 위치가 바뀌는 것에도 저항해 안정적인 부상에 도움을 줍니다.</p></li>
+        </ol>
+        <p class="mechanism-connect"><strong>자석이 뜨는 이유</strong>자석의 자기장과 초전도체의 전류가 상호작용해 자기력이 생깁니다. 위쪽 힘이 자석의 무게와 균형을 이루면 떠 있을 수 있어요. 화면의 높이는 힘을 계산한 결과가 아닌 개념 표현입니다.</p>
+        <details class="mechanism-extra"><summary>쿠퍼쌍은 어떻게 생기나요?</summary><p>전통적인 초전도체에서는 전자가 격자 진동을 통해 서로 영향을 주며, 유효한 인력이 생겨 쿠퍼쌍을 형성할 수 있습니다. 많은 쌍이 집단 상태를 이루고 낮은 에너지의 소산 과정이 억제되는 것이 중요해요. 전자 두 개가 단순히 붙기만 하면 저항이 사라지는 것은 아닙니다.</p><p>화면에서 예로 든 YBCO는 구리산화물 고온 초전도체입니다. 쌍과 집단 상태는 중요하지만, 그 쌍이 생기는 원리를 전통적인 격자 진동 설명만으로 모두 설명할 수는 없습니다.</p><p class="mechanism-source"><a href="https://hoffman.physics.harvard.edu/materials/SCintro.php" target="_blank" rel="noopener noreferrer">Harvard Hoffman Lab · 초전도 원리 참고</a></p></details>
+      </section>
+      <dl class="keyword-note"><div><dt>자속</dt><dd>어떤 면을 통과하는 자기장의 양을 나타내요.</dd></div><div><dt>제2종 초전도체</dt><dd>자기장이 일부 들어오는 상태에서도 초전도성을 유지할 수 있는 종류예요.</dd></div></dl>
+      <p class="everyday-example"><strong>어디에 쓸까요?</strong>병원 MRI의 강한 전자석에도 초전도 재료가 쓰여요.</p>
+      <details class="easy-more"><summary>수식과 자세한 설명이 궁금하다면</summary><div class="easy-more-body">
       <div class="lesson-grid"><article><div class="section-kicker">THE IDEA</div><h3>저항 0과 자기장 배제</h3><p>임계온도 아래에서는 전기저항이 0이 되는 <b>초전도 상태</b>가 가능합니다. 초전도체가 충분히 약한 자기장을 내부에서 밀어내는 현상이 <b>마이스너 효과</b>입니다.</p><p>제2종 초전도체의 혼합상(H<sub>c1</sub> &lt; H &lt; H<sub>c2</sub>)에서는 자속이 소용돌이 형태로 일부 침투합니다. 이 자속이 결함 등에 붙잡히는 것이 <b>자속 고정</b>이며, 안정적인 부상에 기여할 수 있습니다.</p></article><article><div class="section-kicker">READ THE MODEL</div><h3>온도와 저항의 관계</h3><svg id="resistanceChart" class="resistance-chart" viewBox="0 0 460 175" role="img" aria-labelledby="resistanceTitle"><title id="resistanceTitle">정규화 저항 대 온도: 92 K 아래에서 0, 위에서는 선형 증가하는 단순화 그래프</title><path class="chart-grid" d="M45 125H435 M45 35V125"/><path class="chart-tc" d="M291 25V125"/><path class="chart-line" d="M45 125H291V50L435 39.2"/><text x="12" y="54">1</text><text x="12" y="129">0</text><text x="40" y="148">10</text><text x="266" y="148">T<tspan baseline-shift="sub">c</tspan> = 92</text><text x="409" y="148">140 K</text><text x="45" y="18">R / R(T<tspan baseline-shift="sub">c</tspan>⁺)</text><circle id="resistanceDot" cx="210" cy="125" r="5"/></svg><p class="model-note">T &lt; T<sub>c</sub>에서 0, 그 이상에서는 완만히 증가하는 이상화된 정규화 저항입니다. 실제 저항 단위 Ω를 계산한 그래프가 아닙니다.</p></article></div>
       <div class="model-boundary"><strong>모델의 범위</strong><p>온도만으로 상태를 전환하는 개념 모델입니다. 임계자기장·임계전류·이력·힘의 평형은 계산하지 않습니다. 혼합상 그림은 적절한 외부장이 있다고 가정합니다. 실제 전이 폭과 저항값은 시료마다 다릅니다.</p></div>
       <div class="quiz" data-quiz="super"><span class="section-kicker">QUICK CHECK</span><h3>제2종 초전도체의 혼합상에서는 자속이 내부에 일부 들어올 수 있을까요?</h3><div class="quiz-choices"><button type="button" data-answer="correct">네, 일부 침투해요</button><button type="button" data-answer="wrong">아니요, 항상 완전히 배제해요</button></div><p class="quiz-feedback" aria-live="polite"></p></div>
+      </div></details>
     </section>
 
     <section class="topic-panel" id="panel-meta" role="tabpanel" aria-labelledby="tab-meta" hidden>
-      <div class="topic-heading"><div><div class="section-kicker">03 / STEER THE WAVE</div><h2>얇은 표면으로 빛의 방향을 바꾸다</h2></div><p>파장 · 주기 · 위상 구배</p></div>
-      <div class="lab-layout"><div class="visual-panel"><div class="visual-toolbar"><span class="live-label"><i></i>3D 개념 모델</span><div><button type="button" class="quiet-button" data-motion="meta" aria-pressed="false">일시정지</button><button type="button" class="quiet-button" data-view="meta">시점 초기화</button></div></div><div class="stage" data-stage="meta"><canvas id="metaCanvas" aria-label="나노 기둥의 위상 구배에 따라 투과 파면이 기울어지는 3D 개념 모델"></canvas><div class="fallback" hidden role="img" aria-label="메타표면 파면의 2D 대체 모식도"></div><div class="scene-caption"><span id="metaSceneCaption">인접한 기둥마다 위상차 → 기울어진 투과 파면</span><small>기둥의 높이·색은 위상만을 개념적으로 표현합니다.</small></div></div><div class="scene-legend"><span><i class="incident"></i>입사 파면</span><span><i class="transmission"></i>투과 파면</span><span><i class="absorption"></i>위상 지연</span><small>드래그로 회전 · 휠로 확대</small></div></div><aside class="controls" aria-label="메타표면 조건"><div class="control-heading"><h3>실험 조건</h3><button type="button" class="text-button" data-reset="meta">기본값</button></div><label class="field" for="metaWavelength"><span>파장 <i>λ</i><output id="metaWavelengthOut" for="metaWavelength">600 nm</output></span><input id="metaWavelength" type="range" min="400" max="900" step="10" value="600"><small><span>400 nm</span><span>900 nm</span></small></label><label class="field" for="metaPitch"><span>기둥 간격 <i>p</i><output id="metaPitchOut" for="metaPitch">300 nm</output></span><input id="metaPitch" type="range" min="120" max="600" step="10" value="300"><small><span>120 nm</span><span>600 nm</span></small></label><label class="field" for="metaPhase"><span>인접 위상차 <i>Δφ</i><output id="metaPhaseOut" for="metaPhase">60°</output></span><input id="metaPhase" type="range" min="-180" max="180" step="5" value="60"><small><span>−180°</span><span>+180°</span></small></label><div class="result" aria-live="polite" aria-atomic="true"><div class="result-label">정면 입사에 대한 투과 조향각 θ</div><strong class="angle-value" id="metaAngle">+19.5°</strong><dl class="small-results"><div><dt>sin θ = λ Δφ / (360° p)</dt><dd id="metaSine">0.333</dd></div></dl><p class="result-detail" id="metaExplanation">오른쪽으로 기울어진 파면을 관찰합니다.</p></div></aside></div>
-      <div class="observe"><span>해볼 실험</span><p>위상차를 0°로 맞추고 부호를 반대로 바꿔보세요. 파면은 어느 쪽으로 기울어지나요?</p><button type="button" class="outline-button" id="reversePhase">위상차 반전</button></div>
+      <div class="topic-heading"><div><div class="section-kicker">03 / STEER THE WAVE</div><h2>얇은 표면으로 빛의 방향을 바꾸다</h2></div><p>작은 구조로 빛의 진행 방향을 조절해요</p></div>
+      <div class="easy-brief">
+        <p class="easy-takeaway"><strong>메타표면</strong>은 보통 파장보다 작은 구조를 배열한 얇은 표면입니다. 각 구조가 빛의 진동 단계인 <strong>위상</strong>을 다르게 조절하면, 빛이 합쳐져 나아가는 방향이 바뀔 수 있어요.</p>
+        <ul class="easy-points"><li><strong>위상차 Δφ</strong><span>두 위치에서 파의 진동이 얼마나 어긋나는지 나타내는 값이에요.</span></li><li><strong>위상 구배</strong><span>표면을 따라 단위 거리마다 위상이 얼마나 변하는지 나타내요.</span></li><li><strong>파면</strong><span>같은 순간에 위상이 같은 점들을 이은 면이에요.</span></li></ul>
+        <p class="remember-line"><span>기억할 한 문장</span><strong>위상 구배로 파면을 기울여, 빛의 진행 방향을 바꿀 수 있습니다.</strong></p>
+      </div>
+      <div class="lab-layout"><div class="visual-panel"><div class="visual-toolbar"><span class="live-label"><i></i>3D 개념 모델</span><div><button type="button" class="quiet-button" data-motion="meta" aria-pressed="false">일시정지</button><button type="button" class="quiet-button" data-view="meta">시점 초기화</button></div></div><div class="stage" data-stage="meta"><canvas id="metaCanvas" aria-label="나노 기둥의 위상 구배에 따라 투과 파면이 기울어지는 3D 개념 모델"></canvas><div class="fallback" hidden role="img" aria-label="메타표면 파면의 2D 대체 모식도"></div><div class="scene-caption"><span id="metaSceneCaption">인접한 기둥마다 위상차 → 기울어진 투과 파면</span><small>기둥의 높이·색은 위상만을 개념적으로 표현합니다.</small></div></div><div class="scene-legend"><span><i class="incident"></i>입사 파면</span><span><i class="transmission"></i>투과 파면</span><span><i class="absorption"></i>위상 지연</span><small>드래그로 회전 · 휠로 확대</small></div></div><aside class="controls" aria-label="메타표면 조건"><div class="control-heading"><h3>실험 조건</h3><button type="button" class="text-button" data-reset="meta">기본값</button></div><label class="field" for="metaWavelength"><span>파장 <i>λ</i><output id="metaWavelengthOut" for="metaWavelength">600 nm</output></span><input id="metaWavelength" type="range" min="400" max="900" step="10" value="600"><small><span>400 nm</span><span>900 nm</span></small></label><label class="field" for="metaPitch"><span>기둥 간격 <i>p</i><output id="metaPitchOut" for="metaPitch">300 nm</output></span><input id="metaPitch" type="range" min="120" max="600" step="10" value="300"><small><span>120 nm</span><span>600 nm</span></small></label><label class="field" for="metaPhase"><span>인접 위상차 <i>Δφ</i><output id="metaPhaseOut" for="metaPhase">60°</output></span><input id="metaPhase" type="range" min="-180" max="180" step="5" value="60"><small><span>−180°</span><span>+180°</span></small></label><div class="result" aria-live="polite" aria-atomic="true"><div class="result-label">빛의 조향각 θ</div><strong class="angle-value" id="metaAngle">+19.5°</strong><details class="calculation-details"><summary>계산값 보기</summary><dl class="small-results"><div><dt>sin θ = λ Δφ / (360° p)</dt><dd id="metaSine">0.333</dd></div></dl><p class="result-detail" id="metaExplanation">오른쪽으로 기울어진 파면을 관찰합니다.</p></details></div></aside></div>
+      <div class="observe"><span>해볼 실험</span><p>위상차를 0°로 맞춘 뒤 양쪽으로 움직여보세요. 빛이 나아가는 방향을 살펴보세요.</p><button type="button" class="outline-button" id="reversePhase">위상차 반전</button></div>
+      <section class="mechanism" aria-labelledby="meta-mechanism-title">
+        <div class="mechanism-heading"><span>원인 → 변화 → 결과</span><h3 id="meta-mechanism-title">왜 위상차가 빛의 방향을 바꿀까요?</h3></div>
+        <ol class="mechanism-steps">
+          <li><h4>기둥의 구조가 빛의 위상을 바꿔요</h4><p>빛의 전기장이 기둥 안의 전하를 흔들면, 그 전하도 빛을 내보냅니다. 재료와 모양에 따라 반응의 타이밍이 달라져, 기둥을 지난 빛의 <strong>위상</strong>이 달라져요.</p></li>
+          <li><h4>여러 기둥에서 나온 빛이 서로 더해져요</h4><p>빛은 파동이라서 만나면 <strong>간섭</strong>합니다. 진동이 맞으면 강해지는 <strong>보강 간섭</strong>, 어긋나면 약해지는 <strong>상쇄 간섭</strong>이 나타날 수 있어요.</p></li>
+          <li><h4>진동이 잘 맞는 방향으로 빛이 모여요</h4><p>기둥마다 준 위상차와 빛이 이동한 거리 차이가 특정 방향에서 서로 보상되도록 만들 수 있습니다. 그 방향에서는 파들이 잘 맞아 빛이 강해지고, 전체 <strong>파면</strong>도 기울어져요.</p></li>
+        </ol>
+        <p class="mechanism-connect"><strong>3D에서 확인하기</strong>위상차를 0°로 두면 정면으로 진행합니다. 위상차의 부호를 바꾸면 파들이 잘 맞는 방향도 반대가 돼, 빛이 반대쪽으로 꺾여요.</p>
+      </section>
+      <dl class="keyword-note"><div><dt>파장 λ</dt><dd>같은 진동 상태가 반복되는 두 지점 사이의 거리예요.</dd></div><div><dt>조향각 θ</dt><dd>빛의 진행 방향이 표면의 수직 방향에서 얼마나 기울어졌는지 나타내요.</dd></div></dl>
+      <p class="everyday-example"><strong>어디에 쓸까요?</strong>얇은 표면으로 빛을 모으는 ‘메타렌즈’에 활용돼요.</p>
+      <details class="easy-more"><summary>수식과 자세한 설명이 궁금하다면</summary><div class="easy-more-body">
       <div class="lesson-grid"><article><div class="section-kicker">THE IDEA</div><h3>작은 지연을 모아, 새로운 파면으로</h3><p>메타표면은 파장보다 작은 구조를 배열해 빛의 <b>위상</b> 등을 조절하는 얇은 표면입니다. 각 구조가 파를 조금씩 다르게 지연시키면, 통과한 파들이 모여 기울어진 파면을 만듭니다.</p><p>위상차가 0이면 정면으로 진행합니다. 위상 구배의 부호를 바꾸면 조향 방향도 반대가 됩니다. 화면의 기둥 높이만으로 실제 광학 특성을 예측할 수는 없습니다.</p></article><article><div class="section-kicker">READ THE MODEL</div><h3>위상 구배와 조향각</h3><div class="formula">sin θ = (λ / 2π) · (Δφ / p)<br>Δφ의 단위: rad &nbsp; · &nbsp; 정면 입사, 같은 매질</div><p class="model-note">일반화된 굴절 관계를 이상적인 위상 구배에 적용한 모델입니다. 이산 배열의 다른 회절 차수, 효율, 편광, 재료 분산은 생략했습니다. |sin θ| &gt; 1이면 이 식이 지정하는 방향의 전파 해가 없다는 뜻이며, 빛이 전부 사라진다는 뜻은 아닙니다.</p></article></div>
       <div class="quiz" data-quiz="meta"><span class="section-kicker">QUICK CHECK</span><h3>입사 조건이 같을 때, 위상차가 0°이면 이 모델의 조향각은 얼마일까요?</h3><div class="quiz-choices"><button type="button" data-answer="correct">0°, 정면 진행</button><button type="button" data-answer="wrong">90°, 표면과 평행</button></div><p class="quiz-feedback" aria-live="polite"></p></div>
+      </div></details>
     </section>
 
     <footer class="lab-footer"><div><span class="footer-mark">M·</span><span>Materials Learning<br><small>눈으로 관찰하고, 조건을 바꾸고, 원리로 연결하기.</small></span></div><p>학습용 단순화 모델 · 실측 데이터나 설계 예측값이 아닙니다.</p><details><summary>더 읽어보기 · 공개 참고자료</summary><ul><li><a href="https://phys.libretexts.org/Bookshelves/Electricity_and_Magnetism/Electromagnetics_II_(Ellingson)/03%3A_Wave_Propagation_in_General_Media/3.12%3A_Skin_Depth" target="_blank" rel="noopener noreferrer">LibreTexts · Skin depth</a></li><li><a href="https://hyperphysics.phy-astr.gsu.edu/hbase/Solids/meis.html" target="_blank" rel="noopener noreferrer">HyperPhysics · Meissner effect</a></li><li><a href="https://doi.org/10.1126/science.1210713" target="_blank" rel="noopener noreferrer">Yu et al. (2011) · Phase discontinuities and generalized laws</a></li></ul></details></footer>

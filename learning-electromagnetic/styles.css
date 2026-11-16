@@ -225,3 +225,51 @@ body:has(> #materialsLab) { margin: 0; background: #080f1c; }
 @media (prefers-reduced-motion: reduce) {
   #materialsLab *, #materialsLab *::before, #materialsLab *::after { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* Plain-language explanations; the simulator and its animation stay as before. */
+#materialsLab .easy-brief { margin: 0 0 21px; max-width: 980px; }
+#materialsLab .easy-takeaway { margin: 0; color: var(--lab-text); font-size: 15px; line-height: 1.85; max-width: 850px; }
+#materialsLab .easy-takeaway strong { color: var(--lab-text); font-weight: 650; }
+#materialsLab .easy-points { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; list-style: none; padding: 0; margin: 16px 0 0; }
+#materialsLab .easy-points > li { padding-left: 12px; border-left: 2px solid var(--lab-line); }
+#materialsLab .easy-points strong { display: block; font-size: 13px; font-weight: 550; color: var(--lab-cyan); margin-bottom: 4px; }
+#materialsLab .easy-points span { display: block; font-size: 13px; color: var(--lab-muted); line-height: 1.8; }
+#materialsLab .remember-line { display: flex; align-items: baseline; gap: 8px 15px; flex-wrap: wrap; margin: 18px 0 0; padding-top: 13px; border-top: 1px solid var(--lab-line); }
+#materialsLab .remember-line > span { color: var(--lab-cyan); font-size: 11px; flex-shrink: 0; }
+#materialsLab .remember-line > strong { font-size: 13px; line-height: 1.8; font-weight: 550; color: var(--lab-text); }
+#materialsLab .keyword-note { display: grid; gap: 9px; margin: 21px 0 0; max-width: 980px; }
+#materialsLab .keyword-note > div { display: grid; grid-template-columns: minmax(125px, .8fr) minmax(0, 4fr); gap: 14px; font-size: 12px; }
+#materialsLab .keyword-note dt { color: var(--lab-text); font-weight: 550; }
+#materialsLab .keyword-note dd { margin: 0; color: var(--lab-muted); line-height: 1.85; }
+#materialsLab .mechanism { margin: 24px 0; max-width: 980px; }
+#materialsLab .mechanism-heading > span { color: var(--lab-cyan); font-size: 11px; }
+#materialsLab .mechanism-heading h3 { font-size: 19px; font-weight: 550; letter-spacing: -.035em; margin: 5px 0 17px; }
+#materialsLab .mechanism-steps { list-style: decimal; padding-left: 23px; margin: 0; max-width: 880px; }
+#materialsLab .mechanism-steps > li { padding-left: 7px; margin-bottom: 15px; }
+#materialsLab .mechanism-steps > li::marker { color: var(--lab-cyan); font-size: 12px; }
+#materialsLab .mechanism-steps h4 { margin: 0 0 5px; font-size: 14px; font-weight: 550; }
+#materialsLab .mechanism-steps p, #materialsLab .mechanism-extra p { margin: 0; color: var(--lab-muted); font-size: 13px; line-height: 1.9; }
+#materialsLab .mechanism p strong { color: var(--lab-text); font-weight: 550; }
+#materialsLab .mechanism-connect { margin: 15px 0 0; padding-left: 13px; border-left: 2px solid var(--lab-line); max-width: 880px; color: var(--lab-muted); font-size: 12px; line-height: 1.9; }
+#materialsLab .mechanism-connect > strong { margin-right: 8px; }
+#materialsLab .mechanism-extra { margin-top: 16px; max-width: 880px; }
+#materialsLab .mechanism-extra summary { color: var(--lab-muted); font-size: 12px; padding: 8px 0; }
+#materialsLab .mechanism-extra p { margin: 8px 0; }
+#materialsLab .mechanism-source { font-size: 11px !important; }
+#materialsLab .mechanism-source a { text-decoration: underline; text-underline-offset: 4px; }
+#materialsLab .everyday-example { margin: 19px 0 22px; color: var(--lab-muted); font-size: 13px; line-height: 1.85; }
+#materialsLab .everyday-example strong { color: var(--lab-text); font-weight: 550; margin-right: 9px; }
+#materialsLab .easy-more { border-top: 1px solid var(--lab-line); border-bottom: 1px solid var(--lab-line); }
+#materialsLab .easy-more > summary { padding: 15px 0; color: var(--lab-muted); font-size: 12px; }
+#materialsLab .easy-more-body { padding: 0 0 20px; }
+#materialsLab .easy-more-body .lesson-grid { padding-top: 15px; }
+#materialsLab .calculation-details { margin-top: 12px; }
+#materialsLab .calculation-details > summary { font-size: 11px; color: var(--lab-muted); padding: 4px 0; }
+#materialsLab .calculation-details .small-results { margin-top: 7px; }
+@media (max-width: 760px) {
+  #materialsLab .easy-takeaway { font-size: 14px; }
+  #materialsLab .easy-points { grid-template-columns: 1fr; gap: 11px; margin-top: 16px; }
+  #materialsLab .easy-points > li { display: grid; grid-template-columns: minmax(92px, .9fr) minmax(0, 2fr); align-items: baseline; gap: 10px; }
+  #materialsLab .easy-points strong { margin: 0; }
+  #materialsLab .keyword-note > div { grid-template-columns: 1fr; gap: 3px; }
+}
