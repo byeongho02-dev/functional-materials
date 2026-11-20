@@ -21,13 +21,24 @@ for (const [width, height] of [[1440, 900], [390, 844]]) {
     await page.getByRole('link', { name: 'Functional Materials 홈' }).click();
     await page.locator('#nav-learning').click();
     await expect(page.locator('#themeGrid')).toBeVisible();
-    await expect(page.locator('#themeGrid .theme')).toHaveCount(6);
+    await expect(page.locator('#themeGrid .theme')).toHaveCount(7);
+    await expect(page.locator('#themeGrid a[href="learning-mof/index.html"]')).toHaveCount(1);
     await page.locator('a[href="#theme-sma"]').click();
     await expect(page.locator('#smaEntry')).toBeVisible();
     await expect(page.locator('#smaEntry .action')).toHaveAttribute('href', 'learning-lecture3.html#chapter-1');
     const legacy = await page.request.get('/ale.html');
     expect(legacy.status()).toBe(200);
     expect(await legacy.text()).toContain('ALE Simulator V0.6.4');
+
+    await page.locator('#nav-learning').click();
+    await page.locator('#themeGrid a[href="learning-mof/index.html"]').click();
+    await expect(page).toHaveURL(/\/learning-mof\/index\.html$/);
+    await expect(page.locator('#mofLearning')).toHaveAttribute('data-initialized', 'true');
+    await expect(page.locator('#chapterTitle')).toHaveText('MOF는 무엇으로 만들어질까요?');
+    await expect(page.locator('.explanation-column #sceneReason')).not.toBeEmpty();
+    await page.waitForFunction(() => document.querySelector('#objectLabels')?.children.length > 0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: 'preview/fab-v092/mof-learning-' + width + 'x' + height + '.png', fullPage: true });
     expect(errors).toEqual([]); expect(external).toEqual([]);
   });
 }
