@@ -149,7 +149,7 @@
   }
   function updateScene(announce=false){
     const scenes=M.chapters[state.chapter].scenes,entry=scenes[state.step];
-    $('sceneCount').textContent=`장면 ${state.step+1} / ${scenes.length}`;$('sceneTitle').textContent=entry[0];$('sceneWhy').textContent=entry[1];
+    $('sceneCount').textContent=`장면 ${state.step+1} / ${scenes.length}`;$('sceneTitle').textContent=entry[0];$('sceneWhy').textContent=entry[1];$('sceneReason').textContent=M.chapters[state.chapter].reasons[state.step];
     $('previousScene').disabled=state.step===0;$('nextScene').disabled=state.step===scenes.length-1;
     $('playScene').textContent=state.playing?'일시정지':'과정 재생';$('playScene').setAttribute('aria-pressed',String(state.playing));
     const p=Math.round((state.step+state.phase)/scenes.length*100);$('sceneProgress').value=p;$('progressValue').textContent=p+'%';

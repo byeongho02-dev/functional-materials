@@ -82,6 +82,8 @@ function boot({width=800,reduced=false,three=false}={}){
 for(const width of [320,390,800,1280]){
   const u=boot({width}),{q,fire,frames,input,check}=u;frames();eq(q('#mofLearning').dataset.initialized,'true');ok(q('#fallbackScene').innerHTML.includes('circle'),'Functional no-WebGL fallback');
   ok(!q('#viewSettings').open,'Optional view controls start collapsed');ok(!q('#theoryDetails').open,'Full theory starts collapsed');ok(q('#interactionCard').hidden,'No empty controls card in introductory topic');
+  ok(q('#sceneWhy').closest('.explanation-column'),'Scene explanation lives beside the model');
+  const firstReason=q('#sceneReason').textContent;fire('#nextScene');frames();ok(firstReason!==q('#sceneReason').textContent&&q('#sceneReason').textContent.length>20,'Changing the scene updates its causal explanation');
   const all=[];
   for(let chapter=0;chapter<9;chapter++){fire(`[data-chapter="${chapter}"]`);frames();all.push(u.visual());eq(q(`[data-chapter="${chapter}"]`).getAttribute('aria-current'),'step');ok(q('#chapterKey').textContent.length>15);ok(!/NaN|Infinity|undefined/.test(u.visual()),'Finite SVG projection');}
   eq(new Set(all).size,9,'Nine distinct chapter scenes');
