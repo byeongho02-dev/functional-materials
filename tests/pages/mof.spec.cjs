@@ -36,6 +36,9 @@ for(const [width,height]of [[1440,1000],[390,844]]){
     await page.locator('#nextScene').click();await page.locator('#nextScene').click();
     await expect(page.locator('#componentReadout')).toContainText('공유');
     await page.screenshot({path:'preview/fab-v092/mof-coordination-'+width+'.png',fullPage:true});
+    await page.locator('#playScene').click();
+    await page.waitForFunction(()=>+document.querySelector('#sceneProgress').value>0);
+    await page.locator('#playScene').click();
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
     expect(errors).toEqual([]);
   });

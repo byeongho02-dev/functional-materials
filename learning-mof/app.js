@@ -148,6 +148,7 @@
     const model=state.chapter<3&&window.MOFMolecular?window.MOFMolecular.scene(state,state.phase):M.scene(state,state.phase);currentModel=model;$('modelName').textContent=model.name;placedLabels=[];
     $('componentReadout').textContent=model.readout||'조작한 변수에 따라 골격과 기공의 변화를 비교하세요.';viewport.dataset.atomCount=String(model.parts.filter(p=>p.atom).length);
     $('molecularControls').hidden=state.chapter>=3||state.chapter===1;$('componentChoices').hidden=state.chapter===1;
+    $('molecularOptions').hidden=state.chapter>=3;$('explodeModel').closest('label').hidden=state.chapter===1||state.chapter===2&&state.step<3;
     for(const b of root.querySelectorAll('[data-focus]'))b.setAttribute('aria-pressed',String(state.focus===b.dataset.focus));
     for(const b of root.querySelectorAll('[data-representation]'))b.setAttribute('aria-pressed',String(state.representation===b.dataset.representation));
     const atomicColors=window.MOFMolecular?.colors;
@@ -257,7 +258,7 @@
   root.addEventListener('click',e=>{
     const b=e.target.closest('button');if(!b||!root.contains(b)||b.disabled)return;
     if(b.dataset.chapter!==undefined){selectChapter(Number(b.dataset.chapter));return;}
-    if(b.dataset.focus){state.focus=b.dataset.focus;if(['node','linker'].includes(state.focus))state.representation='atoms';state.explode=0;$('explodeModel').value='0';invalidate(true);status('구성요소 보기를 바꿨습니다.');return;}
+    if(b.dataset.focus){state.focus=b.dataset.focus;if(state.focus==='pore'){state.showPores=true;$('showPores').checked=true;}if(['node','linker'].includes(state.focus))state.representation='atoms';state.explode=0;$('explodeModel').value='0';invalidate(true);status('구성요소 보기를 바꿨습니다.');return;}
     if(b.dataset.representation){state.representation=b.dataset.representation;if(state.representation==='topology')state.focus='framework';invalidate(true);return;}
     if(b.dataset.view){view(b.dataset.view);return;}
     if(b.dataset.rings){state.rings=Number(b.dataset.rings);const wasOpen=$('chapterControls').querySelector('details')?.open;controls();$('chapterControls').querySelector('details').open=!!wasOpen;invalidate(true);status(M.family(state.rings).name+' 구조를 선택했습니다.');return;}
@@ -271,6 +272,7 @@
       const chapter=state.chapter,speed=state.speed;state={...M.defaults(chapter),representation:'atoms',showPores:true,polyhedra:true,hydrogen:false,focus:'framework',explode:0};$('showHydrogen').checked=false;$('showPolyhedra').checked=true;$('showPores').checked=true;state.speed=speed;view('home');selectChapter(chapter,false);status('현재 단계의 변수와 시점을 처음 상태로 되돌렸습니다.');
     }
     if(b.id==='playScene'){
+      visible=true;
       if(!state.playing&&state.step===M.chapters[state.chapter].scenes.length-1&&state.phase>=1){state.step=0;state.phase=0;}
       if(!state.playing&&state.phase>=1)state.phase=0;
       state.playing=!state.playing;lastTime=0;updateScene();status(state.playing?'애니메이션 재생':'애니메이션 일시정지');
