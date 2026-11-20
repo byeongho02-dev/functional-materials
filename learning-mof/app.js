@@ -9,7 +9,7 @@
   const media=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
   let reduced=!!media?.matches,visible=true,raf=0,lastTime=0,lastDraw=0,dirty=true,drawing=false;
   let yaw=-.55,pitch=.35,zoom=1,drag=null,renderer=null,threeScene=null,camera=null;
-  let sceneObjects=new Map(),labelObjects=new Map();
+  let sceneObjects=new Map(),labelObjects=new Map(),placedLabels=[];
   const shared={};
   const viewport=$('viewport'),canvas=$('mofCanvas'),fallback=$('fallbackScene');
   const status=text=>{$('labStatus').textContent=text;};
@@ -73,7 +73,18 @@
     let el=labelObjects.get(l.id);
     if(!el){el=document.createElement('span');el.className='object-label';$('objectLabels').appendChild(el);labelObjects.set(l.id,el);}
     if(el.textContent!==l.text)el.textContent=l.text;
-    el.style.left=x+'px';el.style.top=y+'px';el.hidden=!show||!$('showLabels').checked;
+    el.hidden=!show||!$('showLabels').checked;
+    const w=viewport.clientWidth||800,h=viewport.clientHeight||460;
+    const width=el.offsetWidth||Math.min(256,w-16,l.text.length*13+16);
+    const height=el.offsetHeight||Math.max(28,Math.ceil((l.text.length*13+16)/width)*24);
+    x=M.clamp(x,width/2+8,w-width/2-8);y=M.clamp(y,height/2+8,h-height/2-8);
+    for(let i=0;i<12;i++){
+      const overlap=placedLabels.find(p=>Math.abs(p.x-x)<(p.width+width)/2+6&&Math.abs(p.y-y)<(p.height+height)/2+6);
+      if(!overlap)break;
+      const down=overlap.y+(overlap.height+height)/2+8;
+      y=M.clamp(down+height/2<h-8?down:overlap.y-(overlap.height+height)/2-8,height/2+8,h-height/2-8);
+    }
+    placedLabels.push({x,y,width,height});el.style.left=x+'px';el.style.top=y+'px';
   }
   function svgEl(name,attrs){const el=document.createElementNS('http://www.w3.org/2000/svg',name);for(const [k,v]of Object.entries(attrs))el.setAttribute(k,String(v));return el;}
   function drawFallback(model){
@@ -94,7 +105,7 @@
     for(const l of model.labels){const p=projection(l.p);placeLabel(l,dx+p[0]*k,dy+p[1]*k);}
   }
   function render(){
-    const model=M.scene(state,state.phase);$('modelName').textContent=model.name;
+    const model=M.scene(state,state.phase);$('modelName').textContent=model.name;placedLabels=[];
     const ids=new Set(model.labels.map(l=>l.id));for(const [id,el]of labelObjects)if(!ids.has(id)){el.remove();labelObjects.delete(id);}
     if(renderer)drawThree(model);else drawFallback(model);
   }
