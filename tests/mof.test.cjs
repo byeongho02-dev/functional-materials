@@ -6,11 +6,21 @@ const path=require('node:path');
 const vm=require('node:vm');
 const base=path.resolve(__dirname,'../learning-mof');
 const M=require(path.join(base,'model.js'));
+const molecular=require(path.join(base,'molecular.js'))(M);
 let checks=0;
 function ok(v,m){assert.ok(v,m);checks++;}
 function eq(a,b,m){assert.equal(a,b,m);checks++;}
 function near(a,b,m){ok(Math.abs(a-b)<1e-10,m);}
 near(M.volume(1.8).volume,5.832,'Requested cubic geometry');
+const bdc=molecular.scene({...M.defaults(0),focus:'linker',hydrogen:true});
+for(const [element,count]of [['C',8],['H',4],['O',4]])eq(bdc.parts.filter(p=>p.atom===element).length,count,'BDC component composition '+element);
+const sbu=molecular.scene({...M.defaults(0),focus:'node'});
+for(const [element,count]of [['Zn',4],['O',13],['C',6]])eq(sbu.parts.filter(p=>p.atom===element).length,count,'Zn4O(COO)6 component composition '+element);
+for(const chapter of [0,1,2])for(let step=0;step<M.chapters[chapter].scenes.length;step++)for(const phase of [0,.5,1]){
+  const model=molecular.scene({...M.defaults(chapter),step,explode:.3},phase);
+  eq(new Set(model.parts.map(p=>p.id)).size,model.parts.length,'Molecular IDs are unique');
+  for(const p of model.parts)for(const v of [p.p,p.a,p.b,p.size].filter(Boolean))ok(v.every(Number.isFinite),'Finite molecular coordinates');
+}
 near(M.volume(1).volume,1,'Reference volume');
 for(let r=1;r<=1.8;r+=.05)ok(M.volume(r).volume>=M.volume(r-.01).volume,'Monotonic cubic volume');
 const normal=M.defaults(7);
@@ -72,7 +82,7 @@ function boot({width=800,reduced=false,three=false}={}){
     vm.runInContext(fs.readFileSync(vendor,'utf8'),context);
     sandbox.THREE.WebGLRenderer=class{constructor({canvas}){this.canvas=canvas;this.ratio=1;}setPixelRatio(v){this.ratio=v;}getPixelRatio(){return this.ratio;}setSize(w,h){this.canvas.width=w*this.ratio;this.canvas.height=h*this.ratio;}render(scene,camera){scene.updateMatrixWorld();camera.updateMatrixWorld();for(const o of scene.children)ok(o.matrixWorld.elements.every(Number.isFinite),'Real Three geometry matrices');renders++;}};
   }
-  vm.runInContext(fs.readFileSync(path.join(base,'model.js'),'utf8'),context);vm.runInContext(app,context);
+  vm.runInContext(fs.readFileSync(path.join(base,'model.js'),'utf8'),context);vm.runInContext(fs.readFileSync(path.join(base,'molecular.js'),'utf8'),context);vm.runInContext(app,context);
   const fire=(s,type='click',extra={})=>{const e=new window.Event(type,{bubbles:true});Object.assign(e,extra);q(s).dispatchEvent(e);};
   const frames=(count=1,ms=100)=>{for(let i=0;i<count;i++){clock+=ms;const batch=[...pending.values()];pending.clear();batch.forEach(fn=>fn(clock));ok(pending.size<=1,'At most one animation frame pending');}};
   const input=(s,v)=>{q(s).value=String(v);fire(s,'input');frames();};const check=(s,v)=>{q(s).checked=v;fire(s,'change');frames();};
@@ -81,12 +91,14 @@ function boot({width=800,reduced=false,three=false}={}){
 }
 for(const width of [320,390,800,1280]){
   const u=boot({width}),{q,fire,frames,input,check}=u;frames();eq(q('#mofLearning').dataset.initialized,'true');ok(q('#fallbackScene').innerHTML.includes('circle'),'Functional no-WebGL fallback');
-  ok(!q('#viewSettings').open,'Optional view controls start collapsed');ok(!q('#theoryDetails').open,'Full theory starts collapsed');ok(q('#interactionCard').hidden,'No empty controls card in introductory topic');
+  ok(!q('#viewSettings').open,'Optional view controls start collapsed');ok(!q('#theoryDetails').open,'Full theory starts collapsed');ok(!q('#interactionCard').hidden&&q('#interactionCard').textContent.includes('마디'),'Core vocabulary is visible in the introductory topic');
   ok(q('#sceneWhy').closest('.explanation-column'),'Scene explanation lives beside the model');
   const firstReason=q('#sceneReason').textContent;fire('#nextScene');frames();ok(firstReason!==q('#sceneReason').textContent&&q('#sceneReason').textContent.length>20,'Changing the scene updates its causal explanation');
+  eq(q('#chapterNav').querySelectorAll('[data-chapter]').length,3,'Three primary foundation questions');
   const all=[];
   for(let chapter=0;chapter<9;chapter++){fire(`[data-chapter="${chapter}"]`);frames();all.push(u.visual());eq(q(`[data-chapter="${chapter}"]`).getAttribute('aria-current'),'step');ok(q('#chapterKey').textContent.length>15);ok(!/NaN|Infinity|undefined/.test(u.visual()),'Finite SVG projection');}
   eq(new Set(all).size,9,'Nine distinct chapter scenes');
+  fire('[data-chapter="0"]');fire('[data-focus="node"]');frames();ok(q('#modelName').textContent.includes('Zn₄O'),'Node detail view');const nodeView=u.visual();fire('[data-focus="linker"]');frames();ok(q('#modelName').textContent.includes('BDC'));ok(nodeView!==u.visual(),'Component focus changes real geometry');check('#showHydrogen',true);ok(q('[data-legend="hydrogen"]').hidden===false,'Hydrogen toggle changes the model');fire('[data-representation="topology"]');fire('[data-focus="framework"]');frames();const topology=u.visual();fire('[data-representation="atoms"]');frames();ok(topology!==u.visual(),'Molecular and connectivity views differ');
   fire('[data-chapter="3"]');fire('[data-rings="3"]');frames();ok(q('#modelName').textContent.includes('IRMOF-16'));check('#compareStructures',true);ok(q('#objectLabels').textContent.includes('IRMOF-10'));
   fire('[data-chapter="4"]');input('#lengthRatio',1.8);ok(q('#liveResults').textContent.includes('5.832'));const large=u.visual();input('#lengthRatio',1);ok(q('#liveResults').textContent.includes('1.000'));ok(large!==u.visual(),'Slider changes structure');
   fire('[data-chapter="5"]');check('#interpenetration',true);ok(q('#liveResults').textContent.includes('2개'));ok(u.visual().includes(M.colors.purple));check('#interpenetration',false);ok(!u.visual().includes(M.colors.purple));
