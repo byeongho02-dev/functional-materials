@@ -9,14 +9,23 @@
   const coreOrder=[0,2,1],advancedOrder=[3,4,5,6,7,8];
   let currentModel=null;
   const media=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
-  let reduced=!!media?.matches,visible=true,raf=0,lastTime=0,lastDraw=0,dirty=true,drawing=false;
+  let reduced=!!media?.matches,visible=true,raf=0,lastTime=0,lastDraw=0,dirty=true,drawing=false,forcePaint=false;
   let yaw=-.55,pitch=.35,zoom=1,drag=null,renderer=null,threeScene=null,camera=null;
   let sceneObjects=new Map(),labelObjects=new Map(),placedLabels=[];
   const shared={};
   const viewport=$('viewport'),canvas=$('mofCanvas'),fallback=$('fallbackScene');
   const status=text=>{$('labStatus').textContent=text;};
   function active(){return !document.hidden&&visible;}
-  function invalidate(){dirty=true;if(active()&&!raf&&!drawing)raf=requestAnimationFrame(frame);}
+  function invalidate(force=false){
+    dirty=true;if(force===true)forcePaint=true;
+    // A deliberate paused-view change paints once, even after a viewport observer transition.
+    if(force===true&&!state.playing&&!drawing&&!document.hidden){
+      if(raf){cancelAnimationFrame(raf);raf=0;}drawing=true;
+      try{render();dirty=false;forcePaint=false;}finally{drawing=false;}
+      return;
+    }
+    if(!document.hidden&&(visible||forcePaint)&&!raf&&!drawing)raf=requestAnimationFrame(frame);
+  }
   function baseScale(){
     const aspect=Math.max(.7,(viewport.clientWidth||800)/(viewport.clientHeight||460));
     if(currentModel?.atomic){
@@ -65,7 +74,7 @@
       const ambient=new T.HemisphereLight('#d3edff','#14223b',2.1);threeScene.add(ambient);
       for(const [color,intensity,pos]of [['#ffffff',3.2,[5,7,5]],['#75cdff',1.4,[-6,1,3]],['#c6a3ff',2,[-2,4,-6]]]){const light=new T.DirectionalLight(color,intensity);light.position.fromArray(pos);threeScene.add(light);}
       viewport.dataset.renderer='webgl';
-    }catch(_){renderer=null;canvas.hidden=true;fallback.hidden=false;$('renderMode').hidden=false;viewport.dataset.renderer='svg';}
+    }catch(_){renderer=null;canvas.hidden=true;fallback.hidden=false;fallback.removeAttribute('hidden');$('renderMode').hidden=false;viewport.dataset.renderer='svg';}
   }
   function drawThree(model){
     const T=window.THREE,w=Math.max(1,viewport.clientWidth||800),h=Math.max(1,viewport.clientHeight||460),scale=baseScale()/zoom;
@@ -151,12 +160,13 @@
     if(renderer)drawThree(model);else drawFallback(model);
   }
   function frame(now){
-    raf=0;if(!active()){lastTime=0;return;}
+    raf=0;if(document.hidden||(!visible&&!forcePaint)){lastTime=0;return;}
+    forcePaint=false;
     drawing=true;
     const dt=lastTime?Math.min((now-lastTime)/1000,.1):0;lastTime=now;
-    if(state.playing){state.phase+=dt*state.speed/4.5;if(state.phase>=1){if(state.step<M.chapters[state.chapter].scenes.length-1){state.phase=0;state.step++;updateScene();}else{state.phase=1;state.playing=false;updateScene();status('이 단계의 애니메이션이 끝났습니다.');}}const count=M.chapters[state.chapter].scenes.length,p=Math.round((state.step+state.phase)/count*100);$('sceneProgress').value=p;$('progressValue').textContent=p+'%';dirty=true;}
-    if(dirty&&(!state.playing||!lastDraw||now-lastDraw>=1000/30)){render();dirty=false;lastDraw=now;}drawing=false;
-    if(state.playing)raf=requestAnimationFrame(frame);else lastTime=0;
+    if(state.playing&&visible){state.phase+=dt*state.speed/4.5;if(state.phase>=1){if(state.step<M.chapters[state.chapter].scenes.length-1){state.phase=0;state.step++;updateScene();}else{state.phase=1;state.playing=false;updateScene();status('이 단계의 애니메이션이 끝났습니다.');}}const count=M.chapters[state.chapter].scenes.length,p=Math.round((state.step+state.phase)/count*100);$('sceneProgress').value=p;$('progressValue').textContent=p+'%';dirty=true;}
+    if(dirty&&(!state.playing||!lastDraw||now-lastDraw>=1000/30)){render();dirty=false;lastDraw=now;}drawing=false;forcePaint=false;
+    if(state.playing&&active())raf=requestAnimationFrame(frame);else lastTime=0;
   }
   function result(label,value,note='',compact=false){return `<div class="result"><small>${label}</small><b${compact?' class="compact"':''}>${value}</b><span>${note}</span></div>`;}
   function range(id,label,min,max,step,value,note=''){return `<label class="field" for="${id}"><span class="field-title">${label}<output id="${id}Value"></output></span><input id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${value}"></label>${note?'<p class="control-note">'+note+'</p>':''}`;}
@@ -196,7 +206,7 @@
     $('previousScene').disabled=state.step===0;$('nextScene').disabled=state.step===scenes.length-1;
     $('playScene').textContent=state.playing?'일시정지':'과정 재생';$('playScene').setAttribute('aria-pressed',String(state.playing));
     const p=Math.round((state.step+state.phase)/scenes.length*100);$('sceneProgress').value=p;$('progressValue').textContent=p+'%';
-    if(announce)status(`장면 ${state.step+1}. ${entry[0]}. ${entry[1]}`);invalidate();
+    if(announce)status(`장면 ${state.step+1}. ${entry[0]}. ${entry[1]}`);invalidate(true);
   }
   function selectChapter(index,announce=true){
     state.chapter=M.clamp(index,0,M.chapters.length-1);state.step=0;state.phase=0;state.playing=false;lastTime=0;
@@ -215,11 +225,11 @@
   function view(action){
     if(action==='left')yaw-=.18;if(action==='right')yaw+=.18;if(action==='up')pitch=M.clamp(pitch+.15,-1.1,1.1);
     if(action==='in')zoom=M.clamp(zoom*1.15,.6,2.1);if(action==='out')zoom=M.clamp(zoom/1.15,.6,2.1);
-    if(action==='home'){yaw=-.55;pitch=.35;zoom=1;}invalidate();
+    if(action==='home'){yaw=-.55;pitch=.35;zoom=1;}invalidate(true);
   }
   function inputEvent(e){
     const el=e.target,id=el.id;
-    if(id==='explodeModel'){state.explode=Number(el.value);state.focus='framework';invalidate();return;}
+    if(id==='explodeModel'){state.explode=Number(el.value);state.focus='framework';invalidate(true);return;}
     if(id==='lengthRatio')state.ratio=Number(el.value);
     else if(id==='gasPressure')state.pressure=Number(el.value);
     else if(id==='gasTemperature')state.temperature=Number(el.value);
@@ -230,29 +240,29 @@
     }else if(id==='playSpeed'){state.speed=Number(el.value);return;}
     else return;
     if(state.chapter===7&&!state.playing){state.step=1;state.phase=1;updateScene();}
-    results();invalidate();
+    results();invalidate(true);
   }
   root.addEventListener('input',inputEvent);
   root.addEventListener('change',e=>{
     const el=e.target;
-    if(el.id==='showHydrogen'){state.hydrogen=el.checked;invalidate();return;}
-    if(el.id==='showPolyhedra'){state.polyhedra=el.checked;invalidate();return;}
-    if(el.id==='showPores'){state.showPores=el.checked;invalidate();return;}
+    if(el.id==='showHydrogen'){state.hydrogen=el.checked;invalidate(true);return;}
+    if(el.id==='showPolyhedra'){state.polyhedra=el.checked;invalidate(true);return;}
+    if(el.id==='showPores'){state.showPores=el.checked;invalidate(true);return;}
     if(el.id==='compareStructures')state.compare=el.checked;
     else if(el.id==='interpenetration'){state.interpenetrate=el.checked;if(el.checked){state.step=1;state.phase=0;state.playing=!reduced;updateScene();}}
     else if(el.id==='internalSurface'){state.internal=el.checked;if(el.checked&&state.step===0){state.step=1;state.phase=1;updateScene();}}
-    else if(el.id==='showLabels'){invalidate();return;}else return;
-    results();invalidate();status('구조와 결과를 갱신했습니다.');
+    else if(el.id==='showLabels'){invalidate(true);return;}else return;
+    results();invalidate(true);status('구조와 결과를 갱신했습니다.');
   });
   root.addEventListener('click',e=>{
     const b=e.target.closest('button');if(!b||!root.contains(b)||b.disabled)return;
     if(b.dataset.chapter!==undefined){selectChapter(Number(b.dataset.chapter));return;}
-    if(b.dataset.focus){state.focus=b.dataset.focus;if(['node','linker'].includes(state.focus))state.representation='atoms';state.explode=0;$('explodeModel').value='0';invalidate();status('구성요소 보기를 바꿨습니다.');return;}
-    if(b.dataset.representation){state.representation=b.dataset.representation;if(state.representation==='topology')state.focus='framework';invalidate();return;}
+    if(b.dataset.focus){state.focus=b.dataset.focus;if(['node','linker'].includes(state.focus))state.representation='atoms';state.explode=0;$('explodeModel').value='0';invalidate(true);status('구성요소 보기를 바꿨습니다.');return;}
+    if(b.dataset.representation){state.representation=b.dataset.representation;if(state.representation==='topology')state.focus='framework';invalidate(true);return;}
     if(b.dataset.view){view(b.dataset.view);return;}
-    if(b.dataset.rings){state.rings=Number(b.dataset.rings);const wasOpen=$('chapterControls').querySelector('details')?.open;controls();$('chapterControls').querySelector('details').open=!!wasOpen;invalidate();status(M.family(state.rings).name+' 구조를 선택했습니다.');return;}
-    if(b.dataset.species){state.species=b.dataset.species;controls();$('gasOptions').open=true;invalidate();status('기체 '+state.species+'의 단일 성분 점유율을 표시합니다.');return;}
-    if(b.dataset.application!==undefined){state.application=Number(b.dataset.application);controls();invalidate();return;}
+    if(b.dataset.rings){state.rings=Number(b.dataset.rings);const wasOpen=$('chapterControls').querySelector('details')?.open;controls();$('chapterControls').querySelector('details').open=!!wasOpen;invalidate(true);status(M.family(state.rings).name+' 구조를 선택했습니다.');return;}
+    if(b.dataset.species){state.species=b.dataset.species;controls();$('gasOptions').open=true;invalidate(true);status('기체 '+state.species+'의 단일 성분 점유율을 표시합니다.');return;}
+    if(b.dataset.application!==undefined){state.application=Number(b.dataset.application);controls();invalidate(true);return;}
     if(b.id==='previousScene')changeStep(-1);
     if(b.id==='nextScene')changeStep(1);
     if(b.id==='previousChapter'){const order=coreOrder.includes(state.chapter)?coreOrder:advancedOrder;selectChapter(order[order.indexOf(state.chapter)-1]);}
@@ -270,23 +280,23 @@
     const map={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down','+':'in','=':'in','-':'out',Home:'home'};
     if(e.target!==viewport)return;
     if(e.key===' '){e.preventDefault();$('playScene').click();return;}
-    if(map[e.key]){e.preventDefault();if(e.key==='ArrowDown'){pitch=M.clamp(pitch-.15,-1.1,1.1);invalidate();}else view(map[e.key]);}
+    if(map[e.key]){e.preventDefault();if(e.key==='ArrowDown'){pitch=M.clamp(pitch-.15,-1.1,1.1);invalidate(true);}else view(map[e.key]);}
   });
   viewport.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,id:e.pointerId};viewport.setPointerCapture?.(e.pointerId);});
-  viewport.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;yaw+=(e.clientX-drag.x)*.008;pitch=M.clamp(pitch+(e.clientY-drag.y)*.006,-1.1,1.1);drag.x=e.clientX;drag.y=e.clientY;invalidate();});
+  viewport.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;yaw+=(e.clientX-drag.x)*.008;pitch=M.clamp(pitch+(e.clientY-drag.y)*.006,-1.1,1.1);drag.x=e.clientX;drag.y=e.clientY;invalidate(true);});
   const stopDrag=()=>{drag=null;};
   viewport.addEventListener('pointerup',e=>{
     if(drag&&renderer&&state.chapter!==1&&state.chapter<3&&Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<6){
       const rect=viewport.getBoundingClientRect();shared.pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);shared.raycaster.setFromCamera(shared.pointer,camera);
       const hit=shared.raycaster.intersectObjects([...sceneObjects.values()].filter(o=>o.visible)).find(h=>h.object.userData.parts[h.instanceId]?.component==='node'||h.object.userData.parts[h.instanceId]?.component==='linker');
-      if(hit){state.focus=hit.object.userData.parts[hit.instanceId].component;state.explode=0;$('explodeModel').value='0';invalidate();}
+      if(hit){state.focus=hit.object.userData.parts[hit.instanceId].component;state.explode=0;$('explodeModel').value='0';invalidate(true);}
     }stopDrag();
   });viewport.addEventListener('pointercancel',stopDrag);viewport.addEventListener('lostpointercapture',stopDrag);
   viewport.addEventListener('wheel',e=>{if(e.ctrlKey)return;e.preventDefault();view(e.deltaY<0?'in':'out');},{passive:false});
-  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(renderer){renderer=null;canvas.hidden=true;fallback.hidden=false;$('renderMode').hidden=false;viewport.dataset.renderer='svg';invalidate();}});
-  function suspend(){if(raf){cancelAnimationFrame(raf);raf=0;}lastTime=0;}
-  document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend();else invalidate();});
-  if(window.IntersectionObserver)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(visible)invalidate();else suspend();},{rootMargin:'120px'}).observe($('mofLab'));
+  canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(renderer){renderer=null;canvas.hidden=true;fallback.hidden=false;fallback.removeAttribute('hidden');$('renderMode').hidden=false;viewport.dataset.renderer='svg';invalidate(true);}});
+  function suspend(){if(raf){cancelAnimationFrame(raf);raf=0;}lastTime=0;if(!document.hidden&&forcePaint)raf=requestAnimationFrame(frame);}
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend();else invalidate(true);});
+  if(window.IntersectionObserver)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(visible)invalidate(true);else suspend();},{rootMargin:'120px'}).observe($('mofLab'));
   if(window.ResizeObserver)new ResizeObserver(invalidate).observe(viewport);else window.addEventListener('resize',invalidate);
   const motionChange=e=>{reduced=e.matches;if(reduced){state.playing=false;updateScene();}$('motionNotice').textContent=reduced?'동작 줄이기 설정 적용 · 수동 조작 가능':'';};
   media?.addEventListener?.('change',motionChange);motionChange({matches:reduced});
