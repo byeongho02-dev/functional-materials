@@ -106,6 +106,8 @@
   }
   function render(){
     const model=M.scene(state,state.phase);$('modelName').textContent=model.name;placedLabels=[];
+    const colorSet=new Set(model.parts.map(p=>p.color)),legendColors={node:M.colors.blue,linker:M.colors.green,pore:M.colors.yellow,second:M.colors.purple,gas:M.colors.orange};
+    for(const li of root.querySelectorAll('[data-legend]'))li.hidden=!colorSet.has(legendColors[li.dataset.legend]);
     const ids=new Set(model.labels.map(l=>l.id));for(const [id,el]of labelObjects)if(!ids.has(id)){el.remove();labelObjects.delete(id);}
     if(renderer)drawThree(model);else drawFallback(model);
   }
@@ -121,39 +123,35 @@
   function range(id,label,min,max,step,value,note=''){return `<label class="field" for="${id}"><span class="field-title">${label}<output id="${id}Value"></output></span><input id="${id}" type="range" min="${min}" max="${max}" step="${step}" value="${value}"></label>${note?'<p class="control-note">'+note+'</p>':''}`;}
   function controls(){
     const c=state.chapter;let html='';
-    if(c===0)html='<p class="control-note">세 장면을 넘기며 치밀한 재료와 열린 골격을 비교하세요. 노란 선은 빈 공간의 위치입니다.</p>';
-    if(c===1)html='<p class="control-note">재생하거나 다음 장면을 눌러, 비공유 전자쌍이 결합 영역에서 공유되는 과정을 보세요.</p>';
-    if(c===2)html='<p class="control-note">6장면으로 구성요소 → 마디 → 연결 → 반복 → 결정 → 활성화를 살펴보세요. 마지막에는 회색 용매만 사라집니다.</p>';
-    if(c===3)html='<div class="choice-group" role="group" aria-label="링커의 벤젠 고리 수">'+M.families.map(f=>`<button type="button" data-rings="${f.rings}" aria-pressed="${state.rings===f.rings}">${f.rings}고리 · ${f.linker}</button>`).join('')+'</div><label class="check-field"><input id="compareStructures" type="checkbox"'+(state.compare?' checked':'')+'> 세 구조를 같은 배율로 비교</label><div class="comparison-table">'+M.families.map(f=>`<div><strong>${f.name.replace(' · MOF-5','')}</strong><span>${f.linker}</span><small>고리 ${f.rings}개 · Zn₄O</small></div>`).join('')+'</div><p class="control-note">상대 마디 거리 1·1.4·1.8. 측정값이 아닌 구조 비교용 가정입니다.</p>';
-    if(c===4)html=range('lengthRatio','마디 간 상대 거리 L₂/L₁',1,1.8,.01,state.ratio,'슬라이더는 기하 모형을 연속적으로 늘립니다. 고리 수에 따른 실제 합성 재료를 보간하지 않습니다.');
-    if(c===5)html='<label class="check-field"><input id="interpenetration" type="checkbox"'+(state.interpenetrate?' checked':'')+'> 상호관입 ON · 두 번째 골격 보기</label><p class="control-note">OFF: IRMOF-16 · ON: IRMOF-15의 연결 형태.<br>둘 다 TPDC 링커이며 두 망을 잇는 결합은 만들지 않습니다.</p>';
-    if(c===6)html='<label class="check-field"><input id="internalSurface" type="checkbox"'+(state.internal?' checked':'')+'> 내부 표면 강조</label><div class="court-analogy" aria-label="농구장 약 7개의 면적 비유">'+Array.from({length:7},()=>'<i class="court" aria-hidden="true"></i>').join('')+'</div><p class="control-note">1 g당 약 6.90개 농구장 면적.<br>농구장 1개 = 28 × 15 = 420 m²</p>';
-    if(c===7)html=range('gasPressure','상대 압력 P',0,5,.1,state.pressure)+range('gasTemperature','상대 온도 지수',.6,1.8,.05,state.temperature)+range('gasSize','분자 크기 / 입구 폭',.2,1.4,.05,state.size)+'<div class="choice-group" role="group" aria-label="가상 단일 기체의 친화력 선택"><button type="button" data-species="A" aria-pressed="'+(state.species==='A')+'">기체 A · 높은 친화력</button><button type="button" data-species="B" aria-pressed="'+(state.species==='B')+'">기체 B · 낮은 친화력</button></div><p class="control-note">A·B는 가상 기체입니다. 같은 조건에서 각각 따로 넣은 경우를 비교합니다. 수치에 물리 단위를 적용하지 않습니다.</p>';
+    $('interactionCard').hidden=c<3;
+    if(c===3)html='<div class="choice-group" role="group" aria-label="링커의 벤젠 고리 수">'+M.families.map(f=>`<button type="button" data-rings="${f.rings}" aria-pressed="${state.rings===f.rings}">고리 ${f.rings}개</button>`).join('')+'</div><details class="extra-options"><summary>세 구조 비교하기</summary><label class="check-field"><input id="compareStructures" type="checkbox"'+(state.compare?' checked':'')+'> 같은 배율로 나란히 보기</label><div class="comparison-table">'+M.families.map(f=>`<div><strong>${f.name.replace(' · MOF-5','')}</strong><span>${f.linker}</span><small>고리 ${f.rings}개 · Zn₄O</small></div>`).join('')+'</div></details>';
+    if(c===4)html=range('lengthRatio','마디 사이 거리',1,1.8,.01,state.ratio);
+    if(c===5)html='<label class="check-field"><input id="interpenetration" type="checkbox"'+(state.interpenetrate?' checked':'')+'> 보라색 두 번째 골격 보기</label>';
+    if(c===6)html='<label class="check-field"><input id="internalSurface" type="checkbox"'+(state.internal?' checked':'')+'> 내부 표면 강조</label><div class="court-analogy" aria-label="농구장 약 7개의 면적 비유">'+Array.from({length:7},()=>'<i class="court" aria-hidden="true"></i>').join('')+'</div>';
+    if(c===7)html=range('gasPressure','압력 높이기',0,5,.1,state.pressure)+'<details class="extra-options" id="gasOptions"><summary>온도·분자 크기도 바꿔 보기</summary>'+range('gasTemperature','온도 지수',.6,1.8,.05,state.temperature)+range('gasSize','분자 크기 / 입구 폭',.2,1.4,.05,state.size)+'<div class="choice-group" role="group" aria-label="가상 단일 기체의 친화력 선택"><button type="button" data-species="A" aria-pressed="'+(state.species==='A')+'">기체 A · 잘 붙음</button><button type="button" data-species="B" aria-pressed="'+(state.species==='B')+'">기체 B · 덜 붙음</button></div><p class="control-note">같은 조건에서 각각 따로 넣은 가상 기체를 비교합니다. 압력·온도는 물리 단위가 없는 모형값입니다.</p><p id="gasAdvancedResults" class="control-note"></p></details>';
     if(c===8)html='<div class="application-options" role="group" aria-label="MOF 활용 분야">'+M.applications.map((a,i)=>`<button type="button" data-application="${i}" aria-pressed="${state.application===i}">${a.name}</button>`).join('')+'</div><p id="applicationWhy" class="control-note"></p>';
     $('chapterControls').innerHTML=html;results();
   }
   function results(){
     const c=state.chapter;let html='';
-    if(c===0)html=result('핵심 구성','마디 + 링커','연결망 사이에 기공',true)+result('내부 공간','열린 기공','분자의 접근 가능성이 중요',true);
-    if(c===1)html=result('전자쌍 제공','카복실레이트 O','루이스 염기',true)+result('전자쌍 수용','Zn²⁺','루이스 산',true);
-    if(c===2)html=result('조성','Zn₄O(BDC)₃','MOF-5 = IRMOF-1',true)+result('마디의 연결도','6방향','단일 Zn의 배위수와 구분');
-    if(c===3){const f=M.family(state.rings);html=result('선택 구조',f.name,f.linker+' · '+f.rings+'고리',true)+result('금속 마디','같은 Zn₄O','그림 속 마디 반지름 고정',true);}
-    if(c===4){const v=M.volume(state.ratio);$('lengthRatioValue').textContent=v.length.toFixed(2)+'배';html=result('마디 거리비',v.length.toFixed(2)+'배','L₂/L₁')+result('기하 공간 부피비',v.volume.toFixed(3)+'배','(L₂/L₁)³ · 실측 기공 부피 아님');}
-    if(c===5)html=result('독립 연결망',state.interpenetrate?'2개':'1개','두 망 사이의 연결 결합 0개')+result('비교 구조',state.interpenetrate?'IRMOF-15':'IRMOF-16','TPDC · 연결 형태 모식도',true);
-    if(c===6)html=result('문헌 Langmuir 표면적','≈ 2,900','m²/g · MOF-5 대표 추정값')+result('농구장 면적 비유','≈ 6.90개','1 g 기준 · BET 값과 구분');
+    if(c===3){const f=M.family(state.rings);html=result('선택한 구조',f.name,f.linker+' · 고리 '+f.rings+'개',true);}
+    if(c===4){const v=M.volume(state.ratio);$('lengthRatioValue').textContent=v.length.toFixed(2)+'배';html=result('길이비',v.length.toFixed(2)+'배','L₂/L₁')+result('기하 공간 부피비',v.volume.toFixed(3)+'배','길이비 × 길이비 × 길이비');}
+    if(c===5)html=result('현재 연결망',state.interpenetrate?'2개 · IRMOF-15':'1개 · IRMOF-16',state.interpenetrate?'서로 직접 결합하지 않은 두 골격':'TPDC 링커의 골격 하나',true);
+    if(c===6)html=result('MOF-5 1 g의 표면적','농구장 약 7개','문헌의 Langmuir 추정값: 약 2,900 m²/g',true);
     if(c===7){
       const a=M.adsorption(state),b=M.adsorption({...state,species:state.species==='A'?'B':'A'});
       $('gasPressureValue').textContent=Number(state.pressure).toFixed(1);$('gasTemperatureValue').textContent=Number(state.temperature).toFixed(2);$('gasSizeValue').textContent=Number(state.size).toFixed(2);
-      html=result('기체 '+state.species+' 모형 평형 점유율',(a.coverage*100).toFixed(1)+'%','θ = bP/(1+bP) · 단일 성분')+result('입구 접근',a.accessible?'가능':'제한','강체 크기 기준 모형',true)+result('다른 기체 단독 점유율',(b.coverage*100).toFixed(1)+'%','동일 조건에서 따로 넣은 비교')+result('해석 범위','정성 모형','실험값·혼합 기체 선택도 아님',true);
+      html=result('모형의 표면 점유율',(a.coverage*100).toFixed(1)+'%','기체 '+state.species+' · 가상 모형값')+result('입구 통과',a.accessible?'가능':'제한','분자 크기와 입구 폭 비교',true);
+      $('gasAdvancedResults').textContent='다른 기체를 단독으로 넣었을 때: '+(b.coverage*100).toFixed(1)+'%. 혼합 기체의 선택도를 뜻하지 않습니다.';
     }
-    if(c===8){const a=M.applications[state.application];$('applicationWhy').textContent=a.why;html=result('필요한 구조 특성',a.metric,'원하는 응용에 맞추어 설계',true)+result('성능 판단','조건별 검증','안정성·수분·재생도 고려',true);}
-    $('liveResults').innerHTML=html;
+    if(c===8)$('applicationWhy').textContent=M.applications[state.application].why;
+    $('liveResults').innerHTML=html;$('liveResults').hidden=!html;
   }
   function updateScene(announce=false){
     const scenes=M.chapters[state.chapter].scenes,entry=scenes[state.step];
     $('sceneCount').textContent=`장면 ${state.step+1} / ${scenes.length}`;$('sceneTitle').textContent=entry[0];$('sceneWhy').textContent=entry[1];
     $('previousScene').disabled=state.step===0;$('nextScene').disabled=state.step===scenes.length-1;
-    $('playScene').textContent=state.playing?'일시정지':'재생';$('playScene').setAttribute('aria-pressed',String(state.playing));
+    $('playScene').textContent=state.playing?'일시정지':'과정 재생';$('playScene').setAttribute('aria-pressed',String(state.playing));
     const p=Math.round((state.step+state.phase)/scenes.length*100);$('sceneProgress').value=p;$('progressValue').textContent=p+'%';
     if(announce)status(`장면 ${state.step+1}. ${entry[0]}. ${entry[1]}`);invalidate();
   }
@@ -161,7 +159,7 @@
     state.chapter=M.clamp(index,0,M.chapters.length-1);state.step=0;state.phase=0;state.playing=false;lastTime=0;
     const c=M.chapters[state.chapter];
     $('chapterKicker').textContent=`STEP ${String(state.chapter+1).padStart(2,'0')} / 09`;$('chapterTitle').textContent=c.title;$('chapterKey').textContent=c.key;
-    $('chapterExplanation').innerHTML=c.explanation;$('chapterTheory').innerHTML=c.theory;$('chapterCaution').textContent=c.caution;$('theoryDetails').open=false;
+    $('chapterExplanation').innerHTML=c.explanation;$('tryHint').textContent=c.guide;$('chapterNote').textContent=c.note;$('chapterNote').hidden=!c.note;$('chapterTheory').innerHTML=c.theory;$('chapterCaution').textContent=c.caution;$('theoryDetails').open=false;
     for(const b of $('chapterNav').querySelectorAll('button')){if(Number(b.dataset.chapter)===state.chapter)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');}
     $('previousChapter').disabled=state.chapter===0;$('nextChapter').disabled=state.chapter===8;$('chapterPosition').textContent=`학습 단계 ${state.chapter+1} / 9`;
     controls();updateScene();
@@ -184,6 +182,7 @@
       state.step=Math.min(n-1,Math.floor(v));state.phase=Number(el.value)===100?1:v-state.step;state.playing=false;updateScene(true);return;
     }else if(id==='playSpeed'){state.speed=Number(el.value);return;}
     else return;
+    if(state.chapter===7&&!state.playing){state.step=1;state.phase=1;updateScene();}
     results();invalidate();
   }
   root.addEventListener('input',inputEvent);
@@ -199,8 +198,8 @@
     const b=e.target.closest('button');if(!b||!root.contains(b)||b.disabled)return;
     if(b.dataset.chapter!==undefined){selectChapter(Number(b.dataset.chapter));return;}
     if(b.dataset.view){view(b.dataset.view);return;}
-    if(b.dataset.rings){state.rings=Number(b.dataset.rings);controls();invalidate();status(M.family(state.rings).name+' 구조를 선택했습니다.');return;}
-    if(b.dataset.species){state.species=b.dataset.species;controls();invalidate();status('기체 '+state.species+'의 단일 성분 점유율을 표시합니다.');return;}
+    if(b.dataset.rings){state.rings=Number(b.dataset.rings);const wasOpen=$('chapterControls').querySelector('details')?.open;controls();$('chapterControls').querySelector('details').open=!!wasOpen;invalidate();status(M.family(state.rings).name+' 구조를 선택했습니다.');return;}
+    if(b.dataset.species){state.species=b.dataset.species;controls();$('gasOptions').open=true;invalidate();status('기체 '+state.species+'의 단일 성분 점유율을 표시합니다.');return;}
     if(b.dataset.application!==undefined){state.application=Number(b.dataset.application);controls();invalidate();return;}
     if(b.id==='previousScene')changeStep(-1);
     if(b.id==='nextScene')changeStep(1);
