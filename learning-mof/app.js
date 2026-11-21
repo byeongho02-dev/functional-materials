@@ -3,7 +3,6 @@
   const root=document.getElementById('mofLearning');
   const M=window.MOFModel;
   const L=window.MOFLearning;
-  const learnerAnswers=new Map(),learnerNotes=new Map();
   if(!root||!M||root.dataset.initialized==='true')return;
   root.dataset.initialized='true';
   const $=id=>root.querySelector('#'+id);
@@ -207,22 +206,10 @@
     if(!L)return;
     const lesson=L.lessons[state.chapter];
     $('lessonAnalogy').textContent=lesson.analogy;$('analogyBoundary').textContent='비유의 범위 · '+lesson.boundary;
-    $('lessonSources').innerHTML='근거: '+lesson.sources.map(id=>{const ref=L.references.find(r=>r.id===id);return `<a href="${ref.url}" target="_blank" rel="noopener noreferrer">${ref.label}</a>`;}).join(' · ');
     $('experimentDetails').innerHTML=lesson.experiment.reduce((html,text,i)=>i%2===0?html+`<div><dt>${text}</dt><dd>${lesson.experiment[i+1]}</dd></div>`:html,'');
     $('experimentGuide').hidden=state.chapter<3;$('experimentGuide').open=[3,4,5,7].includes(state.chapter);
     $('quantityGuide').hidden=![3,4,6,7].includes(state.chapter);$('quantityGuide').open=false;
     $('practicalNote').textContent=lesson.practical||'';$('practicalNote').hidden=!lesson.practical;
-    $('quizQuestion').textContent=lesson.question;
-    const saved=learnerAnswers.get(state.chapter);
-    $('quizOptions').innerHTML=lesson.options.map((text,i)=>`<label for="knowledge-${i}" class="quiz-option"><input type="radio" name="knowledge-answer" id="knowledge-${i}" value="${i}"${saved?.choice===i?' checked':''}><span>${text}</span></label>`).join('');
-    $('quizFeedback').textContent=saved?.feedback||'';$('quizFeedback').dataset.correct=saved?String(saved.correct):'';
-    $('recallPrompt').textContent=lesson.recall;$('selfExplanation').value=learnerNotes.get(state.chapter)||'';$('selfReflection').open=false;
-  }
-  function checkUnderstanding(){
-    const chosen=root.querySelector('input[name="knowledge-answer"]:checked');
-    const choice=chosen?Number(chosen.value):null,result=L.grade(state.chapter,choice);
-    $('quizFeedback').textContent=result.text;$('quizFeedback').dataset.correct=result.missing?'':String(result.correct);
-    if(!result.missing)learnerAnswers.set(state.chapter,{choice,feedback:result.text,correct:result.correct});
   }
   function updateScene(announce=false){
     const scenes=M.chapters[state.chapter].scenes,entry=scenes[state.step];
@@ -238,7 +225,7 @@
     const coreIndex=coreOrder.indexOf(state.chapter);
     $('chapterKicker').textContent=coreIndex>=0?`기초 ${coreIndex+1} / 3`:`심화 ${advancedOrder.indexOf(state.chapter)+1} / 6`; $('chapterTitle').textContent=c.title;$('chapterKey').textContent=c.key;
     $('storyTitle').textContent=c.storyTitle;$('storyBridge').textContent=c.bridge;$('storyBridgeLabel').textContent=state.chapter===1?'처음의 질문으로 돌아오면':state.chapter===8?'이야기를 마치며':'다음 이야기로';$('storyContinue').hidden=state.chapter!==1;
-    $('chapterExplanation').innerHTML=c.explanation;$('tryHint').textContent=c.guide;$('chapterNote').textContent=c.note;$('chapterNote').hidden=!c.note;$('chapterTheory').innerHTML=c.theory;$('chapterCaution').textContent=c.caution;$('theoryDetails').open=false;
+    $('chapterExplanation').innerHTML=c.explanation;$('chapterNote').textContent=c.note;$('chapterNote').hidden=!c.note;$('chapterTheory').innerHTML=c.theory;$('chapterCaution').textContent=c.caution;$('theoryDetails').open=false;
     for(const b of root.querySelectorAll('[data-chapter]')){if(Number(b.dataset.chapter)===state.chapter)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');}
     const order=coreIndex>=0?coreOrder:advancedOrder,position=order.indexOf(state.chapter);
     $('previousChapter').disabled=position===0;$('nextChapter').disabled=position===order.length-1;$('nextChapter').textContent=state.chapter===0?'다음 · 두 부품의 이야기':state.chapter===2?'다음 · 결합의 이야기':coreIndex===2?'기초 이야기 완료':'다음 이야기';$('chapterPosition').textContent=coreIndex>=0?`기초 ${coreIndex+1} / 3`:`심화 ${position+1} / 6`;
@@ -254,7 +241,6 @@
   }
   function inputEvent(e){
     const el=e.target,id=el.id;
-    if(id==='selfExplanation'){learnerNotes.set(state.chapter,el.value);return;}
     if(id==='explodeModel'){state.explode=Number(el.value);state.focus='framework';invalidate(true);return;}
     if(id==='lengthRatio')state.ratio=Number(el.value);
     else if(id==='gasPressure')state.pressure=Number(el.value);
@@ -282,7 +268,6 @@
   });
   root.addEventListener('click',e=>{
     const b=e.target.closest('button');if(!b||!root.contains(b)||b.disabled)return;
-    if(b.id==='checkAnswer'){checkUnderstanding();return;}
     if(b.dataset.chapter!==undefined){selectChapter(Number(b.dataset.chapter));return;}
     if(b.dataset.focus){state.focus=b.dataset.focus;if(state.focus==='pore'){state.showPores=true;$('showPores').checked=true;}if(['node','linker'].includes(state.focus))state.representation='atoms';state.explode=0;$('explodeModel').value='0';invalidate(true);status('구성요소 보기를 바꿨습니다.');return;}
     if(b.dataset.representation){state.representation=b.dataset.representation;if(state.representation==='topology')state.focus='framework';invalidate(true);return;}

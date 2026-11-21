@@ -13,7 +13,8 @@ function ok(v,m){assert.ok(v,m);checks++;}
 function eq(a,b,m){assert.equal(a,b,m);checks++;}
 function near(a,b,m){ok(Math.abs(a-b)<1e-10,m);}
 near(M.volume(1.8).volume,5.832,'Requested cubic geometry');
-for(let i=0;i<9;i++){eq(L.grade(i,L.lessons[i].answer).correct,true,'Correct concept answer '+i);ok(L.grade(i,null).missing,'Missing answer is not graded');for(let j=0;j<3;j++)eq(L.grade(i,j).correct,j===L.lessons[i].answer,'Concept-specific feedback');for(const id of L.lessons[i].sources)ok(L.references.some(r=>r.id===id),'Referenced source exists');}
+eq(L.lessons.length,9,'All topics retain their learning guidance');
+for(const lesson of L.lessons)for(const id of lesson.sources)ok(L.references.some(r=>r.id===id),'Referenced source exists');
 eq(M.scene({...M.defaults(7),pressure:0},1).parts.filter(p=>p.id.startsWith('gas-')).length,0,'Zero model pressure has no illustrated gas particles');
 const bdc=molecular.scene({...M.defaults(0),focus:'linker',hydrogen:true});
 for(const [element,count]of [['C',8],['H',4],['O',4]])eq(bdc.parts.filter(p=>p.atom===element).length,count,'BDC component composition '+element);
@@ -98,11 +99,9 @@ for(const width of [320,390,800,1280]){
   ok(q('#sceneWhy').closest('.explanation-column'),'Scene explanation lives beside the model');
   const firstReason=q('#sceneReason').textContent;fire('#nextScene');frames();ok(firstReason!==q('#sceneReason').textContent&&q('#sceneReason').textContent.length>20,'Changing the scene updates its causal explanation');
   eq(q('#chapterNav').querySelectorAll('[data-chapter]').length,3,'Three primary foundation questions');
-  ok(q('#lessonAnalogy').textContent.length>20,'Analogy is supplied');ok(q('#analogyBoundary').textContent.includes('비유의 범위'));ok(q('#lessonSources a'));
-  fire('#checkAnswer');ok(q('#quizFeedback').textContent.includes('골라'));
-  q('#knowledge-0').checked=true;fire('#checkAnswer');eq(q('#quizFeedback').dataset.correct,'false');q('#knowledge-0').checked=false;q('#knowledge-1').checked=true;fire('#checkAnswer');eq(q('#quizFeedback').dataset.correct,'true');input('#selfExplanation','금속 노드와 유기 링커의 규칙적인 골격');fire('[data-chapter="2"]');fire('[data-chapter="0"]');eq(q('#selfExplanation').value,'금속 노드와 유기 링커의 규칙적인 골격');eq(q('#quizFeedback').dataset.correct,'true','Feedback survives topic changes');
+  ok(q('#lessonAnalogy').textContent.length>20,'Analogy is supplied');ok(q('#analogyBoundary').textContent.includes('비유의 범위'));ok(q('#additionalReferences a'),'References remain in the folded footer');
   const all=[];
-  for(let chapter=0;chapter<9;chapter++){fire(`[data-chapter="${chapter}"]`);frames();all.push(u.visual());eq(q(`[data-chapter="${chapter}"]`).getAttribute('aria-current'),'step');ok(q('#chapterKey').textContent.length>15);ok(q('#quizQuestion').textContent.length>15);ok(q('#lessonAnalogy').textContent.length>20);ok(!/NaN|Infinity|undefined/.test(u.visual()),'Finite SVG projection');}
+  for(let chapter=0;chapter<9;chapter++){fire(`[data-chapter="${chapter}"]`);frames();all.push(u.visual());eq(q(`[data-chapter="${chapter}"]`).getAttribute('aria-current'),'step');ok(q('#chapterKey').textContent.length>15);ok(!q('#understandingCheck')&&!q('#tryHint')&&!q('#lessonSources'),'Removed sections stay absent in every topic');ok(q('#lessonAnalogy').textContent.length>20);ok(!/NaN|Infinity|undefined/.test(u.visual()),'Finite SVG projection');}
   eq(new Set(all).size,9,'Nine distinct chapter scenes');
   fire('[data-chapter="0"]');fire('[data-focus="node"]');frames();ok(q('#modelName').textContent.includes('Zn₄O'),'Node detail view');const nodeView=u.visual();fire('[data-focus="linker"]');frames();ok(q('#modelName').textContent.includes('BDC'));ok(nodeView!==u.visual(),'Component focus changes real geometry');check('#showHydrogen',true);ok(q('[data-legend="hydrogen"]').hidden===false,'Hydrogen toggle changes the model');fire('[data-representation="topology"]');fire('[data-focus="framework"]');frames();const topology=u.visual();fire('[data-representation="atoms"]');frames();ok(topology!==u.visual(),'Molecular and connectivity views differ');
   fire('[data-chapter="3"]');fire('[data-rings="3"]');frames();ok(q('#modelName').textContent.includes('IRMOF-16'));check('#compareStructures',true);ok(q('#objectLabels').textContent.includes('IRMOF-10'));
