@@ -211,13 +211,25 @@
     $('quantityGuide').hidden=![3,4,6,7].includes(state.chapter);$('quantityGuide').open=false;
     $('practicalNote').textContent=lesson.practical||'';$('practicalNote').hidden=!lesson.practical;
   }
+  function fitLabLayout(){
+    // Keep both primary columns level; long reference text lives below them.
+    if(document.hidden)return;
+    const width=window.innerWidth||0;
+    if(width<=850){viewport.style.removeProperty('height');return;}
+    const stage=viewport.closest('.stage-shell'),side=root.querySelector('.explanation-column');
+    const stageHeight=stage.getBoundingClientRect().height,sideHeight=side.getBoundingClientRect().height,viewHeight=viewport.getBoundingClientRect().height;
+    if(!stageHeight||!sideHeight||!viewHeight)return;
+    const chrome=stageHeight-viewHeight;
+    const target=Math.round(Math.min(800,Math.max(280,sideHeight-chrome)));
+    if(Math.abs(viewHeight-target)>1)viewport.style.height=target+'px';
+  }
   function updateScene(announce=false){
     const scenes=M.chapters[state.chapter].scenes,entry=scenes[state.step];
     $('sceneCount').textContent=`장면 ${state.step+1} / ${scenes.length}`;$('sceneTitle').textContent=entry[0];$('sceneWhy').textContent=entry[1];$('sceneReason').textContent=M.chapters[state.chapter].reasons[state.step];
     $('previousScene').disabled=state.step===0;$('nextScene').disabled=state.step===scenes.length-1;
     $('playScene').textContent=state.playing?'일시정지':'과정 재생';$('playScene').setAttribute('aria-pressed',String(state.playing));
     const p=Math.round((state.step+state.phase)/scenes.length*100);$('sceneProgress').value=p;$('progressValue').textContent=p+'%';
-    if(announce)status(`장면 ${state.step+1}. ${entry[0]}. ${entry[1]}`);invalidate(true);
+    if(announce)status(`장면 ${state.step+1}. ${entry[0]}. ${entry[1]}`);fitLabLayout();invalidate(true);
   }
   function selectChapter(index,announce=true){
     state.chapter=M.clamp(index,0,M.chapters.length-1);state.step=0;state.phase=0;state.playing=false;lastTime=0;
@@ -311,6 +323,11 @@
   document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend();else invalidate(true);});
   if(window.IntersectionObserver)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(visible)invalidate(true);else suspend();},{rootMargin:'120px'}).observe($('mofLab'));
   if(window.ResizeObserver)new ResizeObserver(invalidate).observe(viewport);else window.addEventListener('resize',invalidate);
+  if(window.ResizeObserver){
+    const layoutObserver=new ResizeObserver(fitLabLayout);
+    for(const el of root.querySelectorAll('.explanation-column,.stage-top,.molecular-controls,.direct-view-controls,.legend'))layoutObserver.observe(el);
+  }
+  window.addEventListener('resize',fitLabLayout);
   const motionChange=e=>{reduced=e.matches;if(reduced){state.playing=false;updateScene();}$('motionNotice').textContent=reduced?'동작 줄이기 설정 적용 · 수동 조작 가능':'';};
   media?.addEventListener?.('change',motionChange);motionChange({matches:reduced});
   window.addEventListener('pagehide',()=>{suspend();state.playing=false;});

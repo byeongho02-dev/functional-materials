@@ -113,3 +113,37 @@ test('molecular controls remain usable without WebGL',async({page})=>{
   await expect(page.locator('#modelName')).toContainText('Zn₄O');
   expect(await page.locator('#fallbackScene circle').count()).toBeGreaterThan(20);
 });
+
+for(const [width,height]of [[1440,1000],[1100,900],[900,900]]){
+  test('MOF chapter columns stay balanced at '+width,async({page})=>{
+    const errors=[];page.on('pageerror',e=>errors.push(e.message));
+    await page.setViewportSize({width,height});
+    await page.goto('/learning-mof/index.html');
+    await page.locator('#advancedTopics').evaluate(el=>el.open=true);
+    for(const chapter of [0,2,1,3,4,5,6,7,8]){
+      await page.locator('[data-chapter="'+chapter+'"]').click();
+      let step=0;
+      do{
+        if(step)await page.locator('#nextScene').click();
+        await expect.poll(async()=>page.evaluate(()=>{
+          const model=document.querySelector('.stage-shell').getBoundingClientRect();
+          const controls=document.querySelector('.explanation-column').getBoundingClientRect();
+          return Math.abs(model.height-controls.height);
+        }),{message:'Unfilled column in chapter '+chapter+', scene '+step+', width '+width}).toBeLessThanOrEqual(48);
+        expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+        step++;
+      }while(!await page.locator('#nextScene').isDisabled());
+      const grid=await page.locator('.lab-grid').boundingBox(),shared=await page.locator('.chapter-expansion').boundingBox();
+      expect(Math.abs(grid.width-shared.width)).toBeLessThan(2);
+      expect(shared.y-grid.y-grid.height).toBeLessThan(24);
+      expect(shared.y-grid.y-grid.height).toBeGreaterThanOrEqual(0);
+      if([0,2,1,7].includes(chapter)&&width!==900)await page.locator('.lab-grid').screenshot({path:'preview/fab-v092/mof-balanced-'+chapter+'-'+width+'.png'});
+    }
+    await page.locator('#theoryDetails > summary').click();
+    await expect(page.locator('#chapterTheory')).toBeVisible();
+    await page.setViewportSize({width:390,height:844});
+    await expect.poll(()=>page.locator('#viewport').evaluate(el=>el.style.height)).toBe('');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+    expect(errors).toEqual([]);
+  });
+}
