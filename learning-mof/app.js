@@ -220,8 +220,7 @@
     const stageHeight=stage.getBoundingClientRect().height,sideHeight=side.getBoundingClientRect().height,viewHeight=viewport.getBoundingClientRect().height;
     if(!stageHeight||!sideHeight||!viewHeight)return;
     const chrome=stageHeight-viewHeight;
-    const limit=Math.max(500,Math.min(700,viewport.clientWidth*1.2));
-    const target=Math.round(Math.min(limit,Math.max(280,sideHeight-chrome)));
+    const target=Math.round(Math.min(800,Math.max(280,sideHeight-chrome)));
     if(Math.abs(viewHeight-target)>1)viewport.style.height=target+'px';
   }
   function updateScene(announce=false){
