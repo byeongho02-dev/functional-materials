@@ -34,7 +34,7 @@ for (const [width, height] of [[1440, 900], [390, 844]]) {
     await page.locator('#themeGrid a[href="learning-mof/index.html"]').click();
     await expect(page).toHaveURL(/\/learning-mof\/index\.html$/);
     await expect(page.locator('#mofLearning')).toHaveAttribute('data-initialized', 'true');
-    await expect(page.locator('#chapterTitle')).toHaveText('MOF는 무엇으로 만들어질까요?');
+    await expect(page.locator('#chapterTitle')).toHaveText('MOF란 무엇인가요?');
     await expect(page.locator('.explanation-column #sceneReason')).not.toBeEmpty();
     await page.waitForFunction(() => document.querySelector('#objectLabels')?.children.length > 0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
