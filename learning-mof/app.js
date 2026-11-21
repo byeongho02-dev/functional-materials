@@ -2,6 +2,8 @@
   'use strict';
   const root=document.getElementById('mofLearning');
   const M=window.MOFModel;
+  const L=window.MOFLearning;
+  const learnerAnswers=new Map(),learnerNotes=new Map();
   if(!root||!M||root.dataset.initialized==='true')return;
   root.dataset.initialized='true';
   const $=id=>root.querySelector('#'+id);
@@ -175,7 +177,7 @@
     const c=state.chapter;let html='';
     $('interactionCard').hidden=false;
     $('controlTitle').textContent=c<3?'이해의 핵심':'직접 바꿔 보기';
-    if(c===0)html='<dl class="core-facts"><div><dt>마디</dt><dd>금속 이온 또는 금속 클러스터로 된 연결부</dd></div><div><dt>링커</dt><dd>두 마디 이상을 연결하는 유기 분자</dd></div><div><dt>기공</dt><dd>골격 사이에 남는, 분자가 접근할 수 있는 빈 공간</dd></div></dl>';
+    if(c===0)html='<dl class="core-facts"><div><dt>마디</dt><dd>금속 이온 또는 클러스터(원자들의 묶음)로 된 연결부</dd></div><div><dt>링커</dt><dd>두 마디 이상을 연결하는 유기 분자</dd></div><div><dt>기공</dt><dd>골격 사이에 남는, 분자가 접근할 수 있는 빈 공간</dd></div></dl>';
     if(c===1)html='<dl class="core-facts"><div><dt>전자쌍 제공</dt><dd>카복실레이트 산소 · 루이스 염기</dd></div><div><dt>전자쌍 받음</dt><dd>Zn²⁺ · 루이스 산</dd></div><div><dt>결합의 결과</dt><dd>전자쌍을 공유하며 더 안정한 결합 상태 형성</dd></div></dl>';
     if(c===2)html='<p class="composition-formula">Zn₄O(BDC)₃ <span>MOF-5 · IRMOF-1</span></p><dl class="core-facts"><div><dt>Zn₄O 마디</dt><dd>중심 산소와 아연 네 개가 이룬 클러스터 기반</dd></div><div><dt>BDC 링커</dt><dd>벤젠 고리 + 양끝 카복실레이트</dd></div><div><dt>6개 연결</dt><dd>마디 전체가 여섯 방향으로 이웃과 연결</dd></div></dl>';
     if(c===3)html='<div class="choice-group" role="group" aria-label="링커의 벤젠 고리 수">'+M.families.map(f=>`<button type="button" data-rings="${f.rings}" aria-pressed="${state.rings===f.rings}">고리 ${f.rings}개</button>`).join('')+'</div><details class="extra-options"><summary>세 구조 비교하기</summary><label class="check-field"><input id="compareStructures" type="checkbox"'+(state.compare?' checked':'')+'> 같은 배율로 나란히 보기</label><div class="comparison-table">'+M.families.map(f=>`<div><strong>${f.name.replace(' · MOF-5','')}</strong><span>${f.linker}</span><small>고리 ${f.rings}개 · Zn₄O</small></div>`).join('')+'</div></details>';
@@ -201,6 +203,27 @@
     if(c===8)$('applicationWhy').textContent=M.applications[state.application].why;
     $('liveResults').innerHTML=html;$('liveResults').hidden=!html;
   }
+  function renderLearning(){
+    if(!L)return;
+    const lesson=L.lessons[state.chapter];
+    $('lessonAnalogy').textContent=lesson.analogy;$('analogyBoundary').textContent='비유의 범위 · '+lesson.boundary;
+    $('lessonSources').innerHTML='근거: '+lesson.sources.map(id=>{const ref=L.references.find(r=>r.id===id);return `<a href="${ref.url}" target="_blank" rel="noopener noreferrer">${ref.label}</a>`;}).join(' · ');
+    $('experimentDetails').innerHTML=lesson.experiment.reduce((html,text,i)=>i%2===0?html+`<div><dt>${text}</dt><dd>${lesson.experiment[i+1]}</dd></div>`:html,'');
+    $('experimentGuide').hidden=state.chapter<3;$('experimentGuide').open=[3,4,5,7].includes(state.chapter);
+    $('quantityGuide').hidden=![3,4,6,7].includes(state.chapter);$('quantityGuide').open=false;
+    $('practicalNote').textContent=lesson.practical||'';$('practicalNote').hidden=!lesson.practical;
+    $('quizQuestion').textContent=lesson.question;
+    const saved=learnerAnswers.get(state.chapter);
+    $('quizOptions').innerHTML=lesson.options.map((text,i)=>`<label for="knowledge-${i}" class="quiz-option"><input type="radio" name="knowledge-answer" id="knowledge-${i}" value="${i}"${saved?.choice===i?' checked':''}><span>${text}</span></label>`).join('');
+    $('quizFeedback').textContent=saved?.feedback||'';$('quizFeedback').dataset.correct=saved?String(saved.correct):'';
+    $('recallPrompt').textContent=lesson.recall;$('selfExplanation').value=learnerNotes.get(state.chapter)||'';$('selfReflection').open=false;
+  }
+  function checkUnderstanding(){
+    const chosen=root.querySelector('input[name="knowledge-answer"]:checked');
+    const choice=chosen?Number(chosen.value):null,result=L.grade(state.chapter,choice);
+    $('quizFeedback').textContent=result.text;$('quizFeedback').dataset.correct=result.missing?'':String(result.correct);
+    if(!result.missing)learnerAnswers.set(state.chapter,{choice,feedback:result.text,correct:result.correct});
+  }
   function updateScene(announce=false){
     const scenes=M.chapters[state.chapter].scenes,entry=scenes[state.step];
     $('sceneCount').textContent=`장면 ${state.step+1} / ${scenes.length}`;$('sceneTitle').textContent=entry[0];$('sceneWhy').textContent=entry[1];$('sceneReason').textContent=M.chapters[state.chapter].reasons[state.step];
@@ -214,12 +237,13 @@
     const c=M.chapters[state.chapter];
     const coreIndex=coreOrder.indexOf(state.chapter);
     $('chapterKicker').textContent=coreIndex>=0?`기초 ${coreIndex+1} / 3`:`심화 ${advancedOrder.indexOf(state.chapter)+1} / 6`; $('chapterTitle').textContent=c.title;$('chapterKey').textContent=c.key;
+    $('storyTitle').textContent=c.storyTitle;$('storyBridge').textContent=c.bridge;$('storyBridgeLabel').textContent=state.chapter===1?'처음의 질문으로 돌아오면':state.chapter===8?'이야기를 마치며':'다음 이야기로';$('storyContinue').hidden=state.chapter!==1;
     $('chapterExplanation').innerHTML=c.explanation;$('tryHint').textContent=c.guide;$('chapterNote').textContent=c.note;$('chapterNote').hidden=!c.note;$('chapterTheory').innerHTML=c.theory;$('chapterCaution').textContent=c.caution;$('theoryDetails').open=false;
     for(const b of root.querySelectorAll('[data-chapter]')){if(Number(b.dataset.chapter)===state.chapter)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');}
     const order=coreIndex>=0?coreOrder:advancedOrder,position=order.indexOf(state.chapter);
-    $('previousChapter').disabled=position===0;$('nextChapter').disabled=position===order.length-1;$('nextChapter').textContent=coreIndex===2?'기초 학습 완료':'다음 주제';$('chapterPosition').textContent=coreIndex>=0?`기초 ${coreIndex+1} / 3`:`심화 ${position+1} / 6`;
+    $('previousChapter').disabled=position===0;$('nextChapter').disabled=position===order.length-1;$('nextChapter').textContent=state.chapter===0?'다음 · 두 부품의 이야기':state.chapter===2?'다음 · 결합의 이야기':coreIndex===2?'기초 이야기 완료':'다음 이야기';$('chapterPosition').textContent=coreIndex>=0?`기초 ${coreIndex+1} / 3`:`심화 ${position+1} / 6`;
     if(coreIndex<0)$('advancedTopics').open=true;state.focus='framework';state.explode=0;$('explodeModel').value='0';view('home');
-    controls();updateScene();
+    controls();renderLearning();updateScene();
     if(announce)status(`${state.chapter+1}단계. ${c.title}. ${c.key}`);
   }
   function changeStep(delta){state.step=M.clamp(state.step+delta,0,M.chapters[state.chapter].scenes.length-1);state.phase=1;state.playing=false;updateScene(true);}
@@ -230,6 +254,7 @@
   }
   function inputEvent(e){
     const el=e.target,id=el.id;
+    if(id==='selfExplanation'){learnerNotes.set(state.chapter,el.value);return;}
     if(id==='explodeModel'){state.explode=Number(el.value);state.focus='framework';invalidate(true);return;}
     if(id==='lengthRatio')state.ratio=Number(el.value);
     else if(id==='gasPressure')state.pressure=Number(el.value);
@@ -257,6 +282,7 @@
   });
   root.addEventListener('click',e=>{
     const b=e.target.closest('button');if(!b||!root.contains(b)||b.disabled)return;
+    if(b.id==='checkAnswer'){checkUnderstanding();return;}
     if(b.dataset.chapter!==undefined){selectChapter(Number(b.dataset.chapter));return;}
     if(b.dataset.focus){state.focus=b.dataset.focus;if(state.focus==='pore'){state.showPores=true;$('showPores').checked=true;}if(['node','linker'].includes(state.focus))state.representation='atoms';state.explode=0;$('explodeModel').value='0';invalidate(true);status('구성요소 보기를 바꿨습니다.');return;}
     if(b.dataset.representation){state.representation=b.dataset.representation;if(state.representation==='topology')state.focus='framework';invalidate(true);return;}
@@ -306,5 +332,7 @@
   window.addEventListener('pageshow',()=>{lastTime=0;updateScene();});
   $('chapterNav').innerHTML=coreOrder.map((i,n)=>`<button type="button" data-chapter="${i}"><span class="step-number">${['MOF란?','무엇으로?','왜 결합할까?'][n]}</span><strong>${['빈 공간을 가진 결정','금속 마디와 유기 링커','전자쌍을 공유하는 결합'][n]}</strong></button>`).join('');
   $('advancedChapterNav').innerHTML=advancedOrder.map(i=>`<button type="button" data-chapter="${i}">${M.chapters[i].short}</button>`).join('');
+  $('storyContinue').addEventListener('click',()=>{$('advancedTopics').open=true;});
+  if(L)$('additionalReferences').innerHTML=L.references.slice(2).map(ref=>`<li id="ref-${ref.id}">${ref.title}. <cite>${ref.journal}</cite>. <a href="${ref.url}" target="_blank" rel="noopener noreferrer">학술 원문</a></li>`).join('');
   initRenderer();selectChapter(0,false);
 })();
