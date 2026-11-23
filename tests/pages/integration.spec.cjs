@@ -2,7 +2,7 @@ const {test,expect}=require('@playwright/test');
 for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800]]){
   test('six themes and existing course interactions at '+width,async({page})=>{
     test.setTimeout(180000);const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.setViewportSize({width,height});await page.emulateMedia({reducedMotion:'reduce'});
-    const fits=async()=>{expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(await page.locator('button:visible').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.textContent))).toEqual([]);};
+    const fits=async()=>{const overflow=await page.evaluate(()=>({width:innerWidth,documentWidth:document.documentElement.scrollWidth,elements:[...document.querySelectorAll('main *')].filter(e=>e.getBoundingClientRect().right>innerWidth+1).slice(0,8).map(e=>e.tagName+'.'+e.classList.toString())}));expect(overflow.documentWidth,JSON.stringify({url:page.url(),...overflow})).toBeLessThanOrEqual(overflow.width);expect(await page.locator('button:visible').evaluateAll(es=>es.filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.textContent)),page.url()).toEqual([]);};
     await page.goto('/#learning');await expect(page.locator('#themeGrid .theme')).toHaveCount(6);
     expect(await page.locator('#themeGrid h3').allTextContents()).toEqual(['재료과학 기초와 금속재료','생체재료','형상기억합금','수소저장합금','나노전자재료 및 전자파 차폐','MOF · 금속–유기 골격체']);
     expect(await page.locator('#themeGrid .number').allTextContents()).toEqual(['THEME 01','THEME 02','THEME 03','THEME 04','THEME 05','THEME 06']);await expect(page.locator('#themeCount')).toContainText('6개');await fits();

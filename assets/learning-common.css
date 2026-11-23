@@ -48,3 +48,17 @@ body.learning-home :is(.number,.pills span,.theme .learn){font-size:.875rem}
 .legacy-course .summary-section-title>span{font-size:.875rem}.legacy-course .specs{background:#f2f7fb;color:#172b42}
 .legacy-course :is(.visual,.chapter-visual,.small-chart) :is(.process .p,.stage-card){background:white;color:#172b42}
 .legacy-course :is(.visual,.chapter-visual,.small-chart) :is(.process .p,.stage-card) :is(b,strong,p,span){color:#294f67}
+
+/* Let legacy grids and SVG figures shrink to the reading column on narrow screens. */
+.learning-header .brand{gap:.25em}
+.legacy-course :is(.shell,.layout)>main,.legacy-course :is(.atom-row,.sensor-grid)>div{min-width:0}
+.legacy-course .atom-svg{display:block;width:100%;height:auto;max-height:290px}
+.legacy-course .course-card{min-width:0}
+.legacy-course .course-card-desc{display:block;overflow-wrap:anywhere}
+.legacy-course .course-card-visual{min-width:0;width:100%}
+.legacy-course .course-card-visual :is(svg,img){min-width:0;max-width:100%;flex-shrink:1}
+.legacy-course :is(.visual,.chapter-visual,.small-chart) :is(.explain,.reading){background:white;color:#172b42;border-color:#cbdde8}
+.legacy-course .fact b{color:var(--learning-cyan)}
+.legacy-course .fact span,.legacy-course .hero-copy p{color:var(--learning-muted)}
+.legacy-course .hero-copy h2{color:var(--learning-text)}
+.legacy-course .visual .xray :is(b,small){color:#edf5ff}
