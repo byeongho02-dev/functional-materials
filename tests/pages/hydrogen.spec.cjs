@@ -25,7 +25,7 @@ for(const [width,height]of widths){
     }
     await page.locator('[data-chapter="2"]').click();
     for(let step=0;step<5;step++){await page.locator('[data-step="'+step+'"]').click();await expect(page.locator('#viewport')).toHaveAttribute('data-hydrogen-count','12');if(step===1)await expect(page.locator('#viewport')).toHaveAttribute('data-molecule-bonds','0');if(step===3)await expect(page.locator('#viewport')).toHaveAttribute('data-inside-hydrogen','12');if(step===4)await expect(page.locator('#viewport')).toHaveAttribute('data-molecule-bonds','6');}
-    await page.locator('#viewOptions > summary').click();await page.locator('#resetScene').click();await page.locator('#viewport').scrollIntoViewIfNeeded();await page.locator('.direct-controls [data-play-toggle]').click();
+    await page.locator('#viewOptions > summary').click();await page.locator('#resetScene').click();if(width===1280){await page.setViewportSize({width:1270,height});await page.setViewportSize({width,height});}await page.locator('#viewport').scrollIntoViewIfNeeded();await page.locator('.direct-controls [data-play-toggle]').click();await expect(page.locator('#viewport')).toHaveAttribute('data-scene-visible','true');
     await expect.poll(()=>page.locator('#sceneProgress').inputValue().then(Number)).toBeGreaterThan(0);await page.locator('#playScene').click();await expect(page.locator('#playScene')).toHaveAttribute('aria-pressed','false');
     await page.locator('#sceneProgress').focus();await page.keyboard.press('End');await expect(page.locator('#viewport')).toHaveAttribute('data-coordinate','0.000');await expect(page.locator('#viewport')).toHaveAttribute('data-hydrogen-count','12');
     await page.locator('#showSites').uncheck();await page.locator('#showSites').check();

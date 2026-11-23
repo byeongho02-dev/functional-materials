@@ -79,6 +79,10 @@
   function draw(){model=M.scene(state);if(state.chapter===4&&!state.compositionMode){state.composition=model.stored/12;if($('composition'))$('composition').value=state.composition;}if(renderer)drawThree();else drawFallback();drawLabels();syncReadout();drawPlot();dirty=false;}
   function fitLayout(){if(document.hidden)return;if((window.innerWidth||0)<=850){viewport.style.removeProperty('height');return;}const shell=viewport.closest('.stage-shell'),side=root.querySelector('.explanation-column'),a=shell.getBoundingClientRect().height,b=side.getBoundingClientRect().height,c=viewport.getBoundingClientRect().height;if(a&&b&&c){const target=Math.round(M.clamp(b-(a-c),300,720));if(Math.abs(target-c)>1)viewport.style.height=target+'px';}}
   function active(){return !document.hidden&&visible;}
+  // Observer entries can describe a previous sticky/resize layout. Check the current
+  // rectangle at user actions and scroll boundaries before suspending a visible scene.
+  function inViewport(fallbackValue=visible){const r=viewport.getBoundingClientRect();if(!r.width||!r.height||!Number.isFinite(window.innerHeight)||!Number.isFinite(window.innerWidth))return fallbackValue;return r.bottom>-80&&r.top<window.innerHeight+80&&r.right>-80&&r.left<window.innerWidth+80;}
+  function refreshVisibility(fallbackValue=visible){const next=inViewport(fallbackValue),changed=next!==visible;visible=next;viewport.dataset.sceneVisible=String(visible);if(changed){if(visible)invalidate(true);else suspend();}}
   function invalidate(force=false){dirty=true;if(force===true)forcePaint=true;if(force===true&&!state.playing&&!tween&&!document.hidden){draw();forcePaint=false;return;}if(!document.hidden&&(visible||forcePaint)&&!raf)raf=requestAnimationFrame(frame);}
   function frame(now){
     raf=0;if(document.hidden||(!visible&&!forcePaint)){lastTime=0;return;}const dt=lastTime?Math.min((now-lastTime)/1000,.1):0;lastTime=now;
@@ -114,6 +118,7 @@
   }
   function chooseStep(step,method='hydride'){state={...state,method,step:M.clamp(step,0,4),phase:1,playing:false,response:null,coordinate:null,compositionMode:false};if(state.chapter===3){state.pressure=M.clamp(M.equilibrium(state.temperature)*(state.step===4?.45:1.8),.2,4);if($('gasPressure'))$('gasPressure').value=state.pressure;}lastTime=0;syncReadout();fitLayout();invalidate(true);announce(M.steps[state.step].name);}
   function togglePlay(){
+    refreshVisibility();
     if(state.playing)state.playing=false;
     else if(state.response)state.playing=true;
     else if(state.chapter===3){const d=M.drive(state);if(d.direction==='equilibrium'){announce('평형 기준 부근입니다. 압력이나 온도를 바꾸어 방향을 비교하세요.');return;}const target=d.direction==='absorb'?4:0;if(Math.abs(M.coordinate(state)-target)<.01)state.coordinate=target===4?0:4;state=M.respond(state);}
@@ -150,9 +155,10 @@
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();renderer=null;canvas.hidden=true;fallback.hidden=false;fallback.removeAttribute('hidden');$('renderMode').hidden=false;viewport.dataset.renderer='svg';invalidate(true);});
   function suspend(){if(raf){cancelAnimationFrame(raf);raf=0;}lastTime=0;}
   document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend();else invalidate(true);});
-  if(window.IntersectionObserver)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(visible)invalidate(true);else suspend();},{rootMargin:'80px'}).observe(viewport);
+  if(window.IntersectionObserver)new IntersectionObserver(entries=>{refreshVisibility(entries[0].isIntersecting);},{rootMargin:'80px'}).observe(viewport);
   if(window.ResizeObserver){new ResizeObserver(()=>{plotKey='';invalidate(true);}).observe(viewport);const ro=new ResizeObserver(fitLayout);for(const e of root.querySelectorAll('.explanation-column,.stage-top,.direct-controls,.legend'))ro.observe(e);}
-  window.addEventListener('resize',()=>{fitLayout();plotKey='';invalidate(true);});
+  window.addEventListener('resize',()=>{fitLayout();refreshVisibility();plotKey='';invalidate(true);});
+  window.addEventListener('scroll',()=>refreshVisibility(),{passive:true});
   const motion=e=>{reduced=e.matches;if(reduced){state.playing=false;tween=null;}text('motionNotice',reduced?'동작 줄이기 적용 · 단계와 슬라이더로 비교할 수 있습니다.':'');syncReadout();invalidate(true);};media?.addEventListener?.('change',motion);
   window.addEventListener('pagehide',()=>{suspend();state.playing=false;tween=null;});window.addEventListener('pageshow',()=>{lastTime=0;syncReadout();invalidate(true);});
   window.addEventListener('hashchange',()=>{const n=location.hash.match(/^#chapter-([1-8])$/);if(n&&Number(n[1])-1!==state.chapter)selectChapter(Number(n[1])-1,true);});
