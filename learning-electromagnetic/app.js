@@ -95,14 +95,14 @@
     const host = globalThis.openai;
     if (!host?.setWidgetState) return;
     const inputs = {};
-    $$('input[type="range"]').forEach(input => { inputs[input.id] = input.value; });
+    $$('.controls input[type="range"]').forEach(input => { inputs[input.id] = input.value; });
     const snapshot = { topic: active, inputs, mode: $('input[name="fieldMode"]:checked').value };
     host.setWidgetState({ modelContent: snapshot, privateContent: null }).catch(() => {});
   }
   function restore(snapshot) {
     if (!snapshot || typeof snapshot !== 'object') return;
     if (snapshot.inputs && typeof snapshot.inputs === 'object') {
-      $$('input[type="range"]').forEach(input => {
+      $$('.controls input[type="range"]').forEach(input => {
         const value = Number(snapshot.inputs[input.id]);
         if (Number.isFinite(value)) input.value = String(clamp(value, +input.min, +input.max));
       });
@@ -494,7 +494,7 @@
   });
   const defaults = { emi: { emiThickness: 8, emiFrequency: 1, emiReflection: 55 }, super: { superTemperature: 65 }, meta: { metaWavelength: 600, metaPitch: 300, metaPhase: 60 } };
   topics.forEach(topic => {
-    $('#panel-' + topic).querySelectorAll('input').forEach(input => input.addEventListener('input', () => { updates[topic](); remember(); }));
+    $('#panel-' + topic).querySelectorAll('.controls input').forEach(input => input.addEventListener('input', () => { updates[topic](); remember(); }));
     $('[data-reset="' + topic + '"]').addEventListener('click', () => {
       Object.entries(defaults[topic]).forEach(([id, value]) => { $('#' + id).value = value; });
       if (topic === 'super') $('input[value="meissner"]').checked = true;
