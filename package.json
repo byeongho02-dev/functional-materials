@@ -10,7 +10,8 @@
     "test:fab:model": "node --test tests/fab3d/*.test.mjs",
     "test:fab:browser": "playwright test --config playwright.fab.config.cjs",
     "test:fab": "npm run test:fab:model && npm run build:fab && npm run test:fab:browser",
-    "test:pages": "npm run build:fab:static && node --test tests/pages/*.test.cjs && playwright test --config playwright.pages.config.cjs"
+    "test:pages": "npm run test:learning:model && npm run build:fab:static && node --test tests/pages/*.test.cjs && playwright test --config playwright.pages.config.cjs",
+    "test:learning:model": "node tests/mof.test.cjs && node tests/hydrogen.test.cjs"
   },
   "dependencies": {
     "three": "0.182.0"

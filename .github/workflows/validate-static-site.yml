@@ -116,3 +116,20 @@ jobs:
           node --check sim-model.js
           node --check chamber-view.js
           node --check surface-v041.js
+
+      - name: Check the six themes and parse lecture 4 modules
+        run: |
+          node --check learning-hydrogen/model.js
+          node --check learning-hydrogen/content.js
+          node --check learning-hydrogen/app.js
+          node tests/hydrogen.test.cjs
+          python3 - <<'PYTHON'
+          from pathlib import Path
+          import re
+          page = Path('index.html').read_text()
+          block = re.search(r'const themes=\[(.*?)\];', page, re.S).group(1)
+          assert re.findall(r"id:'([^']+)'", block) == ['fundamentals','biomaterials','sma','hydrogen','nano','mof']
+          assert 'antimicrobial' not in page and 'themePending' not in page
+          assert 'learning-hydrogen/index.html' in page
+          assert Path('assets/learning-common.css').is_file()
+          PYTHON
