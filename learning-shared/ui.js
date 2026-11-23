@@ -43,7 +43,7 @@
   const nav=$('chapterNav');content.lessons.forEach((l,i)=>{const b=document.createElement('button');b.type='button';b.dataset.chapter=i;const n=document.createElement('span');n.className='n';n.textContent=String(i+1).padStart(2,'0');const name=document.createElement('span');name.textContent=l.title;b.append(n,name);nav.append(b);});
   text('courseName',content.subtitle);text('courseTitle',content.title);text('pageFooter','Materials Learning · '+content.subtitle+' · 교육용 3D/2D 모형');
   const match=location.hash.match(/^#chapter-([1-8])$/);chapter(match?Number(match[1])-1:0,true);
-  core=new LearningSceneCore($('viewport'),p=>{state.selection=p.id;render();announce(p.info.label);},dt=>{state=(course.animate||model.advance)(state,dt);render();},()=>state.playing);core.setModel(scene,state.selection);
+  core=new LearningSceneCore($('viewport'),p=>{$('viewport').dataset.pickEvents=String((Number($('viewport').dataset.pickEvents)||0)+1);state.selection=p.id;render();announce(p.info.label);},dt=>{state=(course.animate||model.advance)(state,dt);render();},()=>state.playing);core.setModel(scene,state.selection);
   const ro=new ResizeObserver(()=>{fit();chartKey='';chart(output.chart);});ro.observe($('rightColumn'));window.addEventListener('resize',()=>{fit();chartKey='';chart(output.chart);});
   const media=matchMedia('(prefers-reduced-motion: reduce)'),motion=()=>{core.reduced=media.matches;if(media.matches)state.playing=false;text('motionNote',media.matches?'동작 줄이기 적용 · 수동 단계·변수 비교를 사용할 수 있습니다.':'');render();};media.addEventListener('change',motion);motion();
   window.addEventListener('hashchange',()=>{const m=location.hash.match(/^#chapter-([1-8])$/);if(m&&Number(m[1])-1!==state.chapter)chapter(Number(m[1])-1,true);});
