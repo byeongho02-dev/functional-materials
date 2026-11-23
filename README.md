@@ -2,6 +2,19 @@
 
 브라우저에서 별도 빌드 없이 실행하는 기능성 재료 교육용 인터랙티브 자료입니다.
 
+## Materials Learning · 6개 테마
+
+학습 메뉴는 재료과학 기초·금속재료, 생체재료, 형상기억합금, 수소저장합금, 나노전자재료·전자파 차폐, MOF의 순서입니다. ALE는 별도 시뮬레이터입니다. 항균·나노촉매를 별도 메인 테마로 연결하지 않으며, 기존 강의 내용과 파일은 보존합니다.
+
+4강은 [learning-hydrogen/index.html](learning-hydrogen/index.html)에서 실행합니다. H₂의 해리·원자 H의 내부 흡수·수소화물·재결합 방출, 온도/압력과 PCT를 조작합니다. 수소 원자 수를 보존하는 정성 모형이며 실측 성능을 예측하지 않습니다. **4강 PDF가 제공되지 않아 첨부 작업지시서의 페이지별 개요를 사용했습니다. 원본 직접 대조는 미완료입니다.**
+
+공유 디자인은 [assets/learning-common.css](assets/learning-common.css)의 선택적 토큰·헤더·조작 요소로 적용합니다. 기존 1~3강 스크립트와 과학 도식은 보존하며, 도식 안의 밝은 배경과 진한 글자를 유지합니다. MOF와 전자기 자료도 같은 토큰과 접근성 기준을 사용합니다. ALE 인터페이스에는 적용하지 않습니다.
+
+- [4강의 모형·조작·참고자료](learning-hydrogen/README.md)
+- [통합 변경과 검증 범위](docs/integration/VALIDATION.md)
+- 모델/DOM: `npm run test:learning:model`
+- 빌드·브라우저 회귀: `npm run test:pages`
+
 ## Production-style ICP ALE V0.9.2
 
 홈페이지 `index.html`의 ALE Simulator 메뉴와 대표 카드에서

@@ -67,9 +67,9 @@ try{({parseHTML}=require('linkedom'));}catch(_){console.log(checks+' model/struc
   const {window,document}=parseHTML(homepage),location={hash:'#learning'};
   const context=vm.createContext({document,location,window:{scrollTo(){},addEventListener:window.addEventListener.bind(window)}});
   const code=[...homepage.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]).join('\n');vm.runInContext(code,context);
-  eq(document.querySelectorAll('#themeGrid .theme').length,7,'Seven homepage themes');
+  eq(document.querySelectorAll('#themeGrid .theme').length,6,'Six homepage themes');
   eq(document.querySelector('#themeGrid a:last-child').getAttribute('href'),'learning-mof/index.html','MOF direct link');
-  for(const [theme,entry]of [['fundamentals','hcpEntry'],['biomaterials','biomatEntry'],['sma','smaEntry'],['nano','nanoEntry']]){location.hash='#theme-'+theme;vm.runInContext('renderRoute()',context);ok(!document.querySelector('#'+entry).classList.contains('hidden'),'Existing theme route '+theme);ok(document.querySelector('#themePending').classList.contains('hidden'));}
+  for(const [theme,entry]of [['fundamentals','hcpEntry'],['biomaterials','biomatEntry'],['sma','smaEntry'],['nano','nanoEntry'],['hydrogen','hydrogenEntry'],['mof','mofEntry']]){location.hash='#theme-'+theme;vm.runInContext('renderRoute()',context);ok(!document.querySelector('#'+entry).classList.contains('hidden'),'Existing theme route '+theme);ok(!document.querySelector('#themePending'),'No unfinished theme placeholder');}
   eq(document.querySelectorAll('#homeCards .feature').length,2,'ALE and Materials Learning cards remain');
 }
 function boot({width=800,reduced=false,three=false}={}){

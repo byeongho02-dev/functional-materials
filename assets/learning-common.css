@@ -1,0 +1,50 @@
+/* Materials Learning: shared tokens and opt-in components. ALE does not load this file. */
+:root{--learning-bg:#071321;--learning-surface:#0e2034;--learning-raised:#142c40;--learning-text:#edf5ff;--learning-muted:#b3c6d9;--learning-edge:#29445b;--learning-cyan:#82dfec;--learning-blue:#65b5ff;--learning-green:#68dfa3;--learning-orange:#ffae69;--learning-purple:#bd9aff;--learning-radius:13px;--learning-font:system-ui,'Noto Sans KR',sans-serif}
+body.learning-page,body.learning-home{color-scheme:dark;background:radial-gradient(ellipse at 80% 0,#14365466,transparent 45%),var(--learning-bg);font-family:var(--learning-font);font-size:16px;color:var(--learning-text)}
+body.learning-page button,body.learning-home button,body.learning-page select{min-height:44px}
+body.learning-page input[type=range]{min-height:44px;accent-color:var(--learning-cyan)}
+body.learning-page input[type=checkbox]{accent-color:var(--learning-cyan)}
+body.learning-page :is(a,button,input,select,summary):focus-visible,body.learning-home :is(a,button):focus-visible{outline:3px solid #f5d77a;outline-offset:3px}
+.learning-header{min-height:76px;height:auto!important;background:#0a1b2bee!important;border-bottom:1px solid var(--learning-edge)!important;color:var(--learning-text);display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem clamp(1rem,3vw,2.5rem)!important;flex-wrap:wrap}
+.learning-header .brand,.learning-header>strong{color:var(--learning-text);font-size:1rem;font-weight:750;text-decoration:none}
+.learning-header .brand span,.learning-header .brand b{color:var(--learning-cyan)}
+.learning-header a{color:var(--learning-cyan);font-size:.875rem;min-height:44px;display:inline-flex;align-items:center}
+.learning-header .topinner{width:100%;padding:0;gap:1rem;flex-wrap:wrap}.learning-header .toplinks{flex-wrap:wrap}.learning-header .breadcrumb{color:var(--learning-muted)}
+body.learning-home .theme{border-radius:var(--learning-radius);background:var(--learning-surface);border-color:var(--learning-edge)}
+body.learning-home :is(.theme p,.theme .en,.theme .learn,.feature p){font-size:.875rem}
+body.learning-home :is(.navlinks a,.back,.action){min-height:44px;display:inline-flex;align-items:center}
+body.learning-home .section-top{flex-wrap:wrap}body.learning-home .placeholder{background:var(--learning-surface);border-style:solid}
+/* Legacy lessons opt in at their outer reading panels; existing scientific figures remain light. */
+body.legacy-course{--ink:var(--learning-text);--gray:var(--learning-muted);--muted:var(--learning-muted);--bg:var(--learning-bg);--paper:var(--learning-bg);--border:var(--learning-edge);--line:var(--learning-edge);--blue:var(--learning-blue);--teal:var(--learning-cyan);--light:var(--learning-raised);--navy:var(--learning-text)}
+.legacy-course :is(.side,.sidebar,.card,.panel,.panelhead,.hero,.lecture-hero,.intro-card-section,.explain,.reading,.tile,.material,.box,.highlight,.stage-card,.summary-hero,.summary-node,.summary-card,.summary-compare-card,.summary-conclusion,.summary-hero-foot,.course-card,.facts>div,.gridcards>div){background:var(--learning-surface);border-color:var(--learning-edge);border-radius:var(--learning-radius);color:var(--learning-text)}
+.legacy-course :is(.intro p,.lead,.crumb,.bread,.copy>p,.content p,.note,.notice,.smallnote,.course-foot,.side small,.real-photo-caption){color:var(--learning-muted);font-size:1rem}
+.legacy-course :is(.copy,.content,.box,.highlight,.explain,.reading,.tile,.material,.summary-card,.summary-node,.summary-compare-card,.summary-conclusion,.summary-hero-foot,.course-card,.facts,.minis,.gridcards) :is(p,li,small,h3,h4,b,strong){color:inherit}
+.legacy-course :is(.copy p,.content p,.box p,.highlight p,.summary-card p,.summary-compare-card p,.summary-conclusion p){font-size:1rem;line-height:1.85}
+.legacy-course :is(.note,.notice,.highlight,.summary-hero,.summary-conclusion){background:var(--learning-raised);border-color:#3b667d}
+.legacy-course :is(button.chapter,.navbtn,.nav-item){color:var(--learning-muted);min-height:44px;font-size:.875rem}
+.legacy-course :is(button.chapter.active,.navbtn.active,.nav-item.active){background:#19435b;color:var(--learning-cyan)}
+.legacy-course :is(button.chapter:hover,.navbtn:hover,.nav-item:hover){background:#18334b}
+.legacy-course :is(.pager button,.footnav button,.nav-bottom button,.tabs button,.options button,.chip){background:#17344c;border:1px solid #3d6179;border-radius:9px;color:var(--learning-text);min-height:44px}
+.legacy-course :is(.primary,.chip.selected,.tabs .sel,.tabs .active,.options .active){background:#246da9!important;border-color:#72b9e4!important;color:white!important}
+.legacy-course :is(.visual,.chapter-visual,.small-chart){background:#f2f7fb;color:#172b42;color-scheme:light;--ink:#172b42;--muted:#60798f;--gray:#60798f;--blue:#226db6;--teal:#078c94}
+.legacy-course :is(.visual,.chapter-visual,.small-chart) :is(.tile,.material,.box,.stage-card,.highlight){background:white;color:#172b42;border-color:#cbdde8}
+.legacy-course :is(.visual,.chapter-visual,.small-chart) :is(p,li,small,h2,h3,h4,b,strong,label){color:#294f67}
+.legacy-course :is(.summary-card small,.summary-node small,.summary-hero-foot,.summary-conclusion p){font-size:.875rem;line-height:1.7}
+.legacy-course :is(.summary-card h4,.summary-node b){font-size:1rem}
+.legacy-course :is(.summary-card,.summary-node,.summary-compare-card,.content-area,.copy,.content){min-width:0;overflow-wrap:anywhere}
+.legacy-course .panelhead{border-radius:0}.legacy-course .panelhead :is(strong,span,b){color:var(--learning-cyan)}
+.legacy-course :is(.num,.nav-item .index,.chapter-title .n){background:#1c3c53;color:var(--learning-cyan)}
+.legacy-course :is(.hero p,.hero h1,.summary-section-title h3,.summary-conclusion strong,.summary-hero-title strong){color:var(--learning-text)}
+.legacy-course .hero-logo{background:#17344c}.legacy-course .specs{color:#172b42}
+@media(max-width:600px){.learning-header{gap:.3rem .8rem}.learning-header .breadcrumb{display:none}.legacy-course :is(.copy,.content){padding:1rem}.learning-header .toplinks{gap:.5rem}.legacy-course :is(.grid3,.summary-grid){grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){body.learning-page *,body.learning-home *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+body.learning-home :is(.number,.pills span,.theme .learn){font-size:.875rem}
+/* Keep legacy explanatory cards legible after the outer course adopts dark surfaces. */
+.legacy-course :is(.intro-icon-card,.photo-card,.process .p){background:var(--learning-surface);border-color:var(--learning-edge);color:var(--learning-text);border-radius:var(--learning-radius)}
+.legacy-course :is(.intro-icon-card,.photo-card,.process .p,.intro-card-section) :is(strong,b,h3,h4){color:var(--learning-text)}
+.legacy-course :is(.intro-icon-card small,.photo-card p,.process .p span,.course-card-desc){font-size:.875rem;line-height:1.8;color:var(--learning-muted)}
+.legacy-course .course-card-desc span{color:var(--learning-cyan)}
+.legacy-course .summary-section-title>span{font-size:.875rem}.legacy-course .specs{background:#f2f7fb;color:#172b42}
+.legacy-course :is(.visual,.chapter-visual,.small-chart) :is(.process .p,.stage-card){background:white;color:#172b42}
+.legacy-course :is(.visual,.chapter-visual,.small-chart) :is(.process .p,.stage-card) :is(b,strong,p,span){color:#294f67}

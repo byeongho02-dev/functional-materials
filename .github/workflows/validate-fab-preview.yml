@@ -6,6 +6,13 @@ on:
       - 'ale-v092-fab-preview.html'
       - 'ale-v092-fab.html'
       - 'index.html'
+      - 'learning-hydrogen/**'
+      - 'learning-lecture*.html'
+      - 'learning-mof/**'
+      - 'learning-electromagnetic/**'
+      - 'assets/learning-common.css'
+      - 'tests/hydrogen.test.cjs'
+      - 'tests/mof.test.cjs'
       - 'assets/ale-v092-chamber.png'
       - 'scripts/build-fab-static.mjs'
       - 'src/fab3d/**'
@@ -45,4 +52,12 @@ jobs:
           path: |
             preview/fab-v092/
             test-results/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: learning-integration-evidence
+          path: |
+            preview/learning-integration/
+            test-results/pages-browser-results.json
           retention-days: 14

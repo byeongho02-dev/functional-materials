@@ -21,7 +21,7 @@ for (const [width, height] of [[1440, 900], [390, 844]]) {
     await page.getByRole('link', { name: 'Functional Materials 홈' }).click();
     await page.locator('#nav-learning').click();
     await expect(page.locator('#themeGrid')).toBeVisible();
-    await expect(page.locator('#themeGrid .theme')).toHaveCount(7);
+    await expect(page.locator('#themeGrid .theme')).toHaveCount(6);
     await expect(page.locator('#themeGrid a[href="learning-mof/index.html"]')).toHaveCount(1);
     await page.locator('a[href="#theme-sma"]').click();
     await expect(page.locator('#smaEntry')).toBeVisible();
