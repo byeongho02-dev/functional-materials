@@ -14,7 +14,7 @@ for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800
     // Full 24-unit, 5-size coverage is in lectures.spec.cjs; keep cross-site navigation here.
     for(let n=1;n<=3;n++){
       await page.goto('/learning-lecture'+n+'.html#chapter-3');await expect(page.locator('#chapterNav button')).toHaveCount(8);await expect(page.locator('#viewport')).toHaveAttribute('data-renderer','webgl');await expect(page.locator('#viewport')).toHaveAttribute('data-chapter','2');await fits();
-      await page.locator('[data-chapter="7"]').click();await expect(page.locator('#chapterPosition')).toContainText('08 / 08');await fits();
+      await page.locator('#chapterNav [data-chapter="7"]').click();await expect(page.locator('#chapterPosition')).toContainText('08 / 08');await fits();
     }
 
     await page.goto('/learning-electromagnetic/index.html');await expect(page.locator('#panel-emi')).toBeVisible();const thickness=await page.locator('#emiThicknessOut').textContent();await page.locator('#emiThickness').focus();await page.keyboard.press('End');await expect(page.locator('#emiThicknessOut')).not.toHaveText(thickness);await fits();
