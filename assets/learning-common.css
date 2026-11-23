@@ -62,3 +62,5 @@ body.learning-home :is(.number,.pills span,.theme .learn){font-size:.875rem}
 .legacy-course .fact span,.legacy-course .hero-copy p{color:var(--learning-muted)}
 .legacy-course .hero-copy h2{color:var(--learning-text)}
 .legacy-course .visual .xray :is(b,small){color:#edf5ff}
+.legacy-course .learning-header .toplinks a{background:#17344c;border:1px solid #3d6179;color:var(--learning-cyan)}
+.legacy-course .learning-header .toplinks a:hover{background:#234b66}
