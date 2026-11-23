@@ -11,19 +11,11 @@ for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800
     await page.goto('/#theme-antimicrobial');await expect(page.locator('#themeGrid')).toBeVisible();await expect(page.locator('#themeGrid .theme')).toHaveCount(6);
     await page.screenshot({path:'preview/learning-integration/themes-'+width+'.png',fullPage:true});
 
-    await page.goto('/learning-lecture1.html');await expect(page.locator('#chapters .chapter')).toHaveCount(8);
-    for(let c=0;c<8;c++){await page.locator('#chapters .chapter').nth(c).click();await expect(page.locator('#title')).not.toBeEmpty();await fits();}
-    await page.locator('#chapters .chapter').nth(6).click();await expect(page.locator('#temp')).toBeVisible();await page.locator('#temp').focus();await page.keyboard.press('End');await expect(page.locator('.sensor-grid')).toContainText('100');
-    await page.screenshot({path:'preview/learning-integration/lecture1-'+width+'.png',fullPage:true});
-
-    await page.goto('/learning-lecture2.html#chapter-3');const visual=await page.locator('#visual').innerHTML();await page.locator('[data-choice="SUS316L"]').click();await expect.poll(()=>page.locator('#visual').innerHTML()).not.toBe(visual);await fits();
-    for(let c=0;c<8;c++){await page.locator('#nav .navbtn').nth(c).click();await expect(page.locator('#heading')).not.toBeEmpty();await fits();}
-    await page.locator('#nav .navbtn').nth(6).click();await page.locator('#porosity').focus();await page.keyboard.press('End');await expect(page.locator('#pore-label')).not.toBeEmpty();await page.screenshot({path:'preview/learning-integration/lecture2-'+width+'.png',fullPage:true});
-
-    await page.goto('/learning-lecture3.html#chapter-1');await expect(page.locator('#chaptersNav .nav-item')).toHaveCount(8);
-    for(let c=0;c<8;c++){await page.locator('#chaptersNav [data-chapter="'+c+'"]').click();await expect(page.locator('.chapter.active')).toHaveAttribute('data-page',String(c));await fits();}
-    await page.locator('#chaptersNav [data-chapter="2"]').click();await page.locator('#memoryBtns [data-memory="3"]').click();await expect(page.locator('#heatWaves')).toHaveAttribute('opacity','1');
-    await page.locator('#chaptersNav [data-chapter="6"]').click();await page.locator('#tempSlider').focus();await page.keyboard.press('End');await expect(page.locator('#fractionValue')).toHaveText('100%');await page.screenshot({path:'preview/learning-integration/lecture3-'+width+'.png',fullPage:true});
+    // Full 24-unit, 5-size coverage is in lectures.spec.cjs; keep cross-site navigation here.
+    for(let n=1;n<=3;n++){
+      await page.goto('/learning-lecture'+n+'.html#chapter-3');await expect(page.locator('#chapterNav button')).toHaveCount(8);await expect(page.locator('#viewport')).toHaveAttribute('data-renderer','webgl');await expect(page.locator('#viewport')).toHaveAttribute('data-chapter','2');await fits();
+      await page.locator('[data-chapter="7"]').click();await expect(page.locator('#chapterPosition')).toContainText('08 / 08');await fits();
+    }
 
     await page.goto('/learning-electromagnetic/index.html');await expect(page.locator('#panel-emi')).toBeVisible();const thickness=await page.locator('#emiThicknessOut').textContent();await page.locator('#emiThickness').focus();await page.keyboard.press('End');await expect(page.locator('#emiThicknessOut')).not.toHaveText(thickness);await fits();
     await page.locator('#tab-super').click();await expect(page.locator('#panel-super')).toBeVisible();await page.locator('#superTemperature').focus();await page.keyboard.press('End');await fits();
