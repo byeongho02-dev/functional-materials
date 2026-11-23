@@ -63,7 +63,7 @@
     // Lines indicate lattice positions, not pairwise covalent metal bonds.
     for(const a of atoms)for(const b of atoms)if(a.id<b.id){const distance=Math.hypot(...a.p.map((v,i)=>v-b.p[i]));if(Math.abs(distance-1.5)<.01)bar('grid-'+a.id+'-'+b.id,a.p,b.p,colors.guide,.016,.42);}
     if(hydride>.01)box('hydride-region',[0,0,0],[3.2,3.2,3.2],colors.hydride,.045*hydride);
-    if(s.heat&&(s.chapter===3||s.chapter===7||s.chapter===6&&s.application==='thermal')&&driving.direction!=='equilibrium'){
+    if(s.heat&&(s.chapter===3||s.chapter===7||s.chapter===6&&s.application==='thermal'&&s.method==='hydride')&&driving.direction!=='equilibrium'){
       const releasing=s.response?s.response.end<s.response.start:s.coordinate!==null?driving.direction==='release':s.step===4;const outward=!releasing,color=outward?colors.heat:colors.hydrogen;
       for(let i=0;i<3;i++){const a=[-1+i*1,2,0],b=[a[0],2.9,0],from=outward?a:b,to=outward?b:a;bar('heat-'+i,from,to,color,.035);bar('heat-wing-a'+i,to,[to[0]-.14,to[1]+(outward?-.22:.22),0],color,.025);bar('heat-wing-b'+i,to,[to[0]+.14,to[1]+(outward?-.22:.22),0],color,.025);}
       labels.push({id:'heat-label',p:[0,3.3,0],text:outward?'형성 시 열 방출':'방출 시 열 흡수'});

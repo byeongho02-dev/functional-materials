@@ -104,7 +104,7 @@
     $('focusControls').innerHTML=html;
   }
   function selectChapter(index,initial=false){
-    state={...state,chapter:M.clamp(index,0,7),step:C.chapters[M.clamp(index,0,7)].initial,phase:0,playing:false,response:null,coordinate:null,compositionMode:false};if(state.step===3)state.phase=1;if(state.chapter===4)state.compositionMode=true;
+    state={...state,chapter:M.clamp(index,0,7),step:C.chapters[M.clamp(index,0,7)].initial,method:Number(index)===0?'compressed':'hydride',phase:0,playing:false,response:null,coordinate:null,compositionMode:false};if(state.step===3)state.phase=1;if(state.chapter===4)state.compositionMode=true;
     const c=C.chapters[state.chapter];text('chapterPosition','4강 · '+(state.chapter+1)+' / 8');text('chapterCount',(state.chapter+1)+' / 8');text('chapterTitle',c.title);text('chapterKey',c.key);text('chapterAnalogy',c.analogy);text('analogyBoundary','비유의 범위 · '+c.boundary);$('chapterIntro').innerHTML=c.intro;text('chapterWhy',c.why);text('chapterSummary',c.summary);text('chapterBridge',c.bridge);$('chapterTheory').innerHTML=c.theory;$('theoryDetails').open=false;
     text('lectureScope','현재 주제의 강의 개요 범위: '+c.pages+'쪽. 원본 PDF 직접 대조 전이며, 과학적 보강은 아래 출처를 구분해 사용했습니다.');
     $('chartSection').hidden=![3,4].includes(state.chapter);$('comparisonSection').hidden=state.chapter!==6;$('previousChapter').disabled=state.chapter===0;$('nextChapter').disabled=state.chapter===7;
@@ -112,12 +112,12 @@
     controls();plotKey='';lastTime=0;view('home',initial);syncReadout();fitLayout();invalidate(true);if(!initial)announce(c.title);
     const hash='#chapter-'+(state.chapter+1);if(!initial&&location.hash!==hash)history.replaceState(null,'',hash);
   }
-  function chooseStep(step){state={...state,step:M.clamp(step,0,4),phase:1,playing:false,response:null,coordinate:null,compositionMode:false};if(state.chapter===3){state.pressure=M.clamp(M.equilibrium(state.temperature)*(state.step===4?.45:1.8),.2,4);if($('gasPressure'))$('gasPressure').value=state.pressure;}lastTime=0;syncReadout();fitLayout();invalidate(true);announce(M.steps[state.step].name);}
+  function chooseStep(step,method='hydride'){state={...state,method,step:M.clamp(step,0,4),phase:1,playing:false,response:null,coordinate:null,compositionMode:false};if(state.chapter===3){state.pressure=M.clamp(M.equilibrium(state.temperature)*(state.step===4?.45:1.8),.2,4);if($('gasPressure'))$('gasPressure').value=state.pressure;}lastTime=0;syncReadout();fitLayout();invalidate(true);announce(M.steps[state.step].name);}
   function togglePlay(){
     if(state.playing)state.playing=false;
     else if(state.response)state.playing=true;
     else if(state.chapter===3){const d=M.drive(state);if(d.direction==='equilibrium'){announce('평형 기준 부근입니다. 압력이나 온도를 바꾸어 방향을 비교하세요.');return;}const target=d.direction==='absorb'?4:0;if(Math.abs(M.coordinate(state)-target)<.01)state.coordinate=target===4?0:4;state=M.respond(state);}
-    else{state.coordinate=null;state.response=null;state.compositionMode=false;if(state.phase>=1)state.phase=0;state.playing=true;}
+    else{state.method='hydride';state.coordinate=null;state.response=null;state.compositionMode=false;if(state.phase>=1)state.phase=0;state.playing=true;}
     lastTime=0;syncReadout();invalidate(true);
   }
   root.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!root.contains(b)||b.disabled)return;
@@ -127,8 +127,8 @@
     if(b.dataset.view){view(b.dataset.view);return;}
     if(b.dataset.focus){chooseStep(b.dataset.focus==='lattice'?3:0);if(b.dataset.focus==='lattice')state.phase=1;invalidate(true);return;}
     if(b.dataset.alloy){state.alloy=b.dataset.alloy;syncReadout();invalidate(true);announce(C.alloys[state.alloy].name);return;}
-    if(b.dataset.application){state.application=b.dataset.application;state.step=3;state.phase=1;state.coordinate=null;state.response=null;state.playing=false;syncReadout();invalidate(true);return;}
-    if(b.dataset.method){state.method=b.dataset.method;chooseStep(state.method==='hydride'?3:0);if(state.method==='hydride')state.phase=1;syncReadout();invalidate(true);return;}
+    if(b.dataset.application){state.application=b.dataset.application;state.method='hydride';state.step=3;state.phase=1;state.coordinate=null;state.response=null;state.playing=false;syncReadout();invalidate(true);return;}
+    if(b.dataset.method){chooseStep(b.dataset.method==='hydride'?3:0,b.dataset.method);return;}
     if(b.dataset.branch){state.branch=b.dataset.branch;plotKey='';syncReadout();invalidate(true);return;}
     if(b.id==='playScene')togglePlay();if(b.id==='previousStep')chooseStep(currentStep()-1);if(b.id==='nextStep')chooseStep(currentStep()+1);
     if(b.id==='previousChapter')selectChapter(state.chapter-1);if(b.id==='nextChapter')selectChapter(state.chapter+1);
@@ -136,7 +136,7 @@
   });
   root.addEventListener('input',e=>{const id=e.target.id,value=Number(e.target.value);
     if(id==='gasPressure')state.pressure=value;else if(id==='gasTemperature')state.temperature=value;else if(id==='composition'){state.composition=value;state.compositionMode=true;state.playing=false;state.coordinate=null;state.response=null;}else if(id==='damage')state.damage=value;
-    else if(id==='sceneProgress'){const v=value/100*5;state.step=Math.min(4,Math.floor(v));state.phase=value===100?1:v-state.step;state.playing=false;state.coordinate=null;state.response=null;state.compositionMode=false;}
+    else if(id==='sceneProgress'){const v=value/100*5;state.method='hydride';state.step=Math.min(4,Math.floor(v));state.phase=value===100?1:v-state.step;state.playing=false;state.coordinate=null;state.response=null;state.compositionMode=false;}
     else return;
     if(state.chapter===3&&(id==='gasPressure'||id==='gasTemperature')){state=M.respond(state);if(reduced&&state.response){state.coordinate=state.response.end;state.response=null;state.playing=false;}}
     lastTime=0;plotKey='';syncReadout();invalidate(true);
