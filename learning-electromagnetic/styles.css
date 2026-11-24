@@ -273,3 +273,18 @@ body:has(> #materialsLab) { margin: 0; background: #080f1c; }
   #materialsLab .easy-points strong { margin: 0; }
   #materialsLab .keyword-note > div { grid-template-columns: 1fr; gap: 3px; }
 }
+
+/* Cause, observation and interpretation stay adjacent to the existing scenes. */
+#materialsLab .scene-focus { display:flex; flex-wrap:wrap; gap:6px; padding:10px 12px; border-bottom:1px solid var(--lab-line); }
+#materialsLab .scene-focus button { flex:1 1 120px; min-height:44px; padding:8px; border:1px solid #4d6e85; border-radius:7px; background:#14283d; color:#e0eef8; font-size:14px; }
+#materialsLab .scene-focus button[aria-pressed="true"] { border-color:var(--lab-cyan); background:#1b3d4d; color:#a0f3f7; }
+#materialsLab .focus-reading { padding:16px 20px; margin:12px 0; border-left:2px solid var(--lab-cyan); background:#0f2437; }
+#materialsLab .focus-reading strong { color:var(--lab-cyan); font-size:17px; }
+#materialsLab .focus-reading p { font-size:16px; line-height:1.8; margin:7px 0 0; color:var(--lab-text); }
+#materialsLab .phase-experiment { margin:20px 0; border:1px solid var(--lab-line); border-radius:10px; background:var(--lab-surface); }
+#materialsLab .phase-experiment > summary { padding:18px; color:var(--lab-cyan); font-size:17px; cursor:pointer; }
+#materialsLab .phase-experiment-body { padding:0 20px 20px; font-size:16px; line-height:1.8; }
+#materialsLab .phase-experiment-body p { color:var(--lab-text); }
+#materialsLab #phaseAddition { display:block; width:100%; height:128px; margin-top:16px; background:#0b1729; border-radius:8px; }
+#materialsLab #arrayFactorValue { color:var(--lab-cyan); font-weight:700; font-variant-numeric:tabular-nums; }
+#materialsLab canvas:focus-visible { outline:3px solid var(--lab-cyan); outline-offset:-4px; }

@@ -39,3 +39,11 @@
 .chapter-expansion .practical-note{margin:.8rem 0 0}.chapter-expansion #chapterTheory{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.2rem 1.5rem}.chapter-expansion #chapterTheory>p:last-child:nth-child(odd){grid-column:1/-1}.chapter-expansion .caution{margin:.8rem 0 .3rem}
 @media(min-width:851px){.lab-grid{align-items:start}.visual-column{top:.75rem}.viewport{min-height:280px}.explanation-column{gap:.75rem}}
 @media(max-width:850px){.chapter-expansion{margin-top:.8rem;padding:.9rem 1rem}.chapter-expansion .experiment-guide dl,.chapter-expansion #chapterTheory{grid-template-columns:1fr}.chapter-expansion #chapterTheory>p:last-child:nth-child(odd){grid-column:auto}.chapter-expansion .experiment-guide dl{gap:.8rem}}
+
+/* A shared scale makes the accessibility threshold visible beside its control. */
+#mofLearning .entry-figure { position:relative; height:175px; max-width:100%; margin:16px 0 4px; border:1px solid var(--line,#34556c); border-radius:10px; background:#091b2a; overflow:hidden; }
+#mofLearning .entry-wall { position:absolute; top:0; height:125px; width:calc(50% - 50px); background:#28475e; border:1px solid #608499; }
+#mofLearning .entry-left { left:0; border-radius:0 0 6px 0; }
+#mofLearning .entry-right { right:0; border-radius:0 0 0 6px; }
+#mofLearning .entry-molecule { position:absolute; left:50%; top:70px; transform:translate(-50%,-50%); border-radius:50%; background:#ed9c5d99; border:2px solid #ffbf88; }
+#mofLearning .entry-width { position:absolute; bottom:10px; width:100%; text-align:center; font-size:14px; color:#dceef8; }
