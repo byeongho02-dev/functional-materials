@@ -6,7 +6,7 @@
   const $=id=>root.querySelector('#'+id),viewport=$('viewport'),canvas=$('hydrogenCanvas'),fallback=$('fallbackScene');
   const media=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
   let state=M.defaults(),reduced=!!media?.matches,visible=true,raf=0,lastTime=0,lastDraw=0,dirty=true,forcePaint=false,renderer=null,scene=null,camera=null,model=null,drag=null,tween=null,plotKey='';
-  let yaw=-.5,pitch=.35,zoom=1;
+  let yaw=-.5,pitch=.35,zoom=1,legendMethod='';
   const meshes=new Map(),materials=new Map(),labels=new Map(),shared={};
   const text=(id,value)=>{const el=$(id);if(el&&el.textContent!==String(value))el.textContent=String(value);};
   const announce=value=>text('labStatus',value);
@@ -29,11 +29,11 @@
   function drawThree(){
     const T=window.THREE,w=Math.max(1,viewport.clientWidth||640),h=Math.max(1,viewport.clientHeight||430),sc=scale();
     camera.left=-sc*w/h;camera.right=sc*w/h;camera.top=sc;camera.bottom=-sc;camera.updateProjectionMatrix();camera.position.set(.7+20*Math.cos(pitch)*Math.sin(-yaw),.15+20*Math.sin(pitch),20*Math.cos(pitch)*Math.cos(yaw));camera.lookAt(.7,.15,0);
-    if(canvas.width!==Math.round(w*renderer.getPixelRatio())||canvas.height!==Math.round(h*renderer.getPixelRatio()))renderer.setSize(w,h,false);
+    if(canvas.width!==Math.floor(w*renderer.getPixelRatio())||canvas.height!==Math.floor(h*renderer.getPixelRatio()))renderer.setSize(w,h,false);
     const groups=new Map();for(const p of model.parts){const key=[p.kind,p.color,!!p.hollow,Math.round(p.opacity*100)].join(':');if(!groups.has(key))groups.set(key,[]);groups.get(key).push(p);}
     for(const mesh of meshes.values())mesh.visible=false;
     for(const [key,parts]of groups){let mesh=meshes.get(key);if(!mesh||mesh.instanceMatrix.count<parts.length){if(mesh){scene.remove(mesh);mesh.dispose?.();}mesh=new T.InstancedMesh(shared[parts[0].kind],mat(parts[0]),2**Math.ceil(Math.log2(Math.max(1,parts.length))));mesh.frustumCulled=false;mesh.instanceMatrix.setUsage(T.DynamicDrawUsage);meshes.set(key,mesh);scene.add(mesh);}mesh.count=parts.length;mesh.visible=true;
-      parts.forEach((p,i)=>{const o=shared.transform;o.quaternion.identity();if(p.kind==='bar'){shared.a.fromArray(p.a);shared.b.fromArray(p.b);shared.d.subVectors(shared.b,shared.a);o.position.copy(shared.a).add(shared.b).multiplyScalar(.5);o.scale.set(p.r,shared.d.length(),p.r);o.quaternion.setFromUnitVectors(shared.axis,shared.d.normalize());}else{o.position.fromArray(p.p);if(p.size)o.scale.fromArray(p.size);else o.scale.setScalar(p.r);}o.updateMatrix();mesh.setMatrixAt(i,o.matrix);});mesh.instanceMatrix.needsUpdate=true;
+      parts.forEach((p,i)=>{const o=shared.transform;o.quaternion.identity();if(p.kind==='bar'){shared.a.fromArray(p.a);shared.b.fromArray(p.b);shared.d.subVectors(shared.b,shared.a);o.position.copy(shared.a).add(shared.b).multiplyScalar(.5);o.scale.set(p.r,shared.d.length(),p.r);o.quaternion.setFromUnitVectors(shared.axis,shared.d.normalize());}else{o.position.fromArray(p.p);if(p.size)o.scale.fromArray(p.size);else if(p.scale)o.scale.set(...p.scale.map(v=>v*p.r));else o.scale.setScalar(p.r);}o.updateMatrix();mesh.setMatrixAt(i,o.matrix);});mesh.instanceMatrix.needsUpdate=true;
     }renderer.render(scene,camera);viewport.dataset.drawCalls=String(renderer.info?.render?.calls||0);
   }
   const ns='http://www.w3.org/2000/svg';
@@ -42,25 +42,32 @@
     const w=viewport.clientWidth||640,h=viewport.clientHeight||430;fallback.setAttribute('viewBox',`0 0 ${w} ${h}`);const frag=document.createDocumentFragment(),defs=svg('defs');
     for(const color of new Set(model.parts.map(p=>p.color))){const g=svg('radialGradient',{id:'hydrogen-'+color.slice(1),cx:'30%',cy:'25%',r:'75%'});g.append(svg('stop',{offset:0,'stop-color':'#f2fbff'}),svg('stop',{offset:.45,'stop-color':color}),svg('stop',{offset:1,'stop-color':'#17334a'}));defs.append(g);}frag.append(defs);
     const factor=h/(2*scale());const sorted=model.parts.map(p=>({p,z:projection(p.p||M.mix(p.a,p.b,.5))[2]})).sort((a,b)=>a.z-b.z);
-    for(const {p}of sorted){if(p.kind==='sphere'){const q=projection(p.p);frag.append(svg('circle',{cx:q[0],cy:q[1],r:p.r*factor,fill:p.hollow?'none':'url(#hydrogen-'+p.color.slice(1)+')',stroke:p.color,'stroke-width':p.hollow?1.2:.5,opacity:p.opacity}));}else if(p.kind==='bar'){const a=projection(p.a),b=projection(p.b);frag.append(svg('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:p.color,'stroke-width':Math.max(1,p.r*2*factor),'stroke-linecap':'round',opacity:p.opacity}));}else{const pts=[];for(let x=0;x<2;x++)for(let y=0;y<2;y++)for(let z=0;z<2;z++)pts.push(projection(p.p.map((v,i)=>v+([x,y,z][i]-.5)*p.size[i])));for(const ids of [[0,1,3,2],[4,5,7,6],[0,2,6,4],[1,3,7,5]])frag.append(svg('polygon',{points:ids.map(i=>pts[i].slice(0,2).join(',')).join(' '),fill:p.color,opacity:p.opacity,stroke:p.color}));}}
+    for(const {p}of sorted){if(p.kind==='sphere'){const q=projection(p.p);frag.append(svg('ellipse',{cx:q[0],cy:q[1],rx:p.r*factor*(p.scale?.[0]||1),ry:p.r*factor*(p.scale?.[1]||1),fill:p.hollow?'none':'url(#hydrogen-'+p.color.slice(1)+')',stroke:p.color,'stroke-width':p.hollow?1.2:.5,opacity:p.opacity}));}else if(p.kind==='bar'){const a=projection(p.a),b=projection(p.b);frag.append(svg('line',{x1:a[0],y1:a[1],x2:b[0],y2:b[1],stroke:p.color,'stroke-width':Math.max(1,p.r*2*factor),'stroke-linecap':'round',opacity:p.opacity}));}else{const pts=[];for(let x=0;x<2;x++)for(let y=0;y<2;y++)for(let z=0;z<2;z++)pts.push(projection(p.p.map((v,i)=>v+([x,y,z][i]-.5)*p.size[i])));for(const ids of [[0,1,3,2],[4,5,7,6],[0,2,6,4],[1,3,7,5]])frag.append(svg('polygon',{points:ids.map(i=>pts[i].slice(0,2).join(',')).join(' '),fill:p.color,opacity:p.opacity,stroke:p.color}));}}
     fallback.replaceChildren(frag);
   }
   function drawLabels(){const ids=new Set(model.labels.map(l=>l.id));for(const [id,el]of labels)if(!ids.has(id)){el.remove();labels.delete(id);}const w=viewport.clientWidth||640,h=viewport.clientHeight||430;for(const l of model.labels){let el=labels.get(l.id);if(!el){el=document.createElement('span');el.className='object-label';labels.set(l.id,el);$('objectLabels').append(el);}el.textContent=l.text;const p=projection(l.p),box=el.getBoundingClientRect(),half=Math.min(w/2-8,(box.width||Math.min(210,l.text.length*8))/2);el.style.left=M.clamp(p[0],half+7,w-half-7)+'px';el.style.top=M.clamp(p[1],20,h-20)+'px';}}
   function currentStep(){if(state.response||state.coordinate!==null){const u=M.coordinate(state),release=state.response?state.response.end<state.response.start:M.drive(state).direction==='release';return release?4:Math.min(3,Math.floor(u));}return state.step;}
   function syncReadout(){
-    const step=currentStep(),entry=M.steps[step],u=M.coordinate(state);text('processTitle',entry.name);text('scenePosition',(step+1)+' / 5');
-    let observation=entry.observation;if(step===4){observation=u>3?'수소화물 상태에서 H를 내보내는 과정을 시작합니다.':u>2?'원자 H가 격자 내부에서 표면으로 이동합니다.':u>1?'표면에서 H 원자들이 만나 H₂로 재결합합니다.':'재결합한 H₂ 분자가 표면에서 멀어집니다.';}
-    text('observation',observation);text('processReason',entry.reason);
-    for(const b of root.querySelectorAll('[data-play-toggle]')){b.setAttribute('aria-pressed',String(state.playing));const label=state.playing?'일시정지':'재생';if(b.textContent!==label)b.textContent=label;}$('playScene').setAttribute('aria-pressed',String(state.playing));text('playScene',state.playing?'일시정지':'과정 재생');$('previousStep').disabled=step===0;$('nextStep').disabled=step===4;
+    const step=currentStep(),entry=M.steps[step],u=M.coordinate(state),hydride=state.method==='hydride';text('processTitle',hydride?entry.name:state.method==='liquid'?'액체 속에도 H₂ 분자가 있습니다':'H₂ 분자를 압력 용기에 담습니다');text('scenePosition',hydride?(step+1)+' / 5':'저장 상태 비교');
+    let observation=entry.observation;if(hydride&&step===4){observation=u>3?'수소화물 상태에서 H를 내보내는 과정을 시작합니다.':u>2?'원자 H가 격자 내부에서 표면으로 이동합니다.':u>1?'표면에서 H 원자들이 만나 H₂로 재결합합니다.':'재결합한 H₂ 분자가 표면에서 멀어집니다.';}
+    if(!hydride)observation=state.method==='liquid'?'냉각해 액체로 만든 수소도 H₂ 분자입니다. 두 겹의 벽은 단열 장치의 개념이며 금속 내부에 H 원자로 저장하는 모습과 구분합니다.':'H₂의 H–H 결합은 유지됩니다. 용기는 기체를 가두는 역할을 하고, 금속수소화물과 같은 해리·내부 흡수를 표현하지 않습니다.';
+    text('observation',observation);text('processReason',hydride?entry.reason:state.method==='liquid'?'분자 사이 간격이 좁은 액체 상태를 유지하려면 낮은 온도와 열 유입을 줄이는 단열이 필요합니다. 이 그림의 입자 간격은 실제 밀도가 아닙니다.':'기체를 압축하면 같은 양을 더 작은 부피에 담을 수 있지만 압력 용기와 시스템 무게도 고려해야 합니다. 실제 압력·밀도를 계산한 그림이 아닙니다.');
+    $('stepNav').hidden=!hydride&&state.chapter!==6;$('stepModeNote').hidden=hydride||state.chapter!==6;
+    for(const id of ['showSites','showInteractions','showHeat'])$(id).closest('label').hidden=!hydride;
+    for(const b of root.querySelectorAll('[data-play-toggle]')){b.setAttribute('aria-pressed',String(state.playing));const label=state.playing?'일시정지':'재생';if(b.textContent!==label)b.textContent=label;}$('playScene').setAttribute('aria-pressed',String(state.playing));text('playScene',state.playing?'일시정지':'과정 재생');$('previousStep').disabled=!hydride||step===0;$('nextStep').disabled=!hydride||step===4;
     for(const b of root.querySelectorAll('[data-step]')){if(Number(b.dataset.step)===step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');}
-    const progress=Math.round((step===4?4+(1-u/4):u)/5*100);$('sceneProgress').value=progress;text('progressValue',progress+'%');
+    const progress=Math.round(hydride?(step===4?4+(1-u/4):u)/5*100:state.phase*100);$('sceneProgress').value=progress;text('progressValue',progress+'%');
     for(const [id,value]of [['gasPressureValue',state.pressure.toFixed(2)],['gasTemperatureValue',state.temperature.toFixed(2)],['compositionValue',state.composition.toFixed(2)],['damageValue',['초기','변화 시작','변화 뚜렷'][Math.min(2,Math.round(state.damage*2))]]])text(id,value);
     const d=M.drive(state);text('driveStatus',d.label);if($('driveStatus'))$('driveStatus').dataset.direction=d.direction;
     for(const key of ['alloy','application','branch','method'])for(const b of root.querySelectorAll('[data-'+key+']'))b.setAttribute('aria-pressed',String(state[key]===b.dataset[key]));
     for(const card of root.querySelectorAll('.method-card'))card.setAttribute('aria-current',String(card.dataset.methodCard===state.method));
     if($('alloyDetail')){$('alloyDetail').textContent=C.alloys[state.alloy].text;text('alloyFocus',C.alloys[state.alloy].focus);}
     if($('applicationDetail'))text('applicationDetail',C.applications[state.application].text);
-    if(model){text('modelReadout',`그림 속 H 원자 ${model.totalHydrogen}개를 계속 추적합니다(분자에 든 원자 포함). 현재 금속 내부에 표시된 H는 ${model.stored}개입니다. 실제 저장량을 뜻하지 않습니다.`);viewport.dataset.hydrogenCount=String(model.parts.filter(p=>p.element==='H').length);viewport.dataset.insideHydrogen=String(model.stored);viewport.dataset.coordinate=M.coordinate(state).toFixed(3);viewport.dataset.moleculeBonds=String(model.parts.filter(p=>p.bondType==='H-H').length);}
+    if(model){
+      text('sceneModelName',model.name);text('sceneModelScope',model.molecular?'저장 장치 개념도':'공통 격자 모식도');
+      text('modelReadout',model.molecular?'용기 안 H₂ 6분자(총 H 원자 12개)를 표시했습니다. 금속 내부에 저장된 원자 H는 없으며, 그림의 분포는 실제 저장 밀도나 압력이 아닙니다.':'같은 H 원자 12개를 계속 추적합니다. 현재 금속 내부에 표시된 H는 '+model.stored+'개입니다. 실제 저장량을 뜻하지 않습니다.'+(state.chapter===7&&state.impurity?' 한 해리 자리를 막아 H₂ 한 쌍이 밖에서 기다리는 예입니다. 10/12를 실제 저장 용량이나 피독률로 환산하지 않습니다.':''));
+      if(legendMethod!==state.method){const entries=model.molecular?[['H₂ · 결합을 유지한 분자',M.colors.hydrogen],['흰 선 · H–H 결합',M.colors.bond],['용기·벽 · 장치의 개념',M.colors.guide]]:[['M · 금속 원자',M.colors.metal],['H · 수소 원자',M.colors.hydrogen],['흰 선 · H–H 결합',M.colors.bond],['초록 윤곽 · 간극',M.colors.site],['보라 · 수소화물 영역',M.colors.hydride],['주황 테 · 같은 한 쌍 추적',M.colors.heat]];const frag=document.createDocumentFragment();for(const [label,color]of entries){const li=document.createElement('li'),icon=document.createElement('i');icon.className='dot';icon.style.background=color;li.append(icon,document.createTextNode(label));frag.append(li);}$('sceneLegend').replaceChildren(frag);legendMethod=state.method;}
+      viewport.dataset.hydrogenCount=String(model.parts.filter(p=>p.element==='H').length);viewport.dataset.insideHydrogen=String(model.stored);viewport.dataset.coordinate=M.coordinate(state).toFixed(3);viewport.dataset.moleculeBonds=String(model.parts.filter(p=>p.bondType==='H-H').length);}
   }
   function drawPlot(){
     if($('chartSection').hidden)return;
@@ -104,7 +111,7 @@
     if(c===4)html='<h4>곡선과 두 상을 비교하기</h4>'+range('gasTemperature','온도 · 상대 지수',.6,1.6,.02,state.temperature)+range('composition','수소 함량 · 개념 지수',0,1,.01,state.composition)+'<div class="choice-group"><button type="button" data-branch="absorption">흡수 경로</button><button type="button" data-branch="desorption">방출 경로</button></div><label class="check-field"><input id="showHysteresis" type="checkbox"'+(state.hysteresis?' checked':'')+'> 이력 차이 보기</label><p>구간과 압력은 정성적인 가정입니다. 실제 조성이나 저장량의 계산값이 아닙니다.</p>';
     if(c===5)html='<h4>합금별 선택 기준</h4><div class="choice-group">'+Object.entries(C.alloys).map(([id,v])=>`<button type="button" data-alloy="${id}">${v.name}</button>`).join('')+'</div><h4 id="alloyFocus"></h4><p id="alloyDetail"></p><p>위 격자는 공통 원리를 위한 모형입니다. 선택한 합금의 실제 결정구조·성능을 재현하지 않습니다.</p>';
     if(c===6)html='<h4>어디에 쓰는 원리일까요?</h4><div class="choice-group">'+Object.entries(C.applications).map(([id,v])=>`<button type="button" data-application="${id}">${v.name}</button>`).join('')+'</div><p id="applicationDetail"></p><p>일반적인 연료전지차의 고압 기체 탱크를 모두 금속수소화물 탱크라고 설명하지 않습니다.</p>';
-    if(c===7)html='<h4>반복 영향의 개념 비교</h4>'+range('damage','균열·미분화 표시',0,1,.05,state.damage)+'<label class="check-field"><input id="impurity" type="checkbox"'+(state.impurity?' checked':'')+'> 표면 자리 차단 보기</label><p>슬라이더는 실제 사이클 수·열화율이 아닙니다. 균열이 반응 면적을 늘릴 수도 있으나 분말·열전달 관리도 필요합니다.</p>';
+    if(c===7)html='<h4>반복 영향의 개념 비교</h4>'+range('damage','균열·미분화 표시',0,1,.05,state.damage)+'<label class="check-field"><input id="impurity" type="checkbox"'+(state.impurity?' checked':'')+'> 표면 자리 차단 보기</label><p>표면 차단을 바꾸면 새 조건의 비교 실험을 처음부터 준비합니다. 재생해 주황 테의 H₂ 한 쌍이 표면 밖에서 기다리는 모습을 비교하세요. 속도·피독률·용량을 계산하지 않습니다. 균열이 반응 면적을 늘릴 수도 있으나 분말·열전달 관리도 필요합니다.</p>';
     $('focusControls').innerHTML=html;
   }
   function selectChapter(index,initial=false){
@@ -116,13 +123,13 @@
     controls();plotKey='';lastTime=0;view('home',initial);syncReadout();fitLayout();invalidate(true);if(!initial)announce(c.title);
     const hash='#chapter-'+(state.chapter+1);if(!initial&&location.hash!==hash)history.replaceState(null,'',hash);
   }
-  function chooseStep(step,method='hydride'){state={...state,method,step:M.clamp(step,0,4),phase:1,playing:false,response:null,coordinate:null,compositionMode:false};if(state.chapter===3){state.pressure=M.clamp(M.equilibrium(state.temperature)*(state.step===4?.45:1.8),.2,4);if($('gasPressure'))$('gasPressure').value=state.pressure;}lastTime=0;syncReadout();fitLayout();invalidate(true);announce(M.steps[state.step].name);}
+  function chooseStep(step,method='hydride'){state={...state,method,branch:step===4?'desorption':'absorption',step:M.clamp(step,0,4),phase:1,playing:false,response:null,coordinate:null,compositionMode:false};if(state.chapter===3){state.pressure=M.clamp(M.equilibrium(state.temperature)*(state.step===4?.45:1.8),.2,4);if($('gasPressure'))$('gasPressure').value=state.pressure;}lastTime=0;syncReadout();fitLayout();invalidate(true);announce(M.steps[state.step].name);}
   function togglePlay(){
     refreshVisibility();
     if(state.playing)state.playing=false;
     else if(state.response)state.playing=true;
     else if(state.chapter===3){const d=M.drive(state);if(d.direction==='equilibrium'){announce('평형 기준 부근입니다. 압력이나 온도를 바꾸어 방향을 비교하세요.');return;}const target=d.direction==='absorb'?4:0;if(Math.abs(M.coordinate(state)-target)<.01)state.coordinate=target===4?0:4;state=M.respond(state);}
-    else{state.method='hydride';state.coordinate=null;state.response=null;state.compositionMode=false;if(state.phase>=1)state.phase=0;state.playing=true;}
+    else{state.coordinate=null;state.response=null;state.compositionMode=false;if(state.phase>=1)state.phase=0;state.playing=true;}
     lastTime=0;syncReadout();invalidate(true);
   }
   root.addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!root.contains(b)||b.disabled)return;
@@ -137,16 +144,17 @@
     if(b.dataset.branch){state.branch=b.dataset.branch;plotKey='';syncReadout();invalidate(true);return;}
     if(b.id==='playScene')togglePlay();if(b.id==='previousStep')chooseStep(currentStep()-1);if(b.id==='nextStep')chooseStep(currentStep()+1);
     if(b.id==='previousChapter')selectChapter(state.chapter-1);if(b.id==='nextChapter')selectChapter(state.chapter+1);
-    if(b.id==='resetScene'){const chapter=state.chapter;state=M.defaults();state.chapter=chapter;state.step=0;state.phase=0;state.playing=false;controls();$('showSites').checked=true;$('showInteractions').checked=true;$('showHeat').checked=true;$('playSpeed').value='1';view('home',true);syncReadout();plotKey='';invalidate(true);announce('현재 주제의 변수와 과정을 초기화했습니다.');}
+    if(b.id==='resetScene'){const chapter=state.chapter;state=M.defaults();state.chapter=chapter;if(chapter===0)state.method='compressed';state.step=0;state.phase=0;state.playing=false;controls();$('showSites').checked=true;$('showInteractions').checked=true;$('showHeat').checked=true;$('tracePair').checked=true;$('playSpeed').value='1';view('home',true);syncReadout();plotKey='';invalidate(true);announce('현재 주제의 변수와 과정을 초기화했습니다.');}
   });
   root.addEventListener('input',e=>{const id=e.target.id,value=Number(e.target.value);
     if(id==='gasPressure')state.pressure=value;else if(id==='gasTemperature')state.temperature=value;else if(id==='composition'){state.composition=value;state.compositionMode=true;state.playing=false;state.coordinate=null;state.response=null;}else if(id==='damage')state.damage=value;
+    else if(id==='sceneProgress'&&state.method!=='hydride'){state.phase=value/100;state.step=0;state.playing=false;}
     else if(id==='sceneProgress'){const v=value/100*5;state.method='hydride';state.step=Math.min(4,Math.floor(v));state.phase=value===100?1:v-state.step;state.playing=false;state.coordinate=null;state.response=null;state.compositionMode=false;}
     else return;
     if(state.chapter===3&&(id==='gasPressure'||id==='gasTemperature')){state=M.respond(state);if(reduced&&state.response){state.coordinate=state.response.end;state.response=null;state.playing=false;}}
     lastTime=0;plotKey='';syncReadout();invalidate(true);
   });
-  root.addEventListener('change',e=>{const el=e.target;if(el.id==='playSpeed')state.speed=Number(el.value);else if(el.id==='showSites')state.sites=el.checked;else if(el.id==='showInteractions')state.interactions=el.checked;else if(el.id==='showHeat')state.heat=el.checked;else if(el.id==='showHysteresis')state.hysteresis=el.checked;else if(el.id==='impurity')state.impurity=el.checked;else return;plotKey='';invalidate(true);});
+  root.addEventListener('change',e=>{const el=e.target;if(el.id==='playSpeed')state.speed=Number(el.value);else if(el.id==='showSites')state.sites=el.checked;else if(el.id==='showInteractions')state.interactions=el.checked;else if(el.id==='showHeat')state.heat=el.checked;else if(el.id==='showHysteresis')state.hysteresis=el.checked;else if(el.id==='tracePair')state.tracePair=el.checked;else if(el.id==='impurity'){state={...state,impurity:el.checked,step:0,phase:0,coordinate:null,response:null,playing:false,compositionMode:false};announce('새 표면 조건의 비교 실험을 처음부터 준비했습니다. 재생해 H₂ 한 쌍의 경로를 비교하세요.');}else return;plotKey='';invalidate(true);});
   viewport.addEventListener('keydown',e=>{if(e.target!==viewport)return;if(e.key===' '){e.preventDefault();togglePlay();return;}const deltas={ArrowLeft:[-.15,0],ArrowRight:[.15,0],ArrowUp:[0,.12],ArrowDown:[0,-.12]};if(deltas[e.key]){e.preventDefault();tween=null;yaw+=deltas[e.key][0];pitch=M.clamp(pitch+deltas[e.key][1],-1.1,1.1);invalidate(true);}else if(['+','=','-','Home'].includes(e.key)){e.preventDefault();view(e.key==='Home'?'home':e.key==='-'?'out':'in',true);}});
   viewport.addEventListener('pointerdown',e=>{if(e.button!==undefined&&e.button!==0)return;tween=null;drag={x:e.clientX,y:e.clientY};viewport.setPointerCapture?.(e.pointerId);});
   viewport.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(e.pointerType==='touch'&&Math.abs(dy)>Math.abs(dx))return;yaw+=dx*.009;pitch=M.clamp(pitch+dy*.007,-1.1,1.1);drag={x:e.clientX,y:e.clientY};invalidate(true);});

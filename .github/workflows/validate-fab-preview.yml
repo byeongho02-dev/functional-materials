@@ -16,6 +16,8 @@ on:
       - 'assets/learning-common.css'
       - 'tests/hydrogen.test.cjs'
       - 'tests/mof.test.cjs'
+      - 'tests/cooper-pair.test.cjs'
+      - 'tests/remaining-models.test.cjs'
       - 'assets/ale-v092-chamber.png'
       - 'scripts/build-fab-static.mjs'
       - 'src/fab3d/**'
@@ -45,7 +47,41 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: node tests/sim-model.test.js
       - run: npm run test:fab
-      - run: npm run test:pages
+      - name: Check changed learning scenes first
+        run: npx playwright test --config playwright.pages.config.cjs tests/pages/remaining.spec.cjs
+      - name: Preserve focused browser report
+        if: always()
+        run: |
+          if [ -f test-results/pages-browser-results.json ]; then
+            cp test-results/pages-browser-results.json test-results/remaining-browser-results.json
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: remaining-hydrogen-review
+          path: preview/remaining-review/hydrogen/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: remaining-mof-review
+          path: preview/remaining-review/mof/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: remaining-electromagnetic-review
+          path: |
+            preview/remaining-review/electromagnetic/
+            preview/remaining-review/cooper/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: remaining-browser-report
+          path: test-results/remaining-browser-results.json
+          retention-days: 14
+      - run: npm run test:pages -- --grep-invert "remaining lessons review"
       - name: Verify committed Pages entry matches the sources
         run: git diff --exit-code -- ale-v092-fab.html
       - uses: actions/upload-artifact@v4

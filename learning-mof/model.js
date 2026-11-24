@@ -153,6 +153,26 @@
     }return {nodes,edges};
   }
   const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+  // Twelve persistent tracers. Progress is a teaching sequence, not physical time.
+  function adsorptionPose(s,step=s.step,t=s.phase){
+    const a=adsorption(s),phase=clamp(t,0,1),count=s.pressure>0?12:0,target=Math.round(a.coverage*12);
+    const edges=network(1,3.4).edges;
+    const sites=edges.map((e,i)=>{const p=mix(e.a,e.b,.35+.3*(i%3)/2),n=Math.hypot(...p);return p.map(v=>v-.15*v/n);});
+    const inside=Array.from({length:12},(_,i)=>[Math.sin(i*2.4)*.9,Math.cos(i*2.4)*.9,.7]);
+    const outside=Array.from({length:12},(_,i)=>[Math.sin(i*2.4)*1.3,Math.cos(i*2.4)*1.3,3.8]);
+    const exchange=target>0&&target<12;
+    const positions=Array.from({length:count},(_,i)=>{
+      if(!a.accessible)return [outside[i][0],outside[i][1],2.35+.35*Math.sin(phase*Math.PI)];
+      if(step===0)return mix(outside[i],inside[i],phase);
+      if(step===1)return i<target?mix(inside[i],sites[i],phase):inside[i];
+      const initial=i<target?sites[i]:inside[i];
+      if(exchange&&i===0)return mix(sites[0],outside[0],clamp(phase/.45,0,1));
+      if(exchange&&i===target)return mix(inside[i],sites[0],clamp((phase-.55)/.45,0,1));
+      return initial;
+    });
+    const note=!a.accessible?'분자가 입구보다 커 진입을 제한한 모형입니다.':count===0?'압력 0의 기준 모형: 기체를 표시하지 않습니다.':step===0?'같은 분자들이 입구를 지나 내부로 이동합니다.':step===1?'대표 12개 중 '+target+'개가 표면으로 이동합니다. 평형 목표값을 반올림한 표현입니다.':exchange?'표면의 한 분자가 떠난 자리를 내부의 다른 분자가 채웁니다. 평형에서도 교환은 이어집니다.':target===0?'대표 12개로 반올림하면 표면 분자가 0개입니다. 양의 작은 흡착량이 없다는 뜻은 아닙니다.':'대표 12개가 모두 표면에 그려집니다. 완전 포화를 뜻하지 않으며 이 경계에서는 교환 연출을 생략합니다.';
+    return {positions,target,coverage:a.coverage,accessible:a.accessible,exchange:exchange&&step===2,readout:note+' 진행 막대는 실제 시간이나 흡착 속도가 아닙니다.'};
+  }
   function scene(s,time=0){
     const parts=[],labels=[];const c=s.chapter,step=s.step;const motion=clamp(time,0,1);
     const ball=(id,p,r,color,opacity=1)=>parts.push({id,kind:'sphere',p,r,color,opacity});
@@ -173,7 +193,7 @@
     function gases(id,positions,r=.085){positions.forEach((p,i)=>ball(`${id}-${i}`,p,r,colors.orange));}
     function surfaceSites(L,offset=[0,0,0],count=12){const edges=network(1,L,offset,'sites').edges;return Array.from({length:count},(_,i)=>{const e=edges[i%edges.length],p=mix(e.a,e.b,.35+.3*(i%3)/2);const d=p.map((v,j)=>v-offset[j]),n=Math.hypot(...d);return p.map((v,j)=>v-.15*d[j]/n);});}
     function cluster(offset=[0,0,0]){ball('centralO',offset,.17,colors.white);const spread=step===1?1+(1-motion)*1.7:1;const tet=[[.46,.46,.46],[.46,-.46,-.46],[-.46,.46,-.46],[-.46,-.46,.46]];tet.forEach((p,i)=>{const q=p.map((v,j)=>v*spread+offset[j]);ball('zn'+i,q,.23,colors.blue);bar('znO'+i,offset,q,colors.white,.04);});label('cluster',[-.6,1.65,0],'Zn₄O · 중심 O + 네 Zn');}
-    let name='MOF-5 · 연결망 모식도';
+    let name='MOF-5 · 연결망 모식도',readout='';
     if(c===1){
       name='Zn²⁺ · 카복실레이트 산소의 배위';const shift=step===0?0:step===1?motion*.9:.9;const zn=[-1.2,0,0],o=[1.6-shift,0,0];ball('zn',zn,.38,colors.blue);ball('donorO',o,.28,colors.green);bar('co',o,[o[0]+.65,.4,0],colors.green,.07);ball('carbon',[o[0]+.65,.4,0],.16,colors.green);bar('co2',[o[0]+.65,.4,0],[o[0]+1.1,.03,0],colors.green,.045);ball('otherO',[o[0]+1.1,.03,0],.22,colors.green);
       if(step===2)bar('coordinate',zn,o,colors.cyan,.065);
@@ -194,22 +214,15 @@
       name=s.interpenetrate?'IRMOF-15 · 두 독립 망':'IRMOF-16 · 하나의 망';drawNet('first',2.8,[0,0,0],3,colors.blue,2,false);
       if(s.interpenetrate){const enter=step===0?0:step===1?(1-motion)*2.8:0;drawNet('second',2.8,[1.4+enter,1.4,1.4],3,colors.purple,2,false);label('second',[2.8,4.9,1.4],'보라：독립 연결망 2');}wire('interPore',2.5,[1.4,1.4,1.4]);label('first',[-2.6,-3.6,0],'파랑/초록：연결망 1');if(step===2){gases('spaceProbe',[[.5,.5,.5],[1,1,1],[1.9,1.9,1.9]],.1);label('probe',[0,4.4,0],'분자가 쓸 공간 · 접근성 계산은 생략');}
     }else if(c===7){
-      const a=adsorption(s);name=`기체 ${s.species} · 정성적 흡착 모형`;drawNet('adsorption',3.4,[0,0,0],2);wire('adsorptionPore',2.9);const points=[],sites=surfaceSites(3.4);
-      for(let i=0;i<(s.pressure<=0?0:12);i++){
-        const angle=i*2.4;const outside=[Math.sin(angle)*1.3,Math.cos(angle)*1.3,3.8];const surface=sites[i];
-        const inside=[Math.sin(angle)*.9,Math.cos(angle)*.9,.7];let p;
-        if(!a.accessible)p=[outside[0],outside[1],2.35+.35*Math.sin(motion*Math.PI)];
-        else if(step===0){p=mix(outside,inside,motion);p=p.map((v,j)=>v+.08*Math.sin(i*1.7+j+motion*Math.PI*6)*Math.sin(motion*Math.PI));}
-        else if(step===1)p=i<Math.round(a.coverage*12)?mix(inside,surface,motion):inside;
-        else p=mix(surface,outside,motion);
-        points.push(p);
-      }gases('gas',points,.075+.075*s.size);label('ads',[0,2.35,0],!a.accessible?'입구보다 커서 진입 제한':s.pressure<=0?'상대 압력 0 · 모형 점유율 0':step===1?'내부 골격 표면에 물리흡착':step===2?'표면을 떠나는 탈착':'입구 통과와 확산 · 개념 경로');
+      const pose=adsorptionPose(s,step,motion);name='기체 '+s.species+' · 정성적 흡착 모형';readout=pose.readout;drawNet('adsorption',3.4,[0,0,0],2);wire('adsorptionPore',2.9);
+      gases('gas',pose.positions,.075+.075*s.size);label('ads',[0,2.35,0],!pose.accessible?'입구보다 커서 진입 제한':s.pressure<=0?'상대 압력 0 · 모형 점유율 0':step===1?'내부 골격 표면에 물리흡착':step===2?'탈착과 재흡착 · 동적 교환':'입구 통과와 확산 · 개념 경로');
     }else if(c===8){
       name=applications[s.application].name+' · 구조–기능 모식도';drawNet('application',3.4,[0,0,0],2);wire('appPore',2.95);const points=[];
       for(let i=0;i<14;i++){const z=(i/13-.5)*5.6,r=step===0?1.1:1.5;points.push([Math.sin(i*2.3)*r,Math.cos(i*2.3)*r,z+(step===0?(1-motion)*1.5:0)]);}gases('appGas',points);
       if(s.application===1)for(let i=0;i<6;i++)ball('otherGas'+i,[2.4,Math.sin(i)*1.4,i*.35-.8],.14,colors.white);
       if(s.application===2)for(let i=0;i<6;i++)ball('affinity'+i,[Math.sin(i)*1.5,1.7,Math.cos(i)*1.5],.13,colors.purple);
       if(s.application===3){ball('activeSite',[0,1.7,1.7],.22,colors.purple);label('active',[0,2.4,1.7],'응용에 맞게 설계한 활성점');}
+      if(s.application===4){const response=step===0?0:step===1?motion:1;ball('sensorSite',[0,1.7,1.7],.22,colors.purple);bar('signalPath',[0,1.7,1.7],[2.35,2.1,1.7],colors.cyan,.025);box('sensorSignal',[2.35,2.1,1.7],[.4,.25+response*.7,.15],response?colors.cyan:colors.gray,.8);label('signal',[1.3,2.9,1.7],response?'흡착에 따른 응답 변화':'흡착 전 기준 응답');readout='분자와 감응 부위의 상호작용을 빛·전기 신호로 읽는 개념입니다. 막대 높이는 센서 감도나 실제 측정값이 아닙니다.';}
       if(step===2)label('function',[0,-2.35,0],applications[s.application].metric);
     }else{
       // Chapter 1 and surface-area chapter share the explicit dense/open comparison.
@@ -221,8 +234,8 @@
       if(c===6)for(let i=0;i<6;i++)ball('outerGas'+i,[-3.23,Math.sin(i)*1.1,Math.cos(i)*.9],.095,colors.orange);
     }
     if(!labels.length){label('node',[-1.25,-1.9,0],'금속 마디');label('linker',[1,1.9,0],'유기 링커');}
-    return {parts,labels,name};
+    return {parts,labels,name,readout};
   }
-  const api={colors,families,chapters,applications,defaults,family,volume,adsorption,network,scene,clamp};
+  const api={colors,families,chapters,applications,defaults,family,volume,adsorption,adsorptionPose,network,scene,clamp};
   if(typeof module==='object'&&module.exports)module.exports=api;else scope.MOFModel=api;
 })(typeof window==='object'?window:globalThis);

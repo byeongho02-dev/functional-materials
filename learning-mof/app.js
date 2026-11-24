@@ -81,7 +81,7 @@
     const T=window.THREE,w=Math.max(1,viewport.clientWidth||800),h=Math.max(1,viewport.clientHeight||460),scale=baseScale()/zoom;
     const aspect=w/h;camera.left=-scale*aspect;camera.right=scale*aspect;camera.top=scale;camera.bottom=-scale;camera.updateProjectionMatrix();
     camera.position.set(20*Math.cos(pitch)*Math.sin(-yaw),20*Math.sin(pitch),20*Math.cos(pitch)*Math.cos(yaw));camera.lookAt(0,0,0);
-    if(canvas.width!==Math.round(w*renderer.getPixelRatio())||canvas.height!==Math.round(h*renderer.getPixelRatio()))renderer.setSize(w,h,false);
+    if(canvas.width!==Math.floor(w*renderer.getPixelRatio())||canvas.height!==Math.floor(h*renderer.getPixelRatio()))renderer.setSize(w,h,false);
     const groups=new Map();
     for(const p of model.parts){const key=[p.kind,p.color,p.opacity,!!p.glow].join(':');if(!groups.has(key))groups.set(key,[]);groups.get(key).push(p);}
     for(const obj of sceneObjects.values())obj.visible=false;
@@ -148,6 +148,18 @@
   function render(){
     const model=state.chapter<3&&window.MOFMolecular?window.MOFMolecular.scene(state,state.phase):M.scene(state,state.phase);currentModel=model;$('modelName').textContent=model.name;placedLabels=[];
     $('componentReadout').textContent=model.readout||'조작한 변수에 따라 골격과 기공의 변화를 비교하세요.';viewport.dataset.atomCount=String(model.parts.filter(p=>p.atom).length);
+    if(state.chapter<3&&state.chapter!==1&&['node','linker'].includes(state.focus)){
+      const node=state.focus==='node';
+      $('sceneTitle').textContent=node?'금속 마디를 가까이 보기':'유기 링커를 가까이 보기';
+      $('sceneWhy').textContent=node?'중심 산소와 Zn 네 개가 이루는 Zn₄O 기반 마디입니다. 주변 결합 부위가 이웃 링커와 연결됩니다.':'BDC는 벤젠 고리 양끝에 카복실레이트를 가집니다. 말단 산소가 금속 마디에 배위해 이웃을 잇습니다.';
+      $('sceneReason').textContent=node?'마디는 골격의 연결 방향을 정합니다. 여섯 방향 연결은 마디 전체의 연결도이며 Zn 하나의 배위수가 아닙니다.':'링커는 단순한 막대가 아니라 결합 말단을 가진 분자입니다. 이 모형의 확대 비율과 원자 위치는 이해를 위한 조정입니다.';
+    }else if(state.chapter<3&&state.chapter!==1&&state.focus==='pore'){
+      $('sceneTitle').textContent='골격 사이에 남은 기공 보기';
+      $('sceneWhy').textContent='노란 윤곽은 마디와 링커 사이의 빈 공간을 가리킵니다. 분자가 이용하려면 입구를 통과하고 내부로 접근할 수 있어야 합니다.';
+      $('sceneReason').textContent='기공은 원자를 뚫어 만든 구멍이 아니라 골격의 연결 방식이 남긴 공간입니다. 윤곽은 비교 기호이며 실제 기공 경계나 접근 가능한 부피의 계산값이 아닙니다.';
+    }else{
+      const chapter=M.chapters[state.chapter];$('sceneTitle').textContent=chapter.scenes[state.step][0];$('sceneWhy').textContent=chapter.scenes[state.step][1];$('sceneReason').textContent=chapter.reasons[state.step];
+    }
     $('molecularControls').hidden=state.chapter>=3||state.chapter===1;$('componentChoices').hidden=state.chapter===1;
     $('molecularOptions').hidden=state.chapter>=3;$('explodeModel').closest('label').hidden=state.chapter===1||state.chapter===2&&state.step<3;
     for(const b of root.querySelectorAll('[data-focus]'))b.setAttribute('aria-pressed',String(state.focus===b.dataset.focus));
@@ -183,7 +195,7 @@
     if(c===4)html=range('lengthRatio','마디 사이 거리',1,1.8,.01,state.ratio);
     if(c===5)html='<label class="check-field"><input id="interpenetration" type="checkbox"'+(state.interpenetrate?' checked':'')+'> 보라색 두 번째 골격 보기</label>';
     if(c===6)html='<label class="check-field"><input id="internalSurface" type="checkbox"'+(state.internal?' checked':'')+'> 내부 표면 강조</label><div class="court-analogy" aria-label="농구장 약 7개의 면적 비유">'+Array.from({length:7},()=>'<i class="court" aria-hidden="true"></i>').join('')+'</div>';
-    if(c===7)html=range('gasPressure','압력 높이기',0,5,.1,state.pressure)+'<details class="extra-options" id="gasOptions"><summary>온도·분자 크기도 바꿔 보기</summary>'+range('gasTemperature','온도 지수',.6,1.8,.05,state.temperature)+range('gasSize','분자 크기 / 입구 폭',.2,1.4,.05,state.size)+'<div class="choice-group" role="group" aria-label="가상 단일 기체의 친화력 선택"><button type="button" data-species="A" aria-pressed="'+(state.species==='A')+'">기체 A · 잘 붙음</button><button type="button" data-species="B" aria-pressed="'+(state.species==='B')+'">기체 B · 덜 붙음</button></div><p class="control-note">같은 조건에서 각각 따로 넣은 가상 기체를 비교합니다. 압력·온도는 물리 단위가 없는 모형값입니다.</p><p id="gasAdvancedResults" class="control-note"></p></details>';
+    if(c===7)html=range('gasPressure','압력 높이기',0,5,.1,state.pressure)+'<details class="extra-options" id="gasOptions"><summary>온도·분자 크기도 바꿔 보기</summary>'+range('gasTemperature','온도 지수',.6,1.8,.05,state.temperature)+range('gasSize','분자 크기 / 입구 폭',.2,1.4,.05,state.size)+'<div class="entry-figure" id="entryFigure" role="img"><span class="entry-wall entry-left"></span><span class="entry-wall entry-right"></span><span id="entryMolecule" class="entry-molecule"></span><span class="entry-width">입구 폭 = 1</span></div><p id="entryComparison" class="control-note"></p>'+'<div class="choice-group" role="group" aria-label="가상 단일 기체의 친화력 선택"><button type="button" data-species="A" aria-pressed="'+(state.species==='A')+'">기체 A · 잘 붙음</button><button type="button" data-species="B" aria-pressed="'+(state.species==='B')+'">기체 B · 덜 붙음</button></div><p class="control-note">같은 조건에서 각각 따로 넣은 가상 기체를 비교합니다. 압력·온도는 물리 단위가 없는 모형값입니다.</p><p id="gasAdvancedResults" class="control-note"></p></details>';
     if(c===8)html='<div class="application-options" role="group" aria-label="MOF 활용 분야">'+M.applications.map((a,i)=>`<button type="button" data-application="${i}" aria-pressed="${state.application===i}">${a.name}</button>`).join('')+'</div><p id="applicationWhy" class="control-note"></p>';
     $('chapterControls').innerHTML=html;results();
   }
@@ -196,7 +208,10 @@
     if(c===7){
       const a=M.adsorption(state),b=M.adsorption({...state,species:state.species==='A'?'B':'A'});
       $('gasPressureValue').textContent=Number(state.pressure).toFixed(1);$('gasTemperatureValue').textContent=Number(state.temperature).toFixed(2);$('gasSizeValue').textContent=Number(state.size).toFixed(2);
-      html=result('모형의 표면 점유율',(a.coverage*100).toFixed(1)+'%','기체 '+state.species+' · 가상 모형값')+result('입구 통과',a.accessible?'가능':'제한','분자 크기와 입구 폭 비교',true);
+      html=result('모형의 평형 목표 점유율',(a.coverage*100).toFixed(1)+'%','대표 분자 수는 12개로 반올림 · 순간 점유율과 구분')+result('입구 통과',a.accessible?'가능':'제한','분자 크기와 입구 폭 비교',true);
+      const diameter=100*Number(state.size);$('entryMolecule').style.width=diameter+'px';$('entryMolecule').style.height=diameter+'px';
+      const entryText='같은 배율: 입구 폭 1에 대해 분자 지름 '+Number(state.size).toFixed(2)+'. '+(a.accessible?'이 모형에서는 통과 가능':'입구보다 커 통과 제한');
+      $('entryFigure').setAttribute('aria-label',entryText);$('entryComparison').textContent=entryText+'. 단단한 입구와 구형 분자를 가정한 모식도이며 실제 분자 형태·골격 유연성은 생략합니다.';
       $('gasAdvancedResults').textContent='다른 기체를 단독으로 넣었을 때: '+(b.coverage*100).toFixed(1)+'%. 혼합 기체의 선택도를 뜻하지 않습니다.';
     }
     if(c===8)$('applicationWhy').textContent=M.applications[state.application].why;
@@ -321,7 +336,14 @@
   canvas.addEventListener('webglcontextlost',e=>{e.preventDefault();if(renderer){renderer=null;canvas.hidden=true;fallback.hidden=false;fallback.removeAttribute('hidden');$('renderMode').hidden=false;viewport.dataset.renderer='svg';invalidate(true);}});
   function suspend(){if(raf){cancelAnimationFrame(raf);raf=0;}lastTime=0;if(!document.hidden&&forcePaint)raf=requestAnimationFrame(frame);}
   document.addEventListener('visibilitychange',()=>{if(document.hidden)suspend();else invalidate(true);});
-  if(window.IntersectionObserver)new IntersectionObserver(entries=>{visible=entries[0].isIntersecting;if(visible)invalidate(true);else suspend();},{rootMargin:'120px'}).observe($('mofLab'));
+  function refreshVisibility(observerValue){
+    const r=viewport.getBoundingClientRect(),height=window.innerHeight||0,width=window.innerWidth||0;
+    const measurable=r.width>0&&r.height>0&&height>0&&width>0;
+    visible=measurable?r.bottom>0&&r.top<height&&r.right>0&&r.left<width:typeof observerValue==='boolean'?observerValue:visible;
+    if(visible)invalidate();else suspend();
+  }
+  if(window.IntersectionObserver)new IntersectionObserver(entries=>refreshVisibility(entries[0].isIntersecting),{rootMargin:'80px'}).observe(viewport);
+  window.addEventListener('scroll',()=>refreshVisibility(),{passive:true});
   if(window.ResizeObserver)new ResizeObserver(invalidate).observe(viewport);else window.addEventListener('resize',invalidate);
   if(window.ResizeObserver){
     const layoutObserver=new ResizeObserver(fitLabLayout);

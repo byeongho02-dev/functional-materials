@@ -7,8 +7,11 @@
   <title>전자기파와 기능성 재료 · Materials Learning</title>
   <link rel="stylesheet" href="../assets/learning-common.css">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="cooper-pair.css">
   <script defer src="vendor/three.min.js"></script>
   <script defer src="app.js"></script>
+  <script defer src="cooper-pair.js"></script>
+  <script defer src="explore.js"></script>
 </head>
 <body class="learning-page">
 <div id="materialsLab" lang="ko">
@@ -41,12 +44,12 @@
       <div class="lab-layout">
         <div class="visual-panel">
           <div class="visual-toolbar"><span class="live-label"><i></i>3D 개념 모델</span><div><button type="button" class="quiet-button" data-motion="emi" aria-pressed="false">일시정지</button><button type="button" class="quiet-button" data-view="emi">시점 초기화</button></div></div>
-          <div class="stage" data-stage="emi">
-            <canvas id="emiCanvas" aria-label="금속판에 입사한 전자파가 반사, 흡수, 투과되는 3D 개념 모델">3D를 사용할 수 없어도 아래 수치와 해설로 학습할 수 있습니다.</canvas>
+          <div class="scene-focus" role="group" aria-label="관찰할 과정"><button type="button" data-explore-topic="emi" data-explore-step="0" aria-pressed="false">1. 입사·반사</button><button type="button" data-explore-topic="emi" data-explore-step="1" aria-pressed="false">2. 재료 내부</button><button type="button" data-explore-topic="emi" data-explore-step="2" aria-pressed="true">3. 전체 에너지</button></div><div class="stage" data-stage="emi">
+            <canvas id="emiCanvas" aria-describedby="emiFocusText" aria-label="금속판에 입사한 전자파가 반사, 흡수, 투과되는 3D 개념 모델">3D를 사용할 수 없어도 아래 수치와 해설로 학습할 수 있습니다.</canvas>
             <div class="fallback" hidden role="img" aria-label="전자파 차폐의 2D 대체 모식도"></div>
             <div class="scene-caption"><span>입사파 → 금속판 → 투과파</span><small>두께와 파장의 시각적 크기는 과장했습니다.</small></div>
           </div>
-          <div class="scene-legend"><span><i class="incident"></i>입사</span><span><i class="reflection"></i>반사</span><span><i class="absorption"></i>흡수</span><span><i class="transmission"></i>투과</span><small>드래그로 회전 · 휠로 확대</small></div>
+          <div class="scene-legend"><span><i class="incident"></i>입사</span><span><i class="reflection"></i>반사</span><span><i class="absorption"></i>흡수</span><span><i class="transmission"></i>투과</span><small>드래그·방향키로 회전 · 휠·+/−로 확대 · Home 초기화</small></div>
         </div>
         <aside class="controls" aria-label="전자파 차폐 조건">
           <div class="control-heading"><h3>실험 조건</h3><button type="button" class="text-button" data-reset="emi">기본값</button></div>
@@ -55,7 +58,7 @@
           <label class="field" for="emiReflection"><span>표면 반사율 <i>R</i><output id="emiReflectionOut" for="emiReflection">55%</output></span><input id="emiReflection" type="range" min="0" max="90" step="1" value="55"><small><span>0%</span><span>90%</span></small></label>
           <div class="result" aria-live="polite" aria-atomic="true"><div class="result-label">입사 에너지 100%의 행방</div><div class="energy-bar" role="img" id="energyBar" aria-label="반사, 흡수, 투과 에너지 비율"><span id="rSegment"></span><span id="aSegment"></span><span id="tSegment"></span></div><div class="energy-values"><span>반사 R<strong id="rValue">55.0%</strong></span><span>흡수 A<strong id="aValue">28.5%</strong></span><span>투과 T<strong id="tValue">16.5%</strong></span></div><details class="calculation-details"><summary>계산값 보기</summary><dl class="small-results"><div><dt>표피 깊이 δ</dt><dd id="skinValue">15.92 μm</dd></div><div><dt>차폐효과 SE</dt><dd id="seValue">7.83 dB</dd></div></dl></details></div>
         </aside>
-      </div>
+      </div><div class="focus-reading"><strong id="emiFocusTitle"></strong><p id="emiFocusText"></p></div>
       <div class="observe"><span>해볼 실험</span><p>두께를 늘려보세요. 반대편으로 나오는 파와 ‘투과’ 수치가 어떻게 달라지나요?</p><button type="button" class="outline-button" id="doubleThickness">두께 2배로</button></div>
       <section class="mechanism" aria-labelledby="emi-mechanism-title">
         <div class="mechanism-heading"><span>원인 → 변화 → 결과</span><h3 id="emi-mechanism-title">왜 전자파가 줄어들까요?</h3></div>
@@ -83,10 +86,57 @@
         <p class="remember-line"><span>기억할 한 문장</span><strong>마이스너 효과는 자기장을 밀어내는 것, 자속 고정은 들어온 자속을 붙잡는 것입니다.</strong></p>
       </div>
       <div class="lab-layout">
-        <div class="visual-panel"><div class="visual-toolbar"><span class="live-label"><i></i>3D 개념 모델</span><div><button type="button" class="quiet-button" data-motion="super" aria-pressed="false">일시정지</button><button type="button" class="quiet-button" data-view="super">시점 초기화</button></div></div><div class="stage" data-stage="super"><canvas id="superCanvas" aria-label="초전도체 주변의 자기장 선과 자석의 개념 모델"></canvas><div class="fallback" hidden role="img" aria-label="초전도체 자기장의 2D 대체 모식도"></div><div class="scene-caption"><span id="superSceneCaption">초전도체 바깥으로 휘어지는 자기장 선</span><small>자석의 높이와 자기장 선은 정성적 모식도입니다.</small></div></div><div class="scene-legend"><span><i class="incident"></i>자기장 선</span><span><i class="absorption"></i>제2종 초전도체</span><small>드래그로 회전 · 휠로 확대</small></div></div>
+        <div class="visual-panel"><div class="visual-toolbar"><span class="live-label"><i></i>3D 개념 모델</span><div><button type="button" class="quiet-button" data-motion="super" aria-pressed="false">일시정지</button><button type="button" class="quiet-button" data-view="super">시점 초기화</button></div></div><div class="stage" data-stage="super"><canvas id="superCanvas" aria-label="초전도체 주변의 자기장 선과 자석의 개념 모델"></canvas><div class="fallback" hidden role="img" aria-label="초전도체 자기장의 2D 대체 모식도"></div><div class="scene-caption"><span id="superSceneCaption">초전도체 바깥으로 휘어지는 자기장 선</span><small>자석의 높이와 자기장 선은 정성적 모식도입니다.</small></div></div><div class="scene-legend"><span><i class="incident"></i>자기장 선</span><span><i class="absorption"></i>제2종 초전도체</span><small>드래그·방향키로 회전 · 휠·+/−로 확대 · Home 초기화</small></div></div>
         <aside class="controls" aria-label="초전도체 조건"><div class="control-heading"><h3>실험 조건</h3><button type="button" class="text-button" data-reset="super">기본값</button></div><label class="field" for="superTemperature"><span>온도 <i>T</i><output id="superTemperatureOut" for="superTemperature">65 K</output></span><input id="superTemperature" type="range" min="10" max="140" step="1" value="65"><small><span>10 K</span><span>140 K</span></small></label><div class="fixed-condition"><span>임계온도 T<sub>c</sub></span><b>92 K</b><small>이 실험에서는 92 K를 기준으로 비교해요.</small></div><fieldset class="mode-select"><legend>자기장의 모습</legend><label><input type="radio" name="fieldMode" value="meissner" checked><span>마이스너 효과<small>약한 자기장을 밀어내기</small></span></label><label><input type="radio" name="fieldMode" value="pinning"><span>자속 고정<small>들어온 자속을 붙잡기</small></span></label></fieldset><div class="result" aria-live="polite" aria-atomic="true"><div class="result-label">현재 상태</div><strong class="state-value" id="superState">초전도 상태</strong><details class="calculation-details"><summary>계산값 보기</summary><dl class="small-results"><div><dt>T / T<sub>c</sub></dt><dd id="superRatio">0.71</dd></div><div><dt>정규화 저항 R / R(T<sub>c</sub>⁺)</dt><dd id="superResistance">0.00</dd></div></dl><p class="result-detail" id="superExplanation">약한 외부장을 내부에서 밀어내는 마이스너 효과를 관찰합니다.</p></details></div></aside>
       </div>
       <div class="observe"><span>해볼 실험</span><p>온도를 낮췄다 올려보세요. 자석과 자기장 선의 모습이 어떻게 달라지나요?</p><button type="button" class="outline-button" id="crossTc">T<sub>c</sub> 위로 올리기</button></div>
+      <section id="cooper-lab" class="cp-lab" aria-labelledby="cp-title">
+        <div class="cp-heading"><div><div class="section-kicker">COOPER PAIR LAB / 전통적 BCS</div><h3 id="cp-title">쌍 형성에서 집단 결맞음까지</h3><p>7단계를 직접 움직이며 원인과 결과를 연결해보세요.</p></div><span class="cp-model-label">정성적 학습 모형</span></div>
+        <p class="cp-scope"><strong>기존 YBCO 실험과 구분합니다.</strong> 이 시뮬레이터는 전통적인 포논 매개 BCS 초전도체의 원리를 설명하는 정성적 학습 모형입니다. 기존 YBCO(92 K)의 초전도 현상을 동일한 쌍 형성 기작으로 단정하지 않습니다.</p>
+        <nav class="cp-steps" aria-label="쿠퍼쌍 학습 단계 바로가기">
+          <button type="button" data-cp-step="0" aria-current="step">1. 전자 반발</button><button type="button" data-cp-step="1">2. 격자 지연</button><button type="button" data-cp-step="2">3. 유효 인력</button><button type="button" data-cp-step="3">4. 쿠퍼쌍</button><button type="button" data-cp-step="4">5. 위상 결맞음</button><button type="button" data-cp-step="5">6. 갭·강성</button><button type="button" data-cp-step="6">7. 지속 전류</button>
+        </nav>
+        <div class="cp-layout">
+          <figure class="cp-figure" aria-describedby="cp-caption">
+            <div class="cp-stage">
+              <svg id="cp-svg" viewBox="0 0 640 400" role="img" aria-labelledby="cp-svg-title cp-svg-desc">
+                <title id="cp-svg-title">전자 반발에서 시작하는 쿠퍼쌍 학습</title><desc id="cp-svg-desc">자동재생 또는 단계 버튼으로 전자·격자·위상·에너지의 관계를 비교합니다.</desc>
+                <defs>
+                  <marker id="cp-arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#ffc47d"/></marker>
+                  <marker id="cp-arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#71dfe5"/></marker>
+                  <marker id="cp-arrow-purple" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#bd9bff"/></marker>
+                  <radialGradient id="cp-cloud-a"><stop stop-color="#71dfe5" stop-opacity=".72"/><stop offset="1" stop-color="#71dfe5" stop-opacity="0"/></radialGradient>
+                  <radialGradient id="cp-cloud-b"><stop stop-color="#bd9bff" stop-opacity=".72"/><stop offset="1" stop-color="#bd9bff" stop-opacity="0"/></radialGradient>
+                </defs>
+                <g id="cp-scene"><text x="320" y="190" text-anchor="middle">단계를 선택하면 개념 장면이 표시됩니다.</text></g>
+              </svg>
+            </div>
+            <div class="cp-figure-notes"><p id="cp-legend">입자와 화살표의 뜻은 단계에 따라 바뀝니다.</p><p id="cp-caption">정성적 개념도이며, 실제 입자 크기나 시간을 재현하지 않습니다.</p></div>
+            <label class="cp-progress-label" for="cp-progress">장면 진행 <output id="cp-progress-value" for="cp-progress" aria-live="off">0%</output><input id="cp-progress" type="range" min="0" max="100" step="1" value="0" aria-label="현재 장면의 진행 위치"></label>
+            <div class="cp-playback"><button type="button" id="cp-prev" disabled>← 이전</button><button type="button" id="cp-play" class="cp-primary" aria-pressed="false">자동재생</button><button type="button" id="cp-next">다음 →</button><button type="button" id="cp-reset">처음부터</button></div>
+            <p id="cp-motion-note" class="cp-small">정지 상태로 시작합니다. 자동재생을 누르거나 단계를 선택해보세요.</p>
+          </figure>
+          <div class="cp-reading">
+            <span id="cp-step-number" class="section-kicker">01 / 07</span><h4 id="cp-step-title">전자끼리는 원래 반발해요</h4>
+            <div class="cp-key"><span>핵심 한 문장</span><p id="cp-key-sentence">전자 사이의 직접적인 쿨롱 반발은 사라지지 않습니다.</p></div>
+            <p id="cp-short">각 단계의 그래픽과 설명을 함께 살펴보세요.</p>
+            <div class="cp-controls" aria-label="쿠퍼쌍 실험 조작">
+              <div class="cp-control-row"><label for="cp-speed">애니메이션 속도</label><select id="cp-speed"><option value="0.5">0.5배</option><option value="1" selected>1배</option><option value="1.5">1.5배</option><option value="2">2배</option></select></div>
+              <button type="button" id="cp-lattice">격자 반응 보기</button>
+              <div id="cp-mediated-controls" hidden><label class="cp-check" for="cp-mediated"><input type="checkbox" id="cp-mediated" checked><span>격자 매개 인력 경로 표시</span></label><p class="cp-small">표시를 꺼도 직접 쿨롱 반발은 남아 있습니다.</p></div>
+              <div id="cp-phase-controls" hidden><span class="cp-control-title">공간 영역의 위상 관계</span><div class="cp-coherence-buttons"><button type="button" data-cp-coherence="yes" aria-pressed="true">결맞음</button><button type="button" data-cp-coherence="no" aria-pressed="false">위상 무질서</button></div><p id="cp-phase-status" class="cp-small"></p></div>
+              <div id="cp-twist-controls" hidden><label class="cp-range-label" for="cp-twist">이웃 영역의 위상 비틀기 <output id="cp-twist-value" for="cp-twist">0°</output><input type="range" id="cp-twist" min="-45" max="45" step="1" value="0"></label><p class="cp-small">같은 위상 강성에서 비틀기만 비교합니다. 열린 국소 구간의 A = 0을 가정하며, 화살표는 전자의 이동 방향이 아닙니다. 무질서 모드에서는 매끄러운 비틀기 조작을 잠급니다.</p></div>
+              <div id="cp-gap-controls" hidden><label class="cp-check" for="cp-gap"><input type="checkbox" id="cp-gap" checked><span>BCS 갭 표시 · 끄면 갭 없는 분산과 비교</span></label><p class="cp-small">Δ와 위상 변형을 독립적으로 보여주는 모식도입니다. 갭을 실제 단위로 예측하지 않습니다.</p></div>
+              <div id="cp-limit-controls" hidden><label class="cp-check" for="cp-limits"><input type="checkbox" id="cp-limits" checked><span>온도·자기장·전류의 임계 조건 충족</span></label><p id="cp-ring-status" class="cp-small"></p></div>
+            </div>
+          </div>
+        </div>
+        <details id="cp-theory" class="cp-theory"><summary>이 단계의 자세한 이론</summary><div id="cp-theory-body"><p>단계별 자세한 이론이 여기에 표시됩니다.</p></div></details>
+        <p id="cp-status" class="cp-status" role="status" aria-live="polite" aria-atomic="true">1단계. 전자 반발. 일시정지.</p>
+        <details class="cp-references"><summary>참고자료 · 이론 더 보기</summary><ul><li><a href="https://www.hyperphysics.phy-astr.gsu.edu/hbase/Solids/bcs.html" target="_blank" rel="noopener noreferrer">Georgia State HyperPhysics · BCS</a></li><li><a href="https://qs3.mit.edu/images/pdf/Van_Harlingen_Lecture_1.pdf" target="_blank" rel="noopener noreferrer">MIT QS3 · Van Harlingen 초전도·위상 강의(PDF)</a></li><li><a href="https://ps.uci.edu/~cyu/p115B/LectureNotes/superconductivity.pdf" target="_blank" rel="noopener noreferrer">UCI · Superconductivity notes(PDF)</a></li><li><a href="https://wucj.lab.westlake.edu.cn/teach/Condensed_Matter_theory_B/Lecture11_BCS_thermo_response_EM.pdf" target="_blank" rel="noopener noreferrer">Phase stiffness / two energy scales · 강의자료(PDF)</a></li></ul><p class="cp-small">링크는 이론 참고용입니다. 화면의 도형·속도·상대 비용은 문헌의 실측 데이터가 아닙니다.</p></details>
+        <noscript><p>이 실험의 조작과 애니메이션에는 JavaScript가 필요합니다. 기존 본문의 설명과 참고자료는 계속 읽을 수 있습니다.</p></noscript>
+      </section>
+
       <section class="mechanism" aria-labelledby="super-mechanism-title">
         <div class="mechanism-heading"><span>원인 → 변화 → 결과</span><h3 id="super-mechanism-title">왜 저항이 사라지고 자석이 뜰까요?</h3></div>
         <ol class="mechanism-steps">
@@ -95,7 +145,7 @@
           <li><h4>자속이 고정되면 위치 변화에도 저항해요</h4><p>제2종의 혼합상에서는 자속이 작은 <strong>소용돌이</strong> 형태로 일부 침투합니다. 재료의 결함이 소용돌이가 자리 잡기 쉬운 위치가 되면 움직임을 억제해요. 이 <strong>자속 고정</strong>은 자석과 시료의 상대 위치가 바뀌는 것에도 저항해 안정적인 부상에 도움을 줍니다.</p></li>
         </ol>
         <p class="mechanism-connect"><strong>자석이 뜨는 이유</strong>자석의 자기장과 초전도체의 전류가 상호작용해 자기력이 생깁니다. 위쪽 힘이 자석의 무게와 균형을 이루면 떠 있을 수 있어요. 화면의 높이는 힘을 계산한 결과가 아닌 개념 표현입니다.</p>
-        <details class="mechanism-extra"><summary>쿠퍼쌍은 어떻게 생기나요?</summary><p>전통적인 초전도체에서는 전자가 격자 진동을 통해 서로 영향을 주며, 유효한 인력이 생겨 쿠퍼쌍을 형성할 수 있습니다. 많은 쌍이 집단 상태를 이루고 낮은 에너지의 소산 과정이 억제되는 것이 중요해요. 전자 두 개가 단순히 붙기만 하면 저항이 사라지는 것은 아닙니다.</p><p>화면에서 예로 든 YBCO는 구리산화물 고온 초전도체입니다. 쌍과 집단 상태는 중요하지만, 그 쌍이 생기는 원리를 전통적인 격자 진동 설명만으로 모두 설명할 수는 없습니다.</p><p class="mechanism-source"><a href="https://hoffman.physics.harvard.edu/materials/SCintro.php" target="_blank" rel="noopener noreferrer">Harvard Hoffman Lab · 초전도 원리 참고</a></p></details>
+        <details class="mechanism-extra"><summary>쿠퍼쌍은 어떻게 생기나요?</summary><p>전통적인 BCS에서는 격자 진동이 전자 사이에 유효 인력 성분을 제공할 수 있습니다. <a href="#cooper-lab">위의 7단계 실험</a>에서 쌍 형성과 집단 위상 결맞음을 구분해 보세요. 구리산화물 YBCO의 쌍 형성 기작을 이 설명만으로 단정하지 않습니다.</p></details>
       </section>
       <dl class="keyword-note"><div><dt>자속</dt><dd>어떤 면을 통과하는 자기장의 양을 나타내요.</dd></div><div><dt>제2종 초전도체</dt><dd>자기장이 일부 들어오는 상태에서도 초전도성을 유지할 수 있는 종류예요.</dd></div></dl>
       <p class="everyday-example"><strong>어디에 쓸까요?</strong>병원 MRI의 강한 전자석에도 초전도 재료가 쓰여요.</p>
@@ -113,8 +163,16 @@
         <ul class="easy-points"><li><strong>위상차 Δφ</strong><span>두 위치에서 파의 진동이 얼마나 어긋나는지 나타내는 값이에요.</span></li><li><strong>위상 구배</strong><span>표면을 따라 단위 거리마다 위상이 얼마나 변하는지 나타내요.</span></li><li><strong>파면</strong><span>같은 순간에 위상이 같은 점들을 이은 면이에요.</span></li></ul>
         <p class="remember-line"><span>기억할 한 문장</span><strong>위상 구배로 파면을 기울여, 빛의 진행 방향을 바꿀 수 있습니다.</strong></p>
       </div>
-      <div class="lab-layout"><div class="visual-panel"><div class="visual-toolbar"><span class="live-label"><i></i>3D 개념 모델</span><div><button type="button" class="quiet-button" data-motion="meta" aria-pressed="false">일시정지</button><button type="button" class="quiet-button" data-view="meta">시점 초기화</button></div></div><div class="stage" data-stage="meta"><canvas id="metaCanvas" aria-label="나노 기둥의 위상 구배에 따라 투과 파면이 기울어지는 3D 개념 모델"></canvas><div class="fallback" hidden role="img" aria-label="메타표면 파면의 2D 대체 모식도"></div><div class="scene-caption"><span id="metaSceneCaption">인접한 기둥마다 위상차 → 기울어진 투과 파면</span><small>기둥의 높이·색은 위상만을 개념적으로 표현합니다.</small></div></div><div class="scene-legend"><span><i class="incident"></i>입사 파면</span><span><i class="transmission"></i>투과 파면</span><span><i class="absorption"></i>위상 지연</span><small>드래그로 회전 · 휠로 확대</small></div></div><aside class="controls" aria-label="메타표면 조건"><div class="control-heading"><h3>실험 조건</h3><button type="button" class="text-button" data-reset="meta">기본값</button></div><label class="field" for="metaWavelength"><span>파장 <i>λ</i><output id="metaWavelengthOut" for="metaWavelength">600 nm</output></span><input id="metaWavelength" type="range" min="400" max="900" step="10" value="600"><small><span>400 nm</span><span>900 nm</span></small></label><label class="field" for="metaPitch"><span>기둥 간격 <i>p</i><output id="metaPitchOut" for="metaPitch">300 nm</output></span><input id="metaPitch" type="range" min="120" max="600" step="10" value="300"><small><span>120 nm</span><span>600 nm</span></small></label><label class="field" for="metaPhase"><span>인접 위상차 <i>Δφ</i><output id="metaPhaseOut" for="metaPhase">60°</output></span><input id="metaPhase" type="range" min="-180" max="180" step="5" value="60"><small><span>−180°</span><span>+180°</span></small></label><div class="result" aria-live="polite" aria-atomic="true"><div class="result-label">빛의 조향각 θ</div><strong class="angle-value" id="metaAngle">+19.5°</strong><details class="calculation-details"><summary>계산값 보기</summary><dl class="small-results"><div><dt>sin θ = λ Δφ / (360° p)</dt><dd id="metaSine">0.333</dd></div></dl><p class="result-detail" id="metaExplanation">오른쪽으로 기울어진 파면을 관찰합니다.</p></details></div></aside></div>
+      <div class="lab-layout"><div class="visual-panel"><div class="visual-toolbar"><span class="live-label"><i></i>3D 개념 모델</span><div><button type="button" class="quiet-button" data-motion="meta" aria-pressed="false">일시정지</button><button type="button" class="quiet-button" data-view="meta">시점 초기화</button></div></div><div class="scene-focus" role="group" aria-label="관찰할 과정"><button type="button" data-explore-topic="meta" data-explore-step="0" aria-pressed="false">1. 입사 파면</button><button type="button" data-explore-topic="meta" data-explore-step="1" aria-pressed="false">2. 지역 위상</button><button type="button" data-explore-topic="meta" data-explore-step="2" aria-pressed="true">3. 합쳐진 파면</button></div><div class="stage" data-stage="meta"><canvas id="metaCanvas" aria-describedby="metaFocusText" aria-label="나노 기둥의 위상 구배에 따라 투과 파면이 기울어지는 3D 개념 모델"></canvas><div class="fallback" hidden role="img" aria-label="메타표면 파면의 2D 대체 모식도"></div><div class="scene-caption"><span id="metaSceneCaption">인접한 기둥마다 위상차 → 기울어진 투과 파면</span><small>기둥의 높이·색은 위상만을 개념적으로 표현합니다.</small></div></div><div class="scene-legend"><span><i class="incident"></i>입사 파면</span><span><i class="transmission"></i>투과 파면</span><span><i class="absorption"></i>위상 지연</span><small>드래그·방향키로 회전 · 휠·+/−로 확대 · Home 초기화</small></div></div><aside class="controls" aria-label="메타표면 조건"><div class="control-heading"><h3>실험 조건</h3><button type="button" class="text-button" data-reset="meta">기본값</button></div><label class="field" for="metaWavelength"><span>파장 <i>λ</i><output id="metaWavelengthOut" for="metaWavelength">600 nm</output></span><input id="metaWavelength" type="range" min="400" max="900" step="10" value="600"><small><span>400 nm</span><span>900 nm</span></small></label><label class="field" for="metaPitch"><span>기둥 간격 <i>p</i><output id="metaPitchOut" for="metaPitch">300 nm</output></span><input id="metaPitch" type="range" min="120" max="600" step="10" value="300"><small><span>120 nm</span><span>600 nm</span></small></label><label class="field" for="metaPhase"><span>인접 위상차 <i>Δφ</i><output id="metaPhaseOut" for="metaPhase">60°</output></span><input id="metaPhase" type="range" min="-180" max="180" step="5" value="60"><small><span>−180°</span><span>+180°</span></small></label><div class="result" aria-live="polite" aria-atomic="true"><div class="result-label">빛의 조향각 θ</div><strong class="angle-value" id="metaAngle">+19.5°</strong><details class="calculation-details"><summary>계산값 보기</summary><dl class="small-results"><div><dt>sin θ = λ Δφ / (360° p)</dt><dd id="metaSine">0.333</dd></div></dl><p class="result-detail" id="metaExplanation">오른쪽으로 기울어진 파면을 관찰합니다.</p></details></div></aside></div><div class="focus-reading"><strong id="metaFocusTitle"></strong><p id="metaFocusText"></p></div>
       <div class="observe"><span>해볼 실험</span><p>위상차를 0°로 맞춘 뒤 양쪽으로 움직여보세요. 빛이 나아가는 방향을 살펴보세요.</p><button type="button" class="outline-button" id="reversePhase">위상차 반전</button></div>
+      <details id="phaseExperiment" class="phase-experiment"><summary>왜 그 방향에서 밝아질까요? · 파의 합을 직접 비교</summary>
+        <div class="phase-experiment-body"><p>아홉 기둥에서 온 파를 <strong>같은 관찰 지점</strong>에서 비교합니다. 화살표는 그곳에 도착한 전기장 진동의 상대 위상입니다. 입자의 이동 방향이 아닙니다.</p>
+        <label class="field" for="observationAngle"><span>관찰 방향 θ<output id="observationAngleOut">0.0°</output></span><input type="range" id="observationAngle" min="-90" max="90" step=".1" value="0"></label>
+        <button type="button" id="matchDirection" class="outline-button">위상 구배 식의 방향으로 맞추기</button>
+        <svg id="phaseAddition" role="img" aria-label="9개 파의 상대 위상"></svg>
+        <p id="arrayFactorNote"></p><p>정규화 배열 인자 <output id="arrayFactorValue">0</output><span class="model-note"> · 이상 모형의 상대 세기, 실측 효율 아님</span></p>
+        <details><summary>수식·가정·한계</summary><div class="formula">ψⱼ = j [(2πp/λ) sin θ − Δφ]<br>I / Iₘₐₓ = |(1/9) Σⱼ exp(iψⱼ)|²</div><p id="arrayFactorLimit"></p><p>정면 입사·같은 매질·동일 진폭·한 방향으로 놓인 점파원 9개를 가정합니다. 전자기장 전체 해석이나 실제 기둥의 산란·편광·손실을 재현하지 않습니다. 다른 회절 극대가 나타날 수 있어 이 값만으로 효율·유일한 조향 방향을 판단하지 않습니다.</p><p><a href="https://doi.org/10.1126/science.1210713" target="_blank" rel="noopener noreferrer">위상 구배의 학술 배경 · Yu 등 (2011)</a>. 여기의 유한 배열 합은 명시한 가정으로 작성한 개념 비교식이며 논문의 실험 데이터를 복제하지 않습니다.</p></details></div>
+      </details>
       <section class="mechanism" aria-labelledby="meta-mechanism-title">
         <div class="mechanism-heading"><span>원인 → 변화 → 결과</span><h3 id="meta-mechanism-title">왜 위상차가 빛의 방향을 바꿀까요?</h3></div>
         <ol class="mechanism-steps">

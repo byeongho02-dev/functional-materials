@@ -24,7 +24,8 @@
   globalThis.MaterialsLabModel = Object.freeze({ calculateEMI, calculateSuper, calculateMeta });
   if (typeof document === 'undefined') return;
   const root = document.getElementById('materialsLab');
-  if (!root) return;
+  if (!root || root.dataset.materialsReady === 'true') return;
+  root.dataset.materialsReady = 'true';
   const $ = selector => root.querySelector(selector);
   const $$ = selector => Array.from(root.querySelectorAll(selector));
   const topics = ['emi', 'super', 'meta'];
@@ -34,7 +35,7 @@
   const paused = { emi: reducedMotion, super: reducedMotion, meta: reducedMotion };
   const elapsed = { emi: 0, super: 0, meta: 0 };
   let active = 'emi';
-  let previousFrame = 0;
+  let previousFrame = 0, frameId = 0;
   const palette = { cyan: 0x71dfe5, blue: 0x77b4ff, purple: 0xbd9bff, amber: 0xffc47d };
   const number = id => Number($('#' + id).value);
   const signed = (value, digits) => (value > 0 ? '+' : value < 0 ? '−' : '') + Math.abs(value).toFixed(digits);
@@ -56,6 +57,8 @@
     $('#doubleThickness').disabled = thickness >= 50;
     if (scenes.emi?.update) scenes.emi.update(thickness, frequency, result);
     renderFallback('emi');
+    root.dispatchEvent(new CustomEvent('materials:update',{detail:{topic:'emi'}}));
+    requestRender();
   }
 
   function updateSuper() {
@@ -74,6 +77,8 @@
     $('#resistanceDot').setAttribute('cy', String(125 - 75 * result.resistance));
     if (scenes.super?.update) scenes.super.update(result);
     renderFallback('super');
+    root.dispatchEvent(new CustomEvent('materials:update',{detail:{topic:'super'}}));
+    requestRender();
   }
 
   function updateMeta() {
@@ -89,20 +94,22 @@
     $('#metaSceneCaption').textContent = !result.propagating ? '전파 해 없음 · 지정된 방향의 투과 파면을 표시하지 않습니다' : '인접한 기둥마다 위상차 → ' + (phase === 0 ? '정면으로 진행하는 파면' : '기울어진 투과 파면');
     if (scenes.meta?.update) scenes.meta.update(result);
     renderFallback('meta');
+    root.dispatchEvent(new CustomEvent('materials:update',{detail:{topic:'meta'}}));
+    requestRender();
   }
 
   function remember() {
     const host = globalThis.openai;
     if (!host?.setWidgetState) return;
     const inputs = {};
-    $$('input[type="range"]').forEach(input => { inputs[input.id] = input.value; });
+    $$('.controls input[type="range"]').forEach(input => { inputs[input.id] = input.value; });
     const snapshot = { topic: active, inputs, mode: $('input[name="fieldMode"]:checked').value };
     host.setWidgetState({ modelContent: snapshot, privateContent: null }).catch(() => {});
   }
   function restore(snapshot) {
     if (!snapshot || typeof snapshot !== 'object') return;
     if (snapshot.inputs && typeof snapshot.inputs === 'object') {
-      $$('input[type="range"]').forEach(input => {
+      $$('.controls input[type="range"]').forEach(input => {
         const value = Number(snapshot.inputs[input.id]);
         if (Number.isFinite(value)) input.value = String(clamp(value, +input.min, +input.max));
       });
@@ -170,7 +177,7 @@
     try {
       if (!globalThis.THREE) throw new Error('Three.js unavailable');
       renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-      renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 2));
+      renderer.setPixelRatio(Math.min(globalThis.devicePixelRatio || 1, 1.5));
       renderer.setClearColor(0x0b1729);
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       const scene = new THREE.Scene();
@@ -188,9 +195,9 @@
         const rect = canvas.parentElement.getBoundingClientRect();
         if (rect.width <= 0 || rect.height <= 0) return;
         renderer.setSize(rect.width, rect.height, false);
-        camera.aspect = rect.width / rect.height; camera.updateProjectionMatrix();
+        camera.aspect = rect.width / rect.height; camera.updateProjectionMatrix(); requestRender();
       };
-      api.resetView = () => { group.rotation.set(0, 0, 0); api.zoom = 1; camera.zoom = 1; camera.updateProjectionMatrix(); };
+      api.resetView = () => { group.rotation.set(0, 0, 0); api.zoom = 1; camera.zoom = 1; camera.updateProjectionMatrix(); requestRender(); };
       const observer = new ResizeObserver(api.resize); observer.observe(canvas.parentElement); api.observer = observer;
       let drag = null;
       canvas.addEventListener('pointerdown', event => {
@@ -201,7 +208,7 @@
         if (!drag) return;
         group.rotation.y += (event.clientX - drag.x) * .006;
         group.rotation.x = clamp(group.rotation.x + (event.clientY - drag.y) * .004, -.65, .65);
-        drag = { x: event.clientX, y: event.clientY };
+        drag = { x: event.clientX, y: event.clientY }; requestRender();
       });
       ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => canvas.addEventListener(type, () => { drag = null; }));
       canvas.addEventListener('wheel', event => {
@@ -209,8 +216,22 @@
         if (!event.ctrlKey && !event.shiftKey && !canvas.matches(':hover')) return;
         event.preventDefault();
         api.zoom = clamp(api.zoom * Math.exp(-event.deltaY * .001), .7, 1.7);
-        camera.zoom = api.zoom; camera.updateProjectionMatrix();
+        camera.zoom = api.zoom; camera.updateProjectionMatrix(); requestRender();
       }, { passive: false });
+      canvas.tabIndex=0;
+      canvas.setAttribute('aria-keyshortcuts','ArrowLeft ArrowRight ArrowUp ArrowDown + - Home Space');
+      canvas.addEventListener('keydown',event=>{
+        if(event.target!==canvas)return;
+        const key=event.key;
+        if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Home',' '].includes(key))return;
+        event.preventDefault();
+        if(key==='Home')api.resetView();
+        else if(key===' '){$('[data-motion="'+topic+'"]').click();return;}
+        else if(key==='ArrowLeft'||key==='ArrowRight')group.rotation.y+=(key==='ArrowRight'?1:-1)*.12;
+        else if(key==='ArrowUp'||key==='ArrowDown')group.rotation.x=clamp(group.rotation.x+(key==='ArrowUp'?-1:1)*.1,-.65,.65);
+        else {api.zoom=clamp(api.zoom*(key==='-'?1/1.1:1.1),.7,1.7);camera.zoom=api.zoom;camera.updateProjectionMatrix();}
+        requestRender();
+      });
       canvas.addEventListener('webglcontextlost', event => {
         event.preventDefault(); api.lost = true; showFallback(topic); renderFallback(topic);
       });
@@ -242,14 +263,24 @@
       energy.add(point); sparks.push(point);
     }
     const paths = [];
+    const response = new THREE.Group(); group.add(response);
+    const electrons=[];
+    for(let i=0;i<12;i++){const dot=new THREE.Mesh(new THREE.SphereGeometry(.06,8,6),material(palette.cyan));response.add(dot);electrons.push(dot);}
     function addWave(start, end, y, z, color, fraction, direction, frequency) {
       const count = 90;
       const positions = new Float32Array(count * 3);
       const geometry = new THREE.BufferGeometry(); geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
       const wave = new THREE.Line(geometry, new THREE.LineBasicMaterial({ color, transparent: true, opacity: fraction > 0 ? .95 : 0 }));
       waves.add(wave);
-      paths.push({ start, end, y, z, amplitude: .42 * Math.sqrt(fraction), direction, frequency, positions, geometry, count });
+      paths.push({ start, end, y, z, amplitude: .42 * Math.sqrt(fraction), direction, frequency, positions, geometry, count, wave, internal:false });
     }
+    api.focus=value=>{
+      api.learningFocus=value;
+      paths.forEach(p=>{p.wave.visible=value===2||(value===1?p.internal:!p.internal&&p.direction===-1||!p.internal&&p.start<0);});
+      arrows.visible=value!==1;response.visible=value!==0;energy.visible=value===2;
+      plate.material.opacity=value===1?.22:.68;
+      canvasFocus(api,value);
+    };
     api.update = (thickness, frequency, result) => {
       plate.scale.x = .18 + thickness * .026;
       disposeContents(waves); disposeContents(arrows); paths.length = 0;
@@ -263,6 +294,10 @@
       arrow(arrows, [-4.8, 1.55, 0], [-2.7, 1.55, 0], palette.cyan);
       if (result.R > .001) arrow(arrows, [-2.7, -1.05, 0], [-4.8, -1.05, 0], palette.blue);
       if (result.T > .0001) arrow(arrows, [2.7, 1.1, 0], [4.8, 1.1, 0], palette.amber);
+      addWave(-edge,edge,.1,0,palette.purple,1-result.R,1,visualFreq);
+      const internal=paths[paths.length-1];internal.internal=true;internal.attenuation=thickness/result.deltaUm;
+      api.attenuation=result.A;api.incidentFraction=1-result.R;
+      api.focus(api.learningFocus??2);
       sparks.forEach(spark => { spark.material.emissive.setHex(palette.purple); spark.material.emissiveIntensity = result.A * .7; spark.visible = result.A > .0001; });
       api.draw(elapsed.emi);
     };
@@ -271,10 +306,13 @@
         for (let i = 0; i < path.count; i++) {
           const x = path.start + (path.end - path.start) * i / (path.count - 1);
           path.positions[i * 3] = x;
-          path.positions[i * 3 + 1] = path.y + path.amplitude * Math.sin(x * 4 * path.frequency - time * 3.2 * path.direction);
+          path.positions[i * 3 + 1] = path.y + path.amplitude * (path.internal?Math.exp(-path.attenuation*i/(path.count-1)):1) * Math.sin(x * 4 * path.frequency - time * 3.2 * path.direction);
           path.positions[i * 3 + 2] = path.z;
         }
         path.geometry.attributes.position.needsUpdate = true;
+      });
+      electrons.forEach((dot,i)=>{
+        dot.position.set(((i%3)-1)*plate.scale.x*.25,-.9+Math.floor(i/3)*.65+.12*Math.sqrt(api.incidentFraction||0)*Math.sin(time*3.2),((i%2)-.5)*1.35);
       });
       sparks.forEach((spark, i) => {
         spark.position.set(Math.sin(time * 1.5 + i * 2.3) * plate.scale.x * .38, -.95 + ((i * .137 + time * .11) % 1) * 2.5, Math.sin(i * 3.1 + time * .5) * 1.3);
@@ -360,18 +398,33 @@
     const substrate = new THREE.Mesh(new THREE.BoxGeometry(7, .15, 3.8), material(0x2b4665, .6));
     substrate.position.y = -.85; group.add(substrate);
     const pillars = new THREE.Group(); group.add(pillars);
+    const clocks=new THREE.Group();group.add(clocks);const hands=[];
     const waves = new THREE.Group(); group.add(waves);
     const directions = new THREE.Group(); group.add(directions);
     const label = textSprite('메타표면 · 나노 기둥 배열'); label.position.set(0, -1.6, 2.7); group.add(label);
+    api.focus=value=>{
+      api.learningFocus=value;clocks.visible=value!==0;
+      waves.children.forEach(w=>{w.visible=value===2||(value===0&&w.userData.incident);});
+      directions.visible=value===2;canvasFocus(api,value);
+    };
     api.update = result => {
       api.metaResult = result;
       buildPillars(pillars, result);
       buildWavefronts(waves, directions, result);
+      disposeContents(clocks);hands.length=0;
+      const spacing=.52+(result.pitch-120)/480*.2;
+      for(let i=0;i<9;i++){
+        const x=(i-4)*spacing;
+        const ring=new THREE.Mesh(new THREE.TorusGeometry(.19,.012,5,24),material(palette.cyan,.7));ring.position.set(x,1.25,1.9);clocks.add(ring);
+        const hand=arrow(clocks,[x,1.25,1.9],[x+.17,1.25,1.9],palette.amber,.06);hands.push({hand,phase:(i-4)*result.phase*Math.PI/180});
+      }
+      api.focus(api.learningFocus??2);
       api.draw(elapsed.meta);
     };
     api.draw = time => {
       const result = api.metaResult;
       if (!result) return;
+      hands.forEach(({hand,phase})=>hand.setDirection(new THREE.Vector3(Math.cos(phase-time*2),Math.sin(phase-time*2),0)));
       waves.children.forEach(wave => {
         const data = wave.userData;
         const travel = (data.index / 4 + time * .14) % 1;
@@ -482,6 +535,11 @@
     panel.querySelector('.fallback').innerHTML = '<svg viewBox="0 0 500 280" role="presentation">' + arrowMark + content + '</svg>';
   }
 
+  function canvasFocus(api,value){const canvas=$('#'+(api.topic==='super'?'super':api.topic)+'Canvas');canvas.dataset.learningFocus=String(value);requestRender();}
+  root.addEventListener('materials:focus',event=>{
+    const {topic,step}=event.detail||{};if(!['emi','meta'].includes(topic))return;
+    scenes[topic]?.focus?.(clamp(Number(step)||0,0,2));
+  });
   const updates = { emi: updateEMI, super: updateSuper, meta: updateMeta };
   $$('.lab-tabs button').forEach(tab => {
     tab.addEventListener('click', () => { activate(tab.dataset.topic); remember(); });
@@ -494,7 +552,7 @@
   });
   const defaults = { emi: { emiThickness: 8, emiFrequency: 1, emiReflection: 55 }, super: { superTemperature: 65 }, meta: { metaWavelength: 600, metaPitch: 300, metaPhase: 60 } };
   topics.forEach(topic => {
-    $('#panel-' + topic).querySelectorAll('input').forEach(input => input.addEventListener('input', () => { updates[topic](); remember(); }));
+    $('#panel-' + topic).querySelectorAll('.controls input').forEach(input => input.addEventListener('input', () => { updates[topic](); remember(); }));
     $('[data-reset="' + topic + '"]').addEventListener('click', () => {
       Object.entries(defaults[topic]).forEach(([id, value]) => { $('#' + id).value = value; });
       if (topic === 'super') $('input[value="meissner"]').checked = true;
@@ -506,7 +564,7 @@
     motionButton.addEventListener('click', () => {
       paused[topic] = !paused[topic];
       motionButton.setAttribute('aria-pressed', String(paused[topic]));
-      motionButton.textContent = paused[topic] ? '재생' : '일시정지';
+      motionButton.textContent = paused[topic] ? '재생' : '일시정지'; requestRender();
     });
     $('[data-view="' + topic + '"]').addEventListener('click', () => scenes[topic]?.resetView?.());
   });
@@ -531,22 +589,36 @@
 
   restore(globalThis.openai?.widgetState?.modelContent);
   updateEMI(); updateSuper(); updateMeta();
+  if(location.hash==='#cooper-lab')active='super';
   activate(active);
+  globalThis.addEventListener('hashchange',()=>{if(location.hash==='#cooper-lab'){activate('super');$('#cooper-lab').scrollIntoView();}});
   globalThis.addEventListener('openai:set_globals', event => {
     const snapshot = event.detail?.globals?.widgetState?.modelContent;
     if (!snapshot) return;
     restore(snapshot); updateEMI(); updateSuper(); updateMeta(); activate(active);
   });
-  function tick(timestamp) {
-    requestAnimationFrame(tick);
-    if (timestamp - previousFrame < 25) return;
-    const dt = previousFrame ? Math.min((timestamp - previousFrame) / 1000, .08) : 0;
-    previousFrame = timestamp;
-    if (document.hidden) return;
-    const api = scenes[active];
-    if (!api?.renderer || api.lost) return;
-    if (!paused[active]) { elapsed[active] += dt; api.draw?.(elapsed[active]); }
-    api.renderer.render(api.scene, api.camera);
+  function sceneVisible(){
+    const canvas=$('#'+(active==='super'?'super':active)+'Canvas'),r=canvas.getBoundingClientRect();
+    return !document.hidden&&!$('#panel-'+active).hidden&&(r.width<=0||r.height<=0||!globalThis.innerHeight||r.bottom>0&&r.top<innerHeight);
   }
-  requestAnimationFrame(tick);
+  function requestRender(){if(!document.hidden&&!frameId)frameId=requestAnimationFrame(tick);}
+  function stopRender(){if(frameId)cancelAnimationFrame(frameId);frameId=0;previousFrame=0;}
+  function tick(timestamp) {
+    frameId=0;
+    const api=scenes[active];
+    if(!api?.renderer||api.lost||!sceneVisible()){previousFrame=0;return;}
+    if(previousFrame&&timestamp-previousFrame<25){requestRender();return;}
+    const dt=previousFrame?Math.min((timestamp-previousFrame)/1000,.08):0;previousFrame=timestamp;
+    if(!paused[active]){elapsed[active]+=dt;api.draw?.(elapsed[active]);}
+    api.renderer.render(api.scene,api.camera);
+    if(!paused[active])requestRender();else previousFrame=0;
+  }
+  document.addEventListener('visibilitychange',()=>{stopRender();if(!document.hidden)requestRender();});
+  globalThis.addEventListener('scroll',()=>{if(sceneVisible())requestRender();else stopRender();},{passive:true});
+  globalThis.addEventListener('pagehide',stopRender);globalThis.addEventListener('pageshow',requestRender);
+  globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').addEventListener?.('change',event=>{
+    if(!event.matches)return;
+    topics.forEach(topic=>{paused[topic]=true;const b=$('[data-motion="'+topic+'"]');b.textContent='재생';b.setAttribute('aria-pressed','true');});stopRender();requestRender();
+  });
+  requestRender();
 })();
