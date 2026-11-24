@@ -62,6 +62,7 @@
       const p=[center+r*Math.cos(a),y,r*Math.sin(a)],axis=[Math.cos(a+.5)*.12,.08,Math.sin(a+.5)*.12];
       const endpoints=[p.map((v,i)=>v-axis[i]),p.map((v,i)=>v+axis[i])];
       endpoints.forEach((q,j)=>ball('H-'+(pair*2+j),q,.105,c.hydrogen,1,{element:'H',pair,inside:false}));
+      if(s.tracePair&&pair===0)endpoints.forEach((q,j)=>ball('trace-'+j,q,.16,c.heat,.65,{hollow:true}));
       bar('HH-'+pair,endpoints[0],endpoints[1],.026,c.bond,1,{bondType:'H-H'});
     }
     labels.push({id:'storage-kind',p:[.35,2.9,0],text:liquid?'액체 수소 · H₂ 분자 유지':'압축 기체 · H₂ 분자 유지'});

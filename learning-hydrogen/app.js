@@ -53,6 +53,7 @@
     if(!hydride)observation=state.method==='liquid'?'냉각해 액체로 만든 수소도 H₂ 분자입니다. 두 겹의 벽은 단열 장치의 개념이며 금속 내부에 H 원자로 저장하는 모습과 구분합니다.':'H₂의 H–H 결합은 유지됩니다. 용기는 기체를 가두는 역할을 하고, 금속수소화물과 같은 해리·내부 흡수를 표현하지 않습니다.';
     text('observation',observation);text('processReason',hydride?entry.reason:state.method==='liquid'?'분자 사이 간격이 좁은 액체 상태를 유지하려면 낮은 온도와 열 유입을 줄이는 단열이 필요합니다. 이 그림의 입자 간격은 실제 밀도가 아닙니다.':'기체를 압축하면 같은 양을 더 작은 부피에 담을 수 있지만 압력 용기와 시스템 무게도 고려해야 합니다. 실제 압력·밀도를 계산한 그림이 아닙니다.');
     $('stepNav').hidden=!hydride;
+    for(const id of ['showSites','showInteractions','showHeat'])$(id).closest('label').hidden=!hydride;
     for(const b of root.querySelectorAll('[data-play-toggle]')){b.setAttribute('aria-pressed',String(state.playing));const label=state.playing?'일시정지':'재생';if(b.textContent!==label)b.textContent=label;}$('playScene').setAttribute('aria-pressed',String(state.playing));text('playScene',state.playing?'일시정지':'과정 재생');$('previousStep').disabled=!hydride||step===0;$('nextStep').disabled=!hydride||step===4;
     for(const b of root.querySelectorAll('[data-step]')){if(Number(b.dataset.step)===step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');}
     const progress=Math.round(hydride?(step===4?4+(1-u/4):u)/5*100:state.phase*100);$('sceneProgress').value=progress;text('progressValue',progress+'%');

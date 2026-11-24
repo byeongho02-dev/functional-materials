@@ -1,7 +1,7 @@
 const {test,expect}=require('@playwright/test');
 for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800]]){
   test('remaining lessons review: causal scenes, controls and layout at '+width,async({page})=>{
-    test.setTimeout(240000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
+    test.setTimeout(240000);const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push(m.text());});
     await page.setViewportSize({width,height});await page.emulateMedia({reducedMotion:'reduce'});
     const capture=width===1440||width===390,size=width===1440?'desktop':'mobile';
     const input=async(id,v)=>page.locator('#'+id).evaluate((el,value)=>{el.value=String(value);el.dispatchEvent(new Event('input',{bubbles:true}));},v);
@@ -34,7 +34,9 @@ for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800
     for(const topic of ['emi','meta']){
       await page.locator('#tab-'+topic).click();
       for(let step=0;step<3;step++){await page.locator('[data-explore-topic="'+topic+'"][data-explore-step="'+step+'"]').click();await expect(page.locator('#'+topic+'Canvas')).toHaveAttribute('data-learning-focus',String(step));await fits();}
-      await page.locator('#'+topic+'Canvas').focus();await page.keyboard.press('ArrowRight');await page.keyboard.press('+');await page.keyboard.press('Home');
+      const canvas=page.locator('#'+topic+'Canvas');const originalView=await canvas.screenshot();
+      await canvas.focus();await page.keyboard.press('ArrowRight');const rotatedView=await canvas.screenshot();expect(rotatedView.equals(originalView),'Keyboard rotation must change the rendered scene').toBe(false);
+      await page.keyboard.press('+');await page.keyboard.press('Home');
       if(topic==='meta'){
         await page.locator('#phaseExperiment').evaluate(el=>el.open=true);await page.locator('#matchDirection').click();await expect.poll(async()=>Number(await page.locator('#arrayFactorValue').textContent())).toBeGreaterThan(.999);
         await input('observationAngle',0);await expect.poll(async()=>Number(await page.locator('#arrayFactorValue').textContent())).toBeLessThan(.1);
@@ -57,6 +59,7 @@ for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800
     await page.locator('#cp-reset').click();await page.locator('#cp-play').click();await expect.poll(async()=>Number(await page.locator('#cp-progress').inputValue())).toBeGreaterThan(0);await page.locator('#cp-play').click();
     const held=await page.locator('#cp-progress').inputValue();await page.waitForTimeout(200);await expect(page.locator('#cp-progress')).toHaveValue(held);
     await page.locator('#tab-emi').click();await page.locator('#tab-super').click();await expect(page.locator('#superCanvas')).toBeVisible();
+    await page.goto('/learning-electromagnetic/index.html#cooper-lab');await expect(page.locator('#panel-super')).toBeVisible();await expect(page.locator('#cooper-lab')).toBeVisible();
     expect(errors).toEqual([]);
   });
 }
