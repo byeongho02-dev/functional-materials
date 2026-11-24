@@ -288,3 +288,13 @@ body:has(> #materialsLab) { margin: 0; background: #080f1c; }
 #materialsLab #phaseAddition { display:block; width:100%; height:128px; margin-top:16px; background:#0b1729; border-radius:8px; }
 #materialsLab #arrayFactorValue { color:var(--lab-cyan); font-weight:700; font-variant-numeric:tabular-nums; }
 #materialsLab canvas:focus-visible { outline:3px solid var(--lab-cyan); outline-offset:-4px; }
+#materialsLab .observe { display:grid; grid-template-columns:auto minmax(0,1fr) auto; }
+#materialsLab .observe > span { font-size:14px; }
+#materialsLab .observe > p { font-size:16px; line-height:1.8; }
+#materialsLab .observe > button { min-height:44px; }
+#materialsLab .scene-caption > span { font-size:14px; }
+#materialsLab .scene-caption > small, #materialsLab .scene-legend > small { font-size:13px; }
+#materialsLab .scene-legend { font-size:14px; }
+#materialsLab button, #materialsLab select { min-height:44px; }
+#materialsLab .quiet-button, #materialsLab .text-button, #materialsLab .outline-button { font-size:14px; }
+@media(max-width:620px){ #materialsLab .observe { grid-template-columns:minmax(0,1fr); align-items:start; } #materialsLab .observe > button { justify-self:start; } }

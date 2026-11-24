@@ -48,6 +48,7 @@
     const box=(id,p,size,color,opacity=1)=>parts.push({id,kind:'box',p,size,color,opacity});
     const ring=(id,y,r,color)=>{for(let i=0;i<32;i++){const a=i/32*Math.PI*2,b=(i+1)/32*Math.PI*2;bar(id+'-'+i,[center+r*Math.cos(a),y,r*Math.sin(a)],[center+r*Math.cos(b),y,r*Math.sin(b)],.024,color,.75);}};
     bar('vessel-shell',[center,-1.75,0],[center,1.75,0],1.3,c.guide,.13);
+    for(let i=0;i<4;i++){const a=i*Math.PI/2,x=center+1.3*Math.cos(a),z=1.3*Math.sin(a);bar('vessel-outline-'+i,[x,-1.75,z],[x,1.75,z],.016,c.metal,.4);}
     for(const y of [-1.75,1.75]){ring('vessel-ring'+y,y,1.3,c.metal);ball('vessel-cap'+y,[center,y,0],1.3,c.guide,.12,{scale:[1,.24,1]});}
     box('valve',[center,2.18,0],[.35,.32,.35],c.guide);bar('valve-stem',[center,1.95,0],[center,2.4,0],.055,c.metal);
     if(liquid){
