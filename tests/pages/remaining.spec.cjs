@@ -12,9 +12,9 @@ for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800
     await page.goto('/learning-hydrogen/index.html');await expect(page.locator('#viewport')).toHaveAttribute('data-renderer','webgl');
     for(let c=0;c<8;c++){
       await page.locator('[data-chapter="'+c+'"]').click();await fits();
-      if(c===0){for(const method of ['compressed','liquid','hydride']){await page.locator('[data-method="'+method+'"]').click();await expect(page.locator('#sceneModelName')).toContainText(method==='hydride'?'금속수소화물':method==='liquid'?'액체':'압축');if(capture)await page.locator('#hydrogenLab').screenshot({path:'preview/remaining-review/hydrogen/'+size+'/storage-'+method+'.png'});}}
+      if(c===0){for(const method of ['compressed','liquid','hydride']){await page.locator('[data-method="'+method+'"]').first().click();await expect(page.locator('#sceneModelName')).toContainText(method==='hydride'?'금속수소화물':method==='liquid'?'액체':'압축');if(capture)await page.locator('#hydrogenLab .lab-grid').screenshot({path:'preview/remaining-review/hydrogen/'+size+'/storage-'+method+'.png'});}}
       if(c===7){await page.locator('#impurity').check();await page.locator('[data-step="3"]').click();await expect(page.locator('#viewport')).toHaveAttribute('data-inside-hydrogen','10');await expect(page.locator('#objectLabels')).toContainText('차단');}
-      if(capture)await page.locator('#hydrogenLab').screenshot({path:'preview/remaining-review/hydrogen/'+size+'/chapter-'+(c+1)+'.png'});
+      if(capture)await page.locator('#hydrogenLab .lab-grid').screenshot({path:'preview/remaining-review/hydrogen/'+size+'/chapter-'+(c+1)+'.png'});
     }
     await page.goto('/learning-mof/index.html');await expect(page.locator('#viewport')).toHaveAttribute('data-renderer','webgl');
     await page.locator('[data-focus="node"]').click();await expect(page.locator('#sceneTitle')).toContainText('금속 마디');
@@ -28,7 +28,7 @@ for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800
         await expect(page.locator('#liveResults')).toContainText('평형 목표');
       }
       if(c===8){await page.locator('[data-application="4"]').click();await expect(page.locator('#componentReadout')).toContainText('신호');}
-      if(capture)await page.locator('#mofLab').screenshot({path:'preview/remaining-review/mof/'+size+'/chapter-'+(c+1)+'.png'});
+      if(capture)await page.locator('#mofLab .lab-grid').screenshot({path:'preview/remaining-review/mof/'+size+'/chapter-'+(c+1)+'.png'});
     }
     await page.goto('/learning-electromagnetic/index.html');
     for(const topic of ['emi','meta']){
@@ -40,6 +40,7 @@ for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800
         await input('observationAngle',0);await expect.poll(async()=>Number(await page.locator('#arrayFactorValue').textContent())).toBeLessThan(.1);
         await input('metaWavelength',800);await input('metaPitch',120);await input('metaPhase',120);await expect(page.locator('#matchDirection')).toBeDisabled();await expect(page.locator('#arrayFactorLimit')).toContainText('다른 방향');
       }
+      await page.locator('#'+topic+'Canvas').scrollIntoViewIfNeeded();
       if(capture)await page.locator('#panel-'+topic).screenshot({path:'preview/remaining-review/electromagnetic/'+size+'/'+topic+'.png'});
     }
     await page.locator('#tab-super').click();await expect(page.locator('#cooper-lab')).toHaveAttribute('data-cp-ready','true');
@@ -47,6 +48,7 @@ for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800
     for(let step=0;step<7;step++){
       await page.locator('[data-cp-step="'+step+'"]').click();const before=await page.locator('#cp-scene').innerHTML();await input('cp-progress',65);
       if([0,1,2,3,5,6].includes(step))expect(await page.locator('#cp-scene').innerHTML()).not.toBe(before);
+      const clippedLabels=await page.locator('#cp-svg').evaluate(svg=>{const r=svg.getBoundingClientRect();return [...svg.querySelectorAll('#cp-scene text')].filter(el=>{const b=el.getBoundingClientRect();return b.left<r.left-2||b.right>r.right+2||b.top<r.top-2||b.bottom>r.bottom+2;}).map(el=>el.textContent);});expect(clippedLabels,'Cooper stage '+step+' at '+width).toEqual([]);
       await page.locator('#cp-theory').evaluate(el=>el.open=true);await expect(page.locator('#cp-theory-body')).not.toBeEmpty();await fits();
       if(step>=4){await page.locator('[data-cp-coherence="no"]').click();if(step<6)await expect(page.locator('#cp-twist')).toBeDisabled();await page.locator('[data-cp-coherence="yes"]').click();if(step<6){await input('cp-twist',30);await expect(page.locator('#cp-twist-value')).toContainText('30');}}
       if(capture)await page.locator('#cooper-lab').screenshot({path:'preview/remaining-review/cooper/'+size+'/step-'+(step+1)+'.png'});

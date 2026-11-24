@@ -148,11 +148,15 @@
   function render(){
     const model=state.chapter<3&&window.MOFMolecular?window.MOFMolecular.scene(state,state.phase):M.scene(state,state.phase);currentModel=model;$('modelName').textContent=model.name;placedLabels=[];
     $('componentReadout').textContent=model.readout||'조작한 변수에 따라 골격과 기공의 변화를 비교하세요.';viewport.dataset.atomCount=String(model.parts.filter(p=>p.atom).length);
-    if(state.chapter<3&&state.chapter!==1&&state.focus!=='framework'){
+    if(state.chapter<3&&state.chapter!==1&&['node','linker'].includes(state.focus)){
       const node=state.focus==='node';
       $('sceneTitle').textContent=node?'금속 마디를 가까이 보기':'유기 링커를 가까이 보기';
       $('sceneWhy').textContent=node?'중심 산소와 Zn 네 개가 이루는 Zn₄O 기반 마디입니다. 주변 결합 부위가 이웃 링커와 연결됩니다.':'BDC는 벤젠 고리 양끝에 카복실레이트를 가집니다. 말단 산소가 금속 마디에 배위해 이웃을 잇습니다.';
       $('sceneReason').textContent=node?'마디는 골격의 연결 방향을 정합니다. 여섯 방향 연결은 마디 전체의 연결도이며 Zn 하나의 배위수가 아닙니다.':'링커는 단순한 막대가 아니라 결합 말단을 가진 분자입니다. 이 모형의 확대 비율과 원자 위치는 이해를 위한 조정입니다.';
+    }else if(state.chapter<3&&state.chapter!==1&&state.focus==='pore'){
+      $('sceneTitle').textContent='골격 사이에 남은 기공 보기';
+      $('sceneWhy').textContent='노란 윤곽은 마디와 링커 사이의 빈 공간을 가리킵니다. 분자가 이용하려면 입구를 통과하고 내부로 접근할 수 있어야 합니다.';
+      $('sceneReason').textContent='기공은 원자를 뚫어 만든 구멍이 아니라 골격의 연결 방식이 남긴 공간입니다. 윤곽은 비교 기호이며 실제 기공 경계나 접근 가능한 부피의 계산값이 아닙니다.';
     }else{
       const chapter=M.chapters[state.chapter];$('sceneTitle').textContent=chapter.scenes[state.step][0];$('sceneWhy').textContent=chapter.scenes[state.step][1];$('sceneReason').textContent=chapter.reasons[state.step];
     }

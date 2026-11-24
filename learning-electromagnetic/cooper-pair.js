@@ -177,7 +177,7 @@
   function electron(x, y) { return circle(x, y, 12, 'cp-electron') + text(x, y + 4, '−', 'cp-charge', 'middle'); }
   function phaseRow(y, count, time, small = false) {
     const angles = phaseAngles(state.coherent, state.twist, time).slice(0, count);
-    const left = 30, spacing = (width - 60) / (count - 1), radius = small ? 10 : Math.min(22, spacing * .32);
+    const left = 38, spacing = (width - 76) / (count - 1), radius = small ? 10 : Math.min(22, spacing * .32);
     let markup = '';
     angles.forEach((angle, i) => {
       const x = left + spacing * i;
@@ -295,7 +295,7 @@
     }
     if (persistent) markup += arrow(cx - 20, cy - ry, cx + 20, cy - ry, 'cp-phase-arrow', 'cp-arrow-cyan');
     markup += text(cx, cy + 4, persistent ? '지속 전류' : '손실 가능', 'cp-label', 'middle');
-    markup += text(cx, height - 60, '움직이는 표시는 전류 지속의 모식도', 'cp-note', 'middle');
+    markup += text(cx, height - 80, '움직이는 표시는 전류 지속의 모식도', 'cp-note', 'middle');
     return markup + text(cx, height - 31, '실제 전자쌍의 궤적이나 전류 계산이 아닙니다', 'cp-tiny', 'middle');
   }
   function renderScene() {
