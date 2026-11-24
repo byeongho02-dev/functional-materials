@@ -93,3 +93,8 @@
 #materialsLab .cp-lab button:disabled, #materialsLab .cp-lab input:disabled { opacity:.5; cursor:default; }
 #materialsLab .cp-key > p { font-size:17px; }
 #materialsLab .cp-lab input[type="range"] { width:100%; min-width:0; }
+
+/* Long theory expands below both columns instead of leaving an empty scene column. */
+#materialsLab .cp-theory { margin:0; padding:8px 24px 24px; }
+#materialsLab #cp-theory-body { max-width:90ch; margin:0 auto; }
+@media(max-width:520px){ #materialsLab .cp-theory { padding:8px 16px 20px; } }

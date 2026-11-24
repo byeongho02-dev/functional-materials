@@ -52,7 +52,9 @@ for(const [width,height]of [[1440,1000],[1280,900],[768,1024],[390,844],[360,800
       if([0,1,2,3,5,6].includes(step))expect(await page.locator('#cp-scene').innerHTML()).not.toBe(before);
       const clippedLabels=await page.locator('#cp-svg').evaluate(svg=>{const r=svg.getBoundingClientRect();return [...svg.querySelectorAll('#cp-scene text')].filter(el=>{const b=el.getBoundingClientRect();return b.left<r.left-2||b.right>r.right+2||b.top<r.top-2||b.bottom>r.bottom+2;}).map(el=>el.textContent);});expect(clippedLabels,'Cooper stage '+step+' at '+width).toEqual([]);
       await page.locator('#cp-theory').evaluate(el=>el.open=true);await expect(page.locator('#cp-theory-body')).not.toBeEmpty();await fits();
+      const theoryPlacement=await page.locator('#cp-theory').evaluate(el=>({top:el.getBoundingClientRect().top,sceneBottom:document.querySelector('.cp-layout').getBoundingClientRect().bottom}));expect(theoryPlacement.top).toBeGreaterThanOrEqual(theoryPlacement.sceneBottom-1);
       if(step>=4){await page.locator('[data-cp-coherence="no"]').click();if(step<6)await expect(page.locator('#cp-twist')).toBeDisabled();await page.locator('[data-cp-coherence="yes"]').click();if(step<6){await input('cp-twist',30);await expect(page.locator('#cp-twist-value')).toContainText('30');}}
+      await page.locator('#cp-theory').evaluate(el=>el.open=false);
       if(capture)await page.locator('#cooper-lab').screenshot({path:'preview/remaining-review/cooper/'+size+'/step-'+(step+1)+'.png'});
     }
     await expect(page.locator('#superTemperatureOut')).toHaveText(ybco);
