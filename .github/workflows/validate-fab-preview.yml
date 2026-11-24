@@ -8,6 +8,9 @@ on:
       - 'index.html'
       - 'learning-hydrogen/**'
       - 'learning-lecture*.html'
+      - 'learning-shared/**'
+      - 'learning-scenes/**'
+      - 'tests/learning-*.test.cjs'
       - 'learning-mof/**'
       - 'learning-electromagnetic/**'
       - 'assets/learning-common.css'
@@ -60,4 +63,40 @@ jobs:
           path: |
             preview/learning-integration/
             test-results/pages-browser-results.json
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lecture1-desktop-evidence
+          path: preview/lecture-upgrade/lecture1/desktop/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lecture1-mobile-evidence
+          path: preview/lecture-upgrade/lecture1/mobile/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lecture2-desktop-evidence
+          path: preview/lecture-upgrade/lecture2/desktop/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lecture2-mobile-evidence
+          path: preview/lecture-upgrade/lecture2/mobile/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lecture3-desktop-evidence
+          path: preview/lecture-upgrade/lecture3/desktop/
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lecture3-mobile-evidence
+          path: preview/lecture-upgrade/lecture3/mobile/
           retention-days: 14

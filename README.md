@@ -8,7 +8,7 @@
 
 4강은 [learning-hydrogen/index.html](learning-hydrogen/index.html)에서 실행합니다. H₂의 해리·원자 H의 내부 흡수·수소화물·재결합 방출, 온도/압력과 PCT를 조작합니다. 수소 원자 수를 보존하는 정성 모형이며 실측 성능을 예측하지 않습니다. **4강 PDF가 제공되지 않아 첨부 작업지시서의 페이지별 개요를 사용했습니다. 원본 직접 대조는 미완료입니다.**
 
-공유 디자인은 [assets/learning-common.css](assets/learning-common.css)의 선택적 토큰·헤더·조작 요소로 적용합니다. 기존 1~3강 스크립트와 과학 도식은 보존하며, 도식 안의 밝은 배경과 진한 글자를 유지합니다. MOF와 전자기 자료도 같은 토큰과 접근성 기준을 사용합니다. ALE 인터페이스에는 적용하지 않습니다.
+공유 디자인은 [assets/learning-common.css](assets/learning-common.css)의 선택적 토큰을 사용합니다. 1~3강은 learning-shared/와 learning-scenes/의 독립 모듈로 실제 3D·도표·설명을 연결하며, MOF와 전자기 자료의 네이비·시안 기준을 따릅니다. ALE 인터페이스는 별도로 유지합니다.
 
 - [4강의 모형·조작·참고자료](learning-hydrogen/README.md)
 - [통합 변경과 검증 범위](docs/integration/VALIDATION.md)
@@ -89,3 +89,16 @@ python3 -m http.server 8000
 
 검증을 통과한 변경을 `main`에 반영하면 기존 Pages 게시가 갱신됩니다.
 Three.js 파일을 가져오기 위해 별도 CDN이나 새 호스팅 서비스를 설정할 필요가 없습니다.
+
+## 1~3강 3D 학습 업그레이드
+
+각 8단원과 기존 HTML/해시 진입점을 유지합니다. 원자·NaCl/CH₄·CNT·센서, 뼈와 장치·병렬 하중·인장·다공체, NiTi의 B2/B19′ 개념·열/기계 이력·실제 형태 응용을 조작할 수 있습니다. 2D 그래프는 같은 모델 상태를 사용합니다.
+
+- learning-shared/: 공통 토큰·레이아웃·접근성 UI·렌더/카메라·선택·SVG 대체.
+- learning-scenes/: 강의별 순수 모델과 장면·관찰·조작 정의.
+- [24단원 PDF 대응·과학 모형·검증 범위](docs/learning-visual-audit.md).
+- [오픈소스 버전·실제 LICENSE 확인·채택/미채택 이유](THIRD_PARTY_NOTICES.md).
+
+첨부 PDF 1강31쪽·2강43쪽·3강30쪽을 직접 확인했습니다. 그림은 자체 제작하며 원본 도판을 복제하지 않습니다. 자료값·계산·정성 가정을 구분합니다. 4강 PDF의 이전 미제공 기록과 혼동하지 않습니다.
+
+검증 명령: npm run test:learning:model, npm run test:pages. 개별 모형은 node tests/learning-models.test.cjs, 선택적 UI DOM 검사는 node tests/learning-dom.test.cjs입니다. 브라우저 증거는 강의/desktop·mobile별 Actions artifact에 저장합니다.
